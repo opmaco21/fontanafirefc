@@ -9,8 +9,8 @@ body {
 
 /* ========== HEADER ========== */
 .site-header {
-  background-color: #ffffff;
-  border-bottom: 2px solid #c4161c;
+  background-color: transparent;
+  border-bottom: none;
 }
 
 .header-container {
