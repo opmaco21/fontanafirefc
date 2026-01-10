@@ -89,7 +89,7 @@ main {
 .team-photo {
   width: 100%;
   max-width: 900px;
-  height: 520px;              /* MORE HEIGHT = PLAYERS VISIBLE */
+  height: 550px;              /* MORE HEIGHT = PLAYERS VISIBLE */
   object-fit: cover;
   object-position: center center; /* CENTER PLAYERS */
   display: block;
