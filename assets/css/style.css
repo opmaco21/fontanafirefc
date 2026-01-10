@@ -1,22 +1,103 @@
+/* ========== GLOBAL STYLES ========== */
 body {
-  font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  padding: 0;
-  background-color: #fdfdfd;
-  color: #333;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #ffffff;
+  color: #111111;
 }
 
-header {
-  background-color: #d32f2f;
-  color: white;
-  padding: 20px;
+/* ========== HEADER ========== */
+.site-header {
+  background-color: #ffffff;
+  border-bottom: 2px solid #c4161c;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  flex-wrap: wrap;
+}
+
+.logo {
+  width: 80px;
+}
+
+.site-title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #111111;
+}
+
+/* ========== NAVIGATION ========== */
+.main-nav a {
+  color: #111111;
+  margin-left: 1rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  color: #c4161c;
+  border-bottom: 2px solid #c4161c;
+}
+
+/* ========== HERO SECTION ========== */
+.hero {
+  background-color: #f7f7f7;
+  color: #111111;
+  padding: 3rem 1rem;
   text-align: center;
 }
 
-nav a {
-  margin: 0 15px;
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
+.hero h2 {
+  color: #c4161c;
 }
 
+/* ========== CONTENT SECTIONS ========== */
+.about,
+.team {
+  padding: 2rem 1rem;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.about h2,
+.team h2 {
+  color: #c4161c;
+}
+
+/* ========== IMAGES ========== */
+.responsive-image {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ========== FOOTER ========== */
+.site-footer {
+  background-color: #f1f1f1;
+  color: #555555;
+  text-align: center;
+  padding: 1rem;
+  border-top: 1px solid #dddddd;
+}
+
+/* ========== MOBILE ADJUSTMENTS ========== */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .main-nav {
+    margin-top: 0.5rem;
+  }
+
+  .main-nav a {
+    display: inline-block;
+    margin: 0.5rem;
+  }
+}
