@@ -85,18 +85,26 @@ main {
 .team h2 {
   color: #c4161c;
 }
-
-/* ========== TEAM PHOTO (CROPPED) ========== */
+/* ========== TEAM PHOTO (FIXED VISIBILITY) ========== */
 .team-photo {
   width: 100%;
   max-width: 900px;
-  height: 420px;          /* CROPS BACKGROUND */
-  object-fit: cover;     /* ZOOM + CROP */
-  object-position: center top; /* FOCUS ON PLAYERS */
+  height: 520px;              /* MORE HEIGHT = PLAYERS VISIBLE */
+  object-fit: cover;
+  object-position: center center; /* CENTER PLAYERS */
   display: block;
   margin: 0 auto;
   border-radius: 6px;
 }
+
+/* MOBILE ADJUSTMENT */
+@media (max-width: 768px) {
+  .team-photo {
+    height: 360px;           /* Prevent over-cropping on phones */
+  }
+}
+
+
 
 /* ========== FOOTER ========== */
 .site-footer {
