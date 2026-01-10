@@ -3,14 +3,14 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   line-height: 1.6;
-  background-color: #ffffff;
-  color: #111111;
+  background-color: #c4161c; /* FIRE RED */
+  color: #ffffff;
 }
 
 /* ========== HEADER ========== */
 .site-header {
   background-color: transparent;
-  border-bottom: none;
+  border: none;
 }
 
 .header-container {
@@ -30,12 +30,12 @@ body {
 .site-title {
   margin: 0;
   font-size: 1.5rem;
-  color: #111111;
+  color: #ffffff;
 }
 
 /* ========== NAVIGATION ========== */
 .main-nav a {
-  color: #111111;
+  color: #ffffff;
   margin-left: 1rem;
   text-decoration: none;
   font-weight: 600;
@@ -43,8 +43,17 @@ body {
 
 .main-nav a:hover,
 .main-nav a.active {
-  color: #c4161c;
-  border-bottom: 2px solid #c4161c;
+  color: #ffdddd;
+  border-bottom: 2px solid #ffffff;
+}
+
+/* ========== MAIN CONTENT ========== */
+main {
+  background-color: #ffffff;
+  color: #111111;
+  margin: 1.5rem;
+  border-radius: 6px;
+  padding: 1rem;
 }
 
 /* ========== HERO SECTION ========== */
@@ -80,11 +89,10 @@ body {
 
 /* ========== FOOTER ========== */
 .site-footer {
-  background-color: #f1f1f1;
-  color: #555555;
+  background-color: transparent;
+  color: #ffffff;
   text-align: center;
   padding: 1rem;
-  border-top: 1px solid #dddddd;
 }
 
 /* ========== MOBILE ADJUSTMENTS ========== */
@@ -101,5 +109,9 @@ body {
   .main-nav a {
     display: inline-block;
     margin: 0.5rem;
+  }
+
+  main {
+    margin: 1rem;
   }
 }
