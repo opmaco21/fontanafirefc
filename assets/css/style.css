@@ -2,11 +2,11 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #c4161c; /* MATCH LOGO RED */
-  color: #ffffff;
+  background-color: #ffffff; /* MATCH LOGO BACKGROUND */
+  color: #111111;
 }
 
-/* ========== CONTAINER (CENTERS EVERYTHING) ========== */
+/* ========== CENTERED CONTAINER ========== */
 .container {
   max-width: 1100px;
   margin: 0 auto;
@@ -15,45 +15,43 @@ body {
 
 /* ========== HEADER ========== */
 .site-header {
-  background-color: #c4161c;
+  background-color: #ffffff;
 }
 
 .header-container {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: 1rem 0;
+  text-align: center;
+  padding: 2rem 0 1rem;
 }
 
-/* BRAND */
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
+/* LOGO */
 .logo {
-  width: 70px;
+  width: 180px; /* BIGGER LOGO */
   height: auto;
   display: block;
+  margin-bottom: 0.5rem;
 }
 
+/* TITLE */
 .site-title {
-  font-size: 1.6rem;
-  margin: 0;
-  color: #ffffff;
+  font-size: 2rem;
+  margin: 0.25rem 0 1rem;
+  color: #c4161c;
 }
 
 /* ========== NAVIGATION ========== */
 .main-nav a {
-  color: #ffffff;
+  margin: 0 0.75rem;
   text-decoration: none;
   font-weight: 600;
-  margin-left: 1.25rem;
+  color: #111111;
 }
 
 .main-nav a:hover,
 .main-nav a.active {
+  color: #c4161c;
   text-decoration: underline;
 }
 
@@ -63,16 +61,14 @@ main {
 }
 
 .content-box {
-  background-color: #ffffff;
-  color: #111111;
-  border-radius: 8px;
-  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 /* ========== HERO ========== */
 .hero {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .hero h2 {
@@ -82,7 +78,8 @@ main {
 /* ========== SECTIONS ========== */
 .about,
 .team {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  text-align: center;
 }
 
 .about h2,
@@ -92,31 +89,18 @@ main {
 
 /* ========== IMAGES ========== */
 .responsive-image {
-  max-width: 100%;
+  max-width: 900px;
+  width: 100%;
   height: auto;
+  display: block;
+  margin: 0 auto;
   border-radius: 6px;
 }
 
 /* ========== FOOTER ========== */
 .site-footer {
-  background-color: #c4161c;
+  background-color: #ffffff;
   text-align: center;
   padding: 1rem 0;
-  margin-top: 2rem;
-}
-
-/* ========== MOBILE ========== */
-@media (max-width: 768px) {
-  .header-container {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .main-nav {
-    margin-top: 0.75rem;
-  }
-
-  .main-nav a {
-    margin: 0 0.5rem;
-  }
+  border-top: 1px solid #eee;
 }
