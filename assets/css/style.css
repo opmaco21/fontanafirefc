@@ -1,79 +1,88 @@
-/* ========== GLOBAL STYLES ========== */
+/* ========== GLOBAL ========== */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  line-height: 1.6;
-  background-color: #c4161c; /* FIRE RED */
+  background-color: #c4161c; /* MATCH LOGO RED */
   color: #ffffff;
+}
+
+/* ========== CONTAINER (CENTERS EVERYTHING) ========== */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 /* ========== HEADER ========== */
 .site-header {
-  background-color: transparent;
-  border: none;
+  background-color: #c4161c;
 }
 
 .header-container {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 1rem;
-  flex-wrap: wrap;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+/* BRAND */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .logo {
-  width: 80px;
-  background: none;
-  border: none;
+  width: 70px;
+  height: auto;
+  display: block;
 }
 
 .site-title {
+  font-size: 1.6rem;
   margin: 0;
-  font-size: 1.5rem;
   color: #ffffff;
 }
 
 /* ========== NAVIGATION ========== */
 .main-nav a {
   color: #ffffff;
-  margin-left: 1rem;
   text-decoration: none;
   font-weight: 600;
+  margin-left: 1.25rem;
 }
 
 .main-nav a:hover,
 .main-nav a.active {
-  color: #ffdddd;
-  border-bottom: 2px solid #ffffff;
+  text-decoration: underline;
 }
 
 /* ========== MAIN CONTENT ========== */
 main {
-  background-color: #ffffff;
-  color: #111111;
-  margin: 1.5rem;
-  border-radius: 6px;
-  padding: 1rem;
+  padding: 2rem 0;
 }
 
-/* ========== HERO SECTION ========== */
-.hero {
-  background-color: #f7f7f7;
+.content-box {
+  background-color: #ffffff;
   color: #111111;
-  padding: 3rem 1rem;
+  border-radius: 8px;
+  padding: 2rem;
+}
+
+/* ========== HERO ========== */
+.hero {
   text-align: center;
+  margin-bottom: 2rem;
 }
 
 .hero h2 {
   color: #c4161c;
 }
 
-/* ========== CONTENT SECTIONS ========== */
+/* ========== SECTIONS ========== */
 .about,
 .team {
-  padding: 2rem 1rem;
-  max-width: 1000px;
-  margin: auto;
+  margin-bottom: 2rem;
 }
 
 .about h2,
@@ -85,17 +94,18 @@ main {
 .responsive-image {
   max-width: 100%;
   height: auto;
+  border-radius: 6px;
 }
 
 /* ========== FOOTER ========== */
 .site-footer {
-  background-color: transparent;
-  color: #ffffff;
+  background-color: #c4161c;
   text-align: center;
-  padding: 1rem;
+  padding: 1rem 0;
+  margin-top: 2rem;
 }
 
-/* ========== MOBILE ADJUSTMENTS ========== */
+/* ========== MOBILE ========== */
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
@@ -103,15 +113,10 @@ main {
   }
 
   .main-nav {
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
   }
 
   .main-nav a {
-    display: inline-block;
-    margin: 0.5rem;
-  }
-
-  main {
-    margin: 1rem;
+    margin: 0 0.5rem;
   }
 }
