@@ -16,11 +16,9 @@
   <header class="site-header">
     <div class="container header-container">
 
-      <img
-        src="assets/images/TeamLogo.png"
-        alt="Fontana Fire FC Logo"
-        class="logo"
-      >
+      <img src="assets/images/TeamLogo.png"
+           alt="Fontana Fire FC Logo"
+           class="logo">
 
       <h1 class="site-title">Fontana Fire FC</h1>
 
@@ -34,7 +32,7 @@
     </div>
   </header>
 
-  <!-- MAIN -->
+  <!-- MAIN CONTENT -->
   <main>
     <div class="container content-box">
 
@@ -43,21 +41,11 @@
         <p>Developing players through discipline, teamwork, and passion.</p>
       </section>
 
-      <section class="about">
-        <h2>Welcome to Fontana Fire FC</h2>
-        <p>
-          Fontana Fire FC is a community-focused youth soccer club dedicated to
-          player development, sportsmanship, and competitive growth.
-        </p>
-      </section>
-
       <section class="team">
         <h2>Meet the Team</h2>
-        <img
-          src="assets/images/Team1.jpg"
-          alt="Fontana Fire FC Team Photo"
-          class="team-photo"
-        >
+        <img src="assets/images/Team1.jpg"
+             alt="Fontana Fire FC Team Photo"
+             class="team-photo">
       </section>
 
     </div>
@@ -66,10 +54,14 @@
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="container">
-      <p>&copy; 2026 Fontana Fire FC. All rights reserved.</p>
+      <p>&copy; <span id="year"></span> Fontana Fire FC. All rights reserved.</p>
     </div>
   </footer>
 
+  <!-- AUTO UPDATE YEAR (PLACE RIGHT HERE) -->
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
 </body>
 </html>
-
