@@ -26,11 +26,12 @@ body {
   padding: 2rem 0 1.5rem;
 }
 
-/* LOGO */
 .logo {
-  width: 200px; /* BIGGER LOGO */
-  height: auto;
-  margin-bottom: 0.5rem;
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 /* TITLE */
