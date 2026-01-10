@@ -3,37 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <title>Fontana Fire FC</title>
-  <link rel="stylesheet" href="assets/css/style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Official website of Fontana Fire FC youth soccer club in Fontana, CA.">
+
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <header>
-    <img src="assets/images/TeamLogo.png" alt="Fontana Fire FC Logo" width="150">
-    <h1>Fontana Fire FC</h1>
-    <nav>
-      <a href="#">Home</a>
-      <a href="#">Schedule</a>
-      <a href="#">Roster</a>
-      <a href="#">Contact</a>
-    </nav>
+
+  <header class="site-header">
+    <div class="container header-container">
+      <div class="brand">
+        <img src="assets/images/TeamLogo.png" alt="Fontana Fire FC Logo" class="logo">
+        <h1 class="site-title">Fontana Fire FC</h1>
+      </div>
+
+      <nav class="main-nav">
+        <a href="index.html" class="active">Home</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="roster.html">Roster</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
   </header>
 
   <main>
-    <section>
-      <h2>Welcome to Our Official Site</h2>
-      <p>Fontana Fire FC is a passionate soccer club based in Fontana, CA. We’re proud to represent our community and compete with heart.</p>
-    </section>
-    
-    <section>
-      <h2>Meet the Team</h2>
-      <img src="assets/images/Team1.jpg" alt="Team Photo" width="100%">
-    </section>
+    <div class="container content-box">
+
+      <section class="hero">
+        <h2>Youth Soccer Club in Fontana, CA</h2>
+        <p>Developing players through discipline, teamwork, and passion.</p>
+      </section>
+
+      <section class="about">
+        <h2>Welcome to Fontana Fire FC</h2>
+        <p>
+          Fontana Fire FC is a community-driven youth soccer club focused on player
+          development, sportsmanship, and competitive growth.
+        </p>
+      </section>
+
+      <section class="team">
+        <h2>Meet the Team</h2>
+        <img src="assets/images/Team1.jpg" alt="Fontana Fire FC Team Photo" class="responsive-image">
+      </section>
+
+    </div>
   </main>
 
-  <footer>
-    <p>&copy; 2025 Fontana Fire FC. All rights reserved.</p>
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2025 Fontana Fire FC. All rights reserved.</p>
+    </div>
   </footer>
 
-  <script src="assets/js/script.js"></script>
 </body>
 </html>
