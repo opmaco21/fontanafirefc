@@ -6,7 +6,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-        content="Contact Fontana Fire FC for player registration, questions, or 2026 season information. Youth soccer club in Fontana, CA.">
+        content="Contact Fontana Fire FC for player interest, registration questions, and 2026 season information. Youth soccer club in Fontana, CA.">
 
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -44,7 +44,7 @@
         <h2>Contact Fontana Fire FC</h2>
         <p>
           Interested in joining Fontana Fire FC or have questions about our
-          program? Fill out the form below and we’ll get back to you.
+          program? Complete the form below and we’ll get back to you.
         </p>
       </section>
 
@@ -52,44 +52,58 @@
       <section class="contact-form-section">
         <h3>⚽ Player Interest & General Inquiries</h3>
 
-        <!-- IMPORTANT:
-             This form does NOT submit anywhere yet.
-             We will connect it later (email / Google Forms / backend).
-        -->
         <form class="contact-form">
 
           <div class="form-group">
-            <label for="name">Parent / Guardian Name</label>
-            <input type="text" id="name" name="name" required>
+            <label for="guardian-name">Parent / Guardian Name</label>
+            <input
+              type="text"
+              id="guardian-name"
+              name="guardian-name"
+              required
+            >
           </div>
 
           <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" required>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+            >
           </div>
 
           <div class="form-group">
             <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" name="phone">
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+            >
           </div>
 
           <div class="form-group">
-            <label for="player-age">Player Birth Year</label>
-            <select id="player-age" name="player-age">
-              <option value="">Select</option>
-              <option>2012</option>
-              <option>2013</option>
-              <option>2014</option>
-              <option>2015</option>
-              <option>2016</option>
-              <option>2017</option>
-              <option>2018</option>
-            </select>
+            <label for="players">
+              Player Name(s) & Birth Year(s)
+            </label>
+            <input
+              type="text"
+              id="players"
+              name="players"
+              placeholder="Example: Alex (2014), Sofia (2017)"
+              required
+            >
           </div>
 
           <div class="form-group">
             <label for="message">Message / Questions</label>
-            <textarea id="message" name="message" rows="5"></textarea>
+            <textarea
+              id="message"
+              name="message"
+              rows="5"
+              placeholder="Any questions or additional details?"
+            ></textarea>
           </div>
 
           <button type="submit" class="submit-btn">
@@ -99,20 +113,25 @@
         </form>
 
         <p class="form-note">
+          Families with multiple players may list all children in the same field.
+        </p>
+
+        <p class="form-note">
           ⏰ Practice schedules and team availability are subject to change.
         </p>
       </section>
 
-      <!-- CONTACT INFO -->
+      <!-- LOCATION INFO -->
       <section class="contact-info">
         <h3>📍 Club Location</h3>
+
         <p class="location-highlight">
-          Fontana, California
+          Fontana Middle School
         </p>
 
         <p>
-          Training sessions are held at Fontana Middle School.
-          Please refer to the FAQ page for current practice times.
+          Training sessions are held in Fontana, California.
+          Please visit the FAQ page for current practice times and details.
         </p>
 
         <a href="faq.html" class="recruiting-btn">
@@ -132,7 +151,8 @@
 
   <!-- AUTO YEAR -->
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
   </script>
 
 </body>
