@@ -6,96 +6,97 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-        content="Fontana Fire FC is a youth soccer club in Fontana, CA focused on player development, teamwork, and community. Now recruiting for the 2026 season.">
+        content="Fontana Fire FC is a youth soccer club in Fontana, CA. Developing players through discipline, teamwork, and passion. Now recruiting for the 2026 season.">
 
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="container header-container">
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="container center-text">
 
+    <img
+      src="assets/images/TeamLogo.png"
+      alt="Fontana Fire FC Logo"
+      class="logo large-logo"
+    >
+
+    <h1 class="site-title">Fontana Fire FC</h1>
+
+    <nav class="main-nav">
+      <a href="index.html" class="active">Home</a>
+      <a href="teams.html">Teams</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+
+  </div>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main>
+  <div class="container content-box">
+
+    <!-- HERO -->
+    <section class="hero center-text">
+      <h2>Youth Soccer Club in Fontana, CA</h2>
+      <p>Developing players through discipline, teamwork, and passion.</p>
+    </section>
+
+    <!-- MISSION -->
+    <section class="mission center-text">
+      <h2>Our Mission</h2>
+      <p>
+        Fontana Fire FC is dedicated to creating a safe, positive, and
+        competitive soccer experience that helps young athletes grow
+        in confidence, teamwork, and leadership while building strong
+        connections within our community.
+      </p>
+    </section>
+
+    <!-- RECRUITING -->
+    <section class="recruiting center-text">
+      <span class="season-badge">Now Recruiting</span>
+      <h2>2026 Season</h2>
+      <p>
+        Currently training and forming teams for players born
+        between 2012 and 2018. Co-ed play available.
+      </p>
+
+      <a href="contact.html" class="recruiting-btn">
+        Contact Us to Join
+      </a>
+    </section>
+
+    <!-- TEAM PHOTO -->
+    <section class="team-photo center-text">
+      <h2>Meet the Team</h2>
       <img
-        src="assets/images/TeamLogo.png"
-        alt="Fontana Fire FC Logo"
-        class="logo"
+        src="assets/images/Team1.jpg"
+        alt="Fontana Fire FC Team"
+        class="team-img"
       >
+    </section>
 
-      <h1 class="site-title">Fontana Fire FC</h1>
+  </div>
+</main>
 
-      <!-- UPDATED NAVIGATION -->
-      <nav class="main-nav">
-        <a href="index.html" class="active">Home</a>
-        <a href="teams.html">Teams</a>
-        <a href="faq.html">FAQ</a>
-        <a href="contact.html">Contact</a>
-      </nav>
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="container center-text">
+    <p>
+      &copy; <span id="year"></span> Fontana Fire FC. All rights reserved.
+    </p>
+  </div>
+</footer>
 
-    </div>
-  </header>
-
-  <!-- MAIN CONTENT -->
-  <main>
-    <div class="container content-box">
-
-      <!-- HERO -->
-      <section class="hero">
-        <h2>Youth Soccer Club in Fontana, CA</h2>
-        <p>
-          Developing players through discipline, teamwork, and passion.
-        </p>
-      </section>
-
-      <!-- MISSION -->
-      <section class="mission">
-        <h2>Our Mission</h2>
-        <p>
-          Fontana Fire FC is dedicated to creating a safe, positive, and
-          competitive soccer experience that helps young athletes grow
-          in confidence, teamwork, and leadership while building strong
-          connections within our community.
-        </p>
-      </section>
-
-      <!-- RECRUITING -->
-      <section class="recruiting">
-        <span class="season-badge">Now Recruiting</span>
-        <h2>2026 Season Tryouts & Player Interest</h2>
-        <p>
-          We are currently accepting player interest for the 2026 season.
-          Teams are forming for birth years 2012–2018.
-        </p>
-
-        <a href="contact.html" class="recruiting-btn">
-          Contact Us to Join
-        </a>
-      </section>
-
-      <!-- TEAM PHOTO -->
-      <section class="team-photo">
-        <h2>Meet the Team</h2>
-        <img
-          src="assets/images/Team1.jpg"
-          alt="Fontana Fire FC Team Photo"
-        >
-      </section>
-
-    </div>
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; <span id="year"></span> Fontana Fire FC. All rights reserved.</p>
-    </div>
-  </footer>
-
-  <!-- AUTO UPDATE YEAR -->
-  <script>
-    document.getElementById("year").textContent =
-      new Date().getFullYear();
-  </script>
+<!-- AUTO YEAR -->
+<script>
+  document.getElementById("year").textContent =
+    new Date().getFullYear();
+</script>
 
 </body>
 </html>
