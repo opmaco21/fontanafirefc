@@ -6,20 +6,20 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-        content="Fontana Fire FC teams for ages 2012–2018. Youth soccer club in Fontana, CA. Training times and locations.">
+        content="Fontana Fire FC teams for ages 2012–2018. Youth soccer club in Fontana, CA.">
 
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header class="site-header">
   <div class="container center-text">
 
+    <!-- SAME LOGO AS HOME PAGE -->
     <img src="assets/images/TeamLogo.png"
          alt="Fontana Fire FC Logo"
-         class="logo">
+         class="logo large-logo">
 
     <h1 class="site-title">Fontana Fire FC</h1>
 
@@ -33,7 +33,6 @@
   </div>
 </header>
 
-<!-- MAIN -->
 <main>
   <div class="container content-box">
 
@@ -41,44 +40,46 @@
 
     <h2 class="center-text">Our Teams</h2>
 
-    <p class="center-text">
-      Fontana Fire FC currently trains and develops youth players in the
-      following age groups. All teams participate in co-ed play.
-    </p>
-
-    <!-- AGE GROUPS -->
     <section class="teams-grid">
 
       <div class="team-card">
         <h3>⚽ Age Groups</h3>
-        <p>Birth Years <strong>2012 – 2018</strong></p>
+        <p>2012 – 2018</p>
         <p>Co-ed Teams</p>
       </div>
 
       <div class="team-card">
         <h3>⏰ Training Schedule</h3>
-        <p><strong>Girls:</strong><br>Mon & Wed · 6–8 PM</p>
-        <p><strong>Boys:</strong><br>Tue & Thu · 6–8 PM</p>
+        <p><strong>Girls:</strong> Mon & Wed · 6–8 PM</p>
+        <p><strong>Boys:</strong> Tue & Thu · 6–8 PM</p>
       </div>
 
       <div class="team-card">
-        <h3>📍 Training Location</h3>
+        <h3>📍 Location</h3>
         <p><strong>Fontana Middle School</strong></p>
-        <p>Fontana, CA</p>
       </div>
 
       <div class="team-card">
         <h3>📅 Season Start</h3>
-        <p>Training begins <strong>March 2026</strong></p>
+        <p>March 2026</p>
         <p><em>Schedule subject to change</em></p>
       </div>
 
     </section>
 
-    <!-- MAP -->
-    <section class="map-section">
-      <h3 class="center-text">Training Location</h3>
+  </div>
+</main>
 
-      <iframe
-        src="https://www.google.com/maps?q=Fontana+Middle+School+Fontana+CA&output=embed"
-        width="100%"
+<footer class="site-footer">
+  <div class="container center-text">
+    <p>&copy; <span id="year"></span> Fontana Fire FC. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById("year").textContent =
+    new Date().getFullYear();
+</script>
+
+</body>
+</html>
