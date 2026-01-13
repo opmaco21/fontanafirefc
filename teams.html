@@ -1,12 +1,22 @@
+
+It must be in the **root**, not in a subfolder. If it’s in a folder (like `/pages/`), GitHub Pages won’t serve it.
+
+---
+
+## 📍 NEXT — REPLACE `teams.html` WITH THIS
+
+Here is the **FULL, CLEAN, FAQ-ORIENTED `teams.html`** file — make sure you **overwrite the old one**:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Teams | Fontana Fire FC</title>
+  <title>Teams & FAQ | Fontana Fire FC</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-        content="Fontana Fire FC youth soccer teams training ages 2012–2018. Co-ed teams practicing at Fontana Middle School.">
+        content="Fontana Fire FC teams, FAQs, and team rules for ages 2012–2018. Co-ed youth soccer based in Fontana, CA.">
 
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -16,18 +26,16 @@
   <header class="site-header">
     <div class="container header-container">
 
-      <img
-        src="assets/images/TeamLogo.png"
-        alt="Fontana Fire FC Logo"
-        class="logo"
-      >
+      <img src="assets/images/TeamLogo.png"
+           alt="Fontana Fire FC Logo"
+           class="logo">
 
       <h1 class="site-title">Fontana Fire FC</h1>
 
       <nav class="main-nav">
         <a href="index.html">Home</a>
-        <a href="teams.html" class="active">Teams</a>
-        <a href="schedule.html">Schedule</a>
+        <a href="teams.html" class="active">FAQ</a>
+        <a href="faq.html">FAQ</a>
         <a href="contact.html">Contact</a>
       </nav>
 
@@ -38,101 +46,49 @@
   <main>
     <div class="container content-box">
 
-      <!-- INTRO -->
-      <section class="page-intro">
-        <span class="season-badge">Updated for 2026 Season</span>
-        <h2>Our Teams</h2>
+      <span class="season-badge">Updated for 2026 Season</span>
+      <h2>Frequently Asked Questions & Team Rules</h2>
+
+      <section class="faq">
+        <h3>❓ When are practices?</h3>
         <p>
-          Fontana Fire FC provides a safe, positive, and competitive soccer
-          environment focused on development, teamwork, and love for the game.
+          <strong>Girls:</strong> Monday & Wednesday, 6:00 PM – 8:00 PM<br>
+          <strong>Boys:</strong> Tuesday & Thursday, 6:00 PM – 8:00 PM
+        </p>
+
+        <h3>📍 Where do teams practice?</h3>
+        <p><strong>Fontana Middle School</strong></p>
+
+        <h3>⚽ Who plays on the teams?</h3>
+        <p>
+          Currently training age groups include birth years 2012 through 2018.
+          All teams are co-ed.
+        </p>
+
+        <h3>🌧️ What if practice is canceled?</h3>
+        <p>
+          Practice schedules and locations are subject to change due to weather,
+          field availability, or league requirements. We notify families through
+          team communication channels.
         </p>
       </section>
 
-      <!-- AGE GROUPS -->
-      <section class="teams-list">
-        <h3>⚽ Currently Training Age Groups</h3>
-
-        <ul class="age-groups">
-          <li>2012 Birth Year</li>
-          <li>2013 Birth Year</li>
-          <li>2014 Birth Year</li>
-          <li>2015 Birth Year</li>
-          <li>2016 Birth Year</li>
-          <li>2017 Birth Year</li>
-          <li>2018 Birth Year</li>
+      <section class="team-rules">
+        <h3>📋 Team Rules & Expectations</h3>
+        <ul>
+          <li>⚽ Arrive on time and ready to train.</li>
+          <li>👟 Proper gear required (cleats, shin guards, water).</li>
+          <li>🤝 Respect coaches, teammates, and referees.</li>
+          <li>📣 Positive sideline behavior expected from parents.</li>
+          <li>📱 Team communication through approved channels only.</li>
         </ul>
       </section>
 
-      <!-- CO-ED -->
-      <section class="coed">
-        <h3>⚽ Co-Ed Teams</h3>
-        <p>
-          All Fontana Fire FC teams compete in co-ed games.
-          Our focus is on skill development, confidence, and sportsmanship
-          in a supportive team environment.
-        </p>
-      </section>
-
-      <!-- TRAINING SCHEDULE -->
-      <section class="training-schedule">
-        <h3>⚽ Training Schedule</h3>
-
-  
-
-        <div class="schedule-grid">
-
-          <div class="schedule-card">
-            <h4>Girls Training</h4>
-            <p>⏰ <strong>Days:</strong> Monday & Wednesday</p>
-            <p>⏰ <strong>Time:</strong> 6:00 PM – 8:00 PM</p>
-            <p class="location-highlight">
-              📍 <strong>Fontana Middle School</strong>
-            </p>
-          </div>
-
-          <div class="schedule-card">
-            <h4>Boys Training</h4>
-            <p>⏰ <strong>Days:</strong> Tuesday & Thursday</p>
-            <p>⏰ <strong>Time:</strong> 6:00 PM – 8:00 PM</p>
-            <p class="location-highlight">
-              📍 <strong>Fontana Middle School</strong>
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- LOCATION -->
-      <section class="training-location">
-        <h3>📍 Training Location</h3>
-
-        <p class="location-name">
-          <strong>Fontana Middle School</strong>
-        </p>
-
-        <div class="map-container">
-          <iframe
-            src="https://www.google.com/maps?q=Fontana%20Middle%20School%2C%20Fontana%20CA&output=embed"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            allowfullscreen>
-          </iframe>
-        </div>
-
-        <p class="schedule-note">
-          *Training schedules and locations are subject to change due to weather,
-          field availability, or league requirements.
-        </p>
-      </section>
-
-      <!-- CTA -->
       <section class="teams-cta">
-        <h3>Interested in Joining?</h3>
         <p>
-          We are currently recruiting players for the 2026 season.
-          Contact us to learn more about team placement and training opportunities.
+          Interested in joining? Contact us to learn more about team placement
+          and next steps for the 2026 season.
         </p>
-
         <a href="contact.html" class="recruiting-btn">
           Request Team Information
         </a>
@@ -148,9 +104,9 @@
     </div>
   </footer>
 
-  <!-- AUTO YEAR -->
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
   </script>
 
 </body>
