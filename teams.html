@@ -1,113 +1,84 @@
-
-It must be in the **root**, not in a subfolder. If it’s in a folder (like `/pages/`), GitHub Pages won’t serve it.
-
----
-
-## 📍 NEXT — REPLACE `teams.html` WITH THIS
-
-Here is the **FULL, CLEAN, FAQ-ORIENTED `teams.html`** file — make sure you **overwrite the old one**:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Teams & FAQ | Fontana Fire FC</title>
+  <title>Teams | Fontana Fire FC</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-        content="Fontana Fire FC teams, FAQs, and team rules for ages 2012–2018. Co-ed youth soccer based in Fontana, CA.">
+        content="Fontana Fire FC teams for ages 2012–2018. Youth soccer club in Fontana, CA. Training times and locations.">
 
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="container header-container">
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container center-text">
 
-      <img src="assets/images/TeamLogo.png"
-           alt="Fontana Fire FC Logo"
-           class="logo">
+    <img src="assets/images/TeamLogo.png"
+         alt="Fontana Fire FC Logo"
+         class="logo">
 
-      <h1 class="site-title">Fontana Fire FC</h1>
+    <h1 class="site-title">Fontana Fire FC</h1>
 
-      <nav class="main-nav">
-        <a href="index.html">Home</a>
-        <a href="teams.html" class="active">FAQ</a>
-        <a href="faq.html">FAQ</a>
-        <a href="contact.html">Contact</a>
-      </nav>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="teams.html" class="active">Teams</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+    </nav>
 
-    </div>
-  </header>
+  </div>
+</header>
 
-  <!-- MAIN -->
-  <main>
-    <div class="container content-box">
+<!-- MAIN -->
+<main>
+  <div class="container content-box">
 
-      <span class="season-badge">Updated for 2026 Season</span>
-      <h2>Frequently Asked Questions & Team Rules</h2>
+    <span class="season-badge">Updated for 2026 Season</span>
 
-      <section class="faq">
-        <h3>❓ When are practices?</h3>
-        <p>
-          <strong>Girls:</strong> Monday & Wednesday, 6:00 PM – 8:00 PM<br>
-          <strong>Boys:</strong> Tuesday & Thursday, 6:00 PM – 8:00 PM
-        </p>
+    <h2 class="center-text">Our Teams</h2>
 
-        <h3>📍 Where do teams practice?</h3>
+    <p class="center-text">
+      Fontana Fire FC currently trains and develops youth players in the
+      following age groups. All teams participate in co-ed play.
+    </p>
+
+    <!-- AGE GROUPS -->
+    <section class="teams-grid">
+
+      <div class="team-card">
+        <h3>⚽ Age Groups</h3>
+        <p>Birth Years <strong>2012 – 2018</strong></p>
+        <p>Co-ed Teams</p>
+      </div>
+
+      <div class="team-card">
+        <h3>⏰ Training Schedule</h3>
+        <p><strong>Girls:</strong><br>Mon & Wed · 6–8 PM</p>
+        <p><strong>Boys:</strong><br>Tue & Thu · 6–8 PM</p>
+      </div>
+
+      <div class="team-card">
+        <h3>📍 Training Location</h3>
         <p><strong>Fontana Middle School</strong></p>
+        <p>Fontana, CA</p>
+      </div>
 
-        <h3>⚽ Who plays on the teams?</h3>
-        <p>
-          Currently training age groups include birth years 2012 through 2018.
-          All teams are co-ed.
-        </p>
+      <div class="team-card">
+        <h3>📅 Season Start</h3>
+        <p>Training begins <strong>March 2026</strong></p>
+        <p><em>Schedule subject to change</em></p>
+      </div>
 
-        <h3>🌧️ What if practice is canceled?</h3>
-        <p>
-          Practice schedules and locations are subject to change due to weather,
-          field availability, or league requirements. We notify families through
-          team communication channels.
-        </p>
-      </section>
+    </section>
 
-      <section class="team-rules">
-        <h3>📋 Team Rules & Expectations</h3>
-        <ul>
-          <li>⚽ Arrive on time and ready to train.</li>
-          <li>👟 Proper gear required (cleats, shin guards, water).</li>
-          <li>🤝 Respect coaches, teammates, and referees.</li>
-          <li>📣 Positive sideline behavior expected from parents.</li>
-          <li>📱 Team communication through approved channels only.</li>
-        </ul>
-      </section>
+    <!-- MAP -->
+    <section class="map-section">
+      <h3 class="center-text">Training Location</h3>
 
-      <section class="teams-cta">
-        <p>
-          Interested in joining? Contact us to learn more about team placement
-          and next steps for the 2026 season.
-        </p>
-        <a href="contact.html" class="recruiting-btn">
-          Request Team Information
-        </a>
-      </section>
-
-    </div>
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; <span id="year"></span> Fontana Fire FC. All rights reserved.</p>
-    </div>
-  </footer>
-
-  <script>
-    document.getElementById("year").textContent =
-      new Date().getFullYear();
-  </script>
-
-</body>
-</html>
+      <iframe
+        src="https://www.google.com/maps?q=Fontana+Middle+School+Fontana+CA&output=embed"
+        width="100%"
