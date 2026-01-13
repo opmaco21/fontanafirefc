@@ -93,7 +93,7 @@ body {
 .team-img {
   max-width: 900px;     /* 🔑 THIS FIXES IT */
   width: 100%;
-  height: 680px;
+  height: Auto;
   border-radius: 12px;
   display: block;
   margin: 0 auto;
