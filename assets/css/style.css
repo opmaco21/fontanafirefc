@@ -98,6 +98,25 @@ body {
   display: block;
   margin: 0 auto;
 }
+/* ================= TEAMS PAGE ================= */
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.team-card {
+  background: #f8f8f8;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.map-section {
+  margin-top: 40px;
+}
 
 /* ================= FOOTER ================= */
 .site-footer {
