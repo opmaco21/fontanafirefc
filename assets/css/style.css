@@ -1,235 +1,107 @@
-/* =========================
-   GLOBAL STYLES
-========================= */
+/* ================= GLOBAL ================= */
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #ffffff;
-  color: #111111;
+  color: #111;
 }
 
-a {
-  color: inherit;
-}
-
-/* =========================
-   CONTAINER
-========================= */
 .container {
   max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  margin: auto;
+  padding: 20px;
 }
 
-/* =========================
-   HEADER
-========================= */
+.center-text {
+  text-align: center;
+}
+
+/* ================= HEADER ================= */
 .site-header {
   background-color: #ffffff;
+  padding: 20px 0;
 }
 
-.header-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 2rem 0 1.5rem;
-}
-
-/* LOGO */
 .logo {
-  width: 200px;
+  display: block;
+  margin: 0 auto;
+  background: none;
+}
+
+.large-logo {
+  max-width: 220px;
   height: auto;
-  margin-bottom: 0.5rem;
 }
 
-/* TITLE */
-.site-title {
-  margin: 0.25rem 0 1rem;
-  font-size: 2.1rem;
-  color: #c4161c;
-}
-
-/* =========================
-   NAVIGATION
-========================= */
+/* ================= NAV ================= */
 .main-nav {
-  margin-top: 0.5rem;
+  margin-top: 10px;
 }
 
 .main-nav a {
-  margin: 0 0.75rem;
+  margin: 0 12px;
   text-decoration: none;
-  font-weight: 600;
-  color: #111111;
+  color: #b11226;
+  font-weight: bold;
 }
 
 .main-nav a:hover,
 .main-nav a.active {
-  color: #c4161c;
   text-decoration: underline;
 }
 
-/* =========================
-   MAIN CONTENT
-========================= */
-main {
-  padding: 2rem 0;
-}
-
-.content-box {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-/* =========================
-   HERO
-========================= */
-.hero {
-  text-align: center;
-  margin-bottom: 2.5rem;
-}
-
+/* ================= HERO ================= */
 .hero h2 {
-  color: #c4161c;
-  margin-bottom: 0.5rem;
-}
-
-/* =========================
-   MISSION STATEMENT
-========================= */
-.mission {
-  text-align: center;
-  max-width: 850px;
-  margin: 0 auto 3rem;
-}
-
-.mission h2 {
-  color: #c4161c;
-  margin-bottom: 0.75rem;
-}
-
-.mission p {
-  font-size: 1.05rem;
-  line-height: 1.6;
-}
-
-/* =========================
-   RECRUITING CALLOUT
-========================= */
-.recruiting {
-  text-align: center;
-  background: linear-gradient(135deg, #c4161c, #8f0f14);
-  color: #ffffff;
-  border-radius: 12px;
-  padding: 2.5rem 1.75rem;
-  margin: 0 auto 3.5rem;
-  max-width: 950px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-/* BADGE */
-.recruiting-badge {
-  display: inline-block;
-  background-color: #ffffff;
-  color: #c4161c;
-  font-weight: 700;
-  padding: 0.35rem 0.85rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  margin-bottom: 0.75rem;
-}
-
-/* HEADLINE */
-.recruiting h2 {
-  margin: 0.5rem 0 1rem;
   font-size: 1.8rem;
 }
 
-/* TEXT */
-.recruiting-text {
-  font-size: 1.05rem;
-  line-height: 1.6;
-  max-width: 750px;
-  margin: 0 auto 1rem;
+/* ================= RECRUITING ================= */
+.recruiting {
+  background: #b11226;
+  color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  margin: 40px 0;
 }
 
-/* NOTE */
-.recruiting-note {
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+.season-badge {
+  background: #000;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
 }
 
-/* BUTTON */
 .recruiting-btn {
   display: inline-block;
-  background-color: #ffffff;
-  color: #c4161c;
-  padding: 0.75rem 1.75rem;
-  border-radius: 30px;
-  font-weight: 700;
+  margin-top: 15px;
+  padding: 10px 22px;
+  background: #fff;
+  color: #b11226;
+  border-radius: 6px;
+  font-weight: bold;
   text-decoration: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.recruiting-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.25);
-}
-
-/* =========================
-   TEAM SECTION
-========================= */
-.team {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.team h2 {
-  color: #c4161c;
-  margin-bottom: 1rem;
-}
-
-/* TEAM PHOTO (SAFE CROP) */
+/* ================= TEAM PHOTO ================= */
 .team-photo {
+  margin: 40px 0;
+}
+
+.team-img {
+  max-width: 900px;     /* 🔑 THIS FIXES IT */
   width: 100%;
-  max-width: 900px;
-  height: 520px;
-  object-fit: cover;
-  object-position: center center;
+  height: auto;
+  border-radius: 12px;
   display: block;
   margin: 0 auto;
-  border-radius: 6px;
 }
 
-/* =========================
-   FOOTER
-========================= */
+/* ================= FOOTER ================= */
 .site-footer {
-  background-color: #ffffff;
-  border-top: 1px solid #eee;
-  text-align: center;
-  padding: 1rem 0;
+  background: #f4f4f4;
+  padding: 20px 0;
   font-size: 0.9rem;
-}
-
-/* =========================
-   MOBILE OPTIMIZATION
-========================= */
-@media (max-width: 768px) {
-  .logo {
-    width: 160px;
-  }
-
-  .site-title {
-    font-size: 1.8rem;
-  }
-
-  .recruiting h2 {
-    font-size: 1.5rem;
-  }
-
-  .team-photo {
-    height: 360px;
-  }
 }
