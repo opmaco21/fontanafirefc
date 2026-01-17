@@ -22,16 +22,16 @@ body {
   padding: 20px 0;
 }
 
+/* ================= LOGO ================= */
 .logo {
   display: block;
   margin: 0 auto;
+  max-width: 220px;   /* adjust if needed */
+  width: 100%;
+  height: auto;
   background: none;
 }
 
-.large-logo {
-  max-width: 220px;
-  height: auto;
-}
 
 /* ================= NAV ================= */
 .main-nav {
