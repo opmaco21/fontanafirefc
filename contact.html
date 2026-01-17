@@ -16,9 +16,12 @@
 <header class="site-header">
   <div class="container center-text">
 
-   <img src="assets/images/TeamLogoCropped.png"
-     alt="Fontana Fire FC Logo"
-     class="logo large-logo">
+    <!-- CROPPED LOGO -->
+    <img
+      src="assets/images/TeamLogoCropped.png"
+      alt="Fontana Fire FC Logo"
+      class="logo large-logo"
+    >
 
     <h1 class="site-title">Fontana Fire FC</h1>
 
@@ -48,59 +51,55 @@
 
     <!-- CONTACT FORM -->
     <section class="contact-form-section">
-      <h3>⚽ Player Interest & General Inquiries</h3>
+
+      <h3 class="center-text">⚽ Player Interest & General Inquiries</h3>
 
       <form
-        action="https://formsubmit.co/signup@fontanafirefc.com"
-        method="POST"
         class="contact-form"
+        action="https://formspree.io/f/xnjjjynn"
+        method="POST"
       >
 
-        <!-- FORM SETTINGS -->
-        <input type="hidden" name="_subject" value="⚽ New Fontana Fire FC Signup">
+        <!-- FORMSPREE SETTINGS -->
+        <input type="hidden" name="_subject" value="New Player Signup – Fontana Fire FC">
         <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_next" value="https://www.fontanafirefc.com/thank-you.html">
+        <!-- Optional redirect (create page later if desired) -->
+        <!-- <input type="hidden" name="_redirect" value="https://www.fontanafirefc.com/thank-you.html"> -->
 
-        <!-- AUTO-REPLY MESSAGE -->
-        <input
-          type="hidden"
-          name="_autoresponse"
-          value="Thank you for your interest in Fontana Fire FC! We’ve received your message and will contact you shortly with more information about our program."
-        >
-
-        <!-- SPAM HONEYPOT -->
-        <input type="text" name="_honey" style="display:none">
+        <!-- HONEYPOT (SPAM PROTECTION) -->
+        <input type="text" name="_gotcha" style="display:none">
 
         <div class="form-group">
-          <label>Parent / Guardian Name</label>
-          <input type="text" name="guardian_name" required>
+          <label for="guardian-name">Parent / Guardian Name</label>
+          <input type="text" id="guardian-name" name="Guardian Name" required>
         </div>
 
         <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" name="email" required>
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="Email" required>
         </div>
 
         <div class="form-group">
-          <label>Phone Number</label>
-          <input type="tel" name="phone">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="Phone">
         </div>
 
         <div class="form-group">
-          <label>Player Name(s) & Birth Year(s)</label>
+          <label for="players">Player Name(s) & Birth Year(s)</label>
           <input
             type="text"
-            name="players"
+            id="players"
+            name="Players"
             placeholder="Example: Alex (2014), Sofia (2017)"
             required
           >
         </div>
 
         <div class="form-group">
-          <label>Message / Questions</label>
+          <label for="message">Message / Questions</label>
           <textarea
-            name="message"
+            id="message"
+            name="Message"
             rows="5"
             placeholder="Any questions or additional details?"
           ></textarea>
@@ -113,12 +112,13 @@
       </form>
 
       <p class="form-note">
-                Families with multiple players may list all children in the same field.
+        Families with multiple players may list all children in the same field.
       </p>
 
       <p class="form-note">
-                ⏰ Practice schedules and team availability are subject to change.
+        ⏰ Practice schedules and team availability are subject to change.
       </p>
+
     </section>
 
     <!-- LOCATION INFO -->
