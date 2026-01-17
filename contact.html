@@ -12,149 +12,150 @@
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="container center-text">
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container center-text">
 
-      <!-- SAME LOGO AS ALL PAGES -->
-      <img
-        src="assets/images/TeamLogo.png"
-        alt="Fontana Fire FC Logo"
-        class="logo large-logo"
+    <img
+      src="assets/images/TeamLogo.png"
+      alt="Fontana Fire FC Logo"
+      class="logo large-logo"
+    >
+
+    <h1 class="site-title">Fontana Fire FC</h1>
+
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="teams.html">Teams</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html" class="active">Contact</a>
+    </nav>
+
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+  <div class="container content-box">
+
+    <!-- INTRO -->
+    <section class="page-intro center-text">
+      <span class="season-badge">Updated for 2026 Season</span>
+      <h2>Contact Fontana Fire FC</h2>
+      <p>
+        Interested in joining Fontana Fire FC or have questions about our
+        program? Complete the form below and we’ll get back to you.
+      </p>
+    </section>
+
+    <!-- CONTACT FORM -->
+    <section class="contact-form-section">
+      <h3>⚽ Player Interest & General Inquiries</h3>
+
+      <form
+        action="https://formsubmit.co/signup@fontanafirefc.com"
+        method="POST"
+        class="contact-form"
       >
 
-      <h1 class="site-title">Fontana Fire FC</h1>
+        <!-- FORM SETTINGS -->
+        <input type="hidden" name="_subject" value="⚽ New Fontana Fire FC Signup">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_next" value="https://www.fontanafirefc.com/thank-you.html">
 
-      <nav class="main-nav">
-        <a href="index.html">Home</a>
-        <a href="teams.html">Teams</a>
-        <a href="faq.html">FAQ</a>
-        <a href="contact.html" class="active">Contact</a>
-      </nav>
+        <!-- AUTO-REPLY MESSAGE -->
+        <input
+          type="hidden"
+          name="_autoresponse"
+          value="Thank you for your interest in Fontana Fire FC! We’ve received your message and will contact you shortly with more information about our program."
+        >
 
-    </div>
-  </header>
+        <!-- SPAM HONEYPOT -->
+        <input type="text" name="_honey" style="display:none">
 
-  <!-- MAIN -->
-  <main>
-    <div class="container content-box">
+        <div class="form-group">
+          <label>Parent / Guardian Name</label>
+          <input type="text" name="guardian_name" required>
+        </div>
 
-      <!-- INTRO -->
-      <section class="page-intro center-text">
-        <span class="season-badge">Updated for 2026 Season</span>
-        <h2>Contact Fontana Fire FC</h2>
-        <p>
-          Interested in joining Fontana Fire FC or have questions about our
-          program? Complete the form below and we’ll get back to you.
-        </p>
-      </section>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" name="email" required>
+        </div>
 
-      <!-- CONTACT FORM -->
-      <section class="contact-form-section">
-        <h3>⚽ Player Interest & General Inquiries</h3>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" name="phone">
+        </div>
 
-        <form class="contact-form">
+        <div class="form-group">
+          <label>Player Name(s) & Birth Year(s)</label>
+          <input
+            type="text"
+            name="players"
+            placeholder="Example: Alex (2014), Sofia (2017)"
+            required
+          >
+        </div>
 
-          <div class="form-group">
-            <label for="guardian-name">Parent / Guardian Name</label>
-            <input
-              type="text"
-              id="guardian-name"
-              name="guardian-name"
-              required
-            >
-          </div>
+        <div class="form-group">
+          <label>Message / Questions</label>
+          <textarea
+            name="message"
+            rows="5"
+            placeholder="Any questions or additional details?"
+          ></textarea>
+        </div>
 
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-            >
-          </div>
+        <button type="submit" class="submit-btn">
+          Submit Request
+        </button>
 
-          <div class="form-group">
-            <label for="phone">Phone Number</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-            >
-          </div>
+      </form>
 
-          <div class="form-group">
-            <label for="players">
-              Player Name(s) & Birth Year(s)
-            </label>
-            <input
-              type="text"
-              id="players"
-              name="players"
-              placeholder="Example: Alex (2014), Sofia (2017)"
-              required
-            >
-          </div>
+      <p class="form-note">
+        Families with multiple players may list all children in the same field.
+      </p>
 
-          <div class="form-group">
-            <label for="message">Message / Questions</label>
-            <textarea
-              id="message"
-              name="message"
-              rows="5"
-              placeholder="Any questions or additional details?"
-            ></textarea>
-          </div>
+      <p class="form-note">
+        ⏰ Practice schedules and team availability are subject to change.
+      </p>
+    </section>
 
-          <button type="submit" class="submit-btn">
-            Submit Request
-          </button>
+    <!-- LOCATION INFO -->
+    <section class="contact-info center-text">
+      <h3>📍 Club Location</h3>
 
-        </form>
+      <p class="location-highlight">
+        <strong>Fontana Middle School</strong>
+      </p>
 
-        <p class="form-note">
-          Families with multiple players may list all children in the same field.
-        </p>
+      <p>
+        Training sessions are held in Fontana, California.
+        Please visit the FAQ page for current practice times and details.
+      </p>
 
-        <p class="form-note">
-          ⏰ Practice schedules and team availability are subject to change.
-        </p>
-      </section>
+      <a href="faq.html" class="recruiting-btn">
+        View FAQ & Team Information
+      </a>
+    </section>
 
-      <!-- LOCATION INFO -->
-      <section class="contact-info center-text">
-        <h3>📍 Club Location</h3>
+  </div>
+</main>
 
-        <p class="location-highlight">
-          <strong>Fontana Middle School</strong>
-        </p>
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container center-text">
+    <p>&copy; <span id="year"></span> Fontana Fire FC. All rights reserved.</p>
+  </div>
+</footer>
 
-        <p>
-          Training sessions are held in Fontana, California.
-          Please visit the FAQ page for current practice times and details.
-        </p>
-
-        <a href="faq.html" class="recruiting-btn">
-          View FAQ & Team Information
-        </a>
-      </section>
-
-    </div>
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="container center-text">
-      <p>&copy; <span id="year"></span> Fontana Fire FC. All rights reserved.</p>
-    </div>
-  </footer>
-
-  <!-- AUTO YEAR -->
-  <script>
-    document.getElementById("year").textContent =
-      new Date().getFullYear();
-  </script>
+<!-- AUTO YEAR -->
+<script>
+  document.getElementById("year").textContent =
+    new Date().getFullYear();
+</script>
 
 </body>
 </html>
