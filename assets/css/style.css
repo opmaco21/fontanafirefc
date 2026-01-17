@@ -124,6 +124,27 @@ body {
   margin-top: 40px;
 }
 
+/* ================= CONTACT FORM CENTERING ================= */
+
+.contact-form-section {
+  max-width: 700px;          /* controls form width */
+  margin: 0 auto 40px;       /* centers horizontally */
+}
+
+.contact-form {
+  background: #f8f8f8;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Optional: center the form heading */
+.contact-form-section h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+
 /* ================= FOOTER ================= */
 .site-footer {
   background: #f4f4f4;
