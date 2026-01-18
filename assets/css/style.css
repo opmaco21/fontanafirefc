@@ -16,6 +16,10 @@ body {
   text-align: center;
 }
 
+html {
+  overflow-y: scroll;
+}
+
 /* ================= HEADER ================= */
 .site-header {
   background-color: #ffffff;
