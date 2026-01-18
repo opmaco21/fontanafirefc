@@ -1,4 +1,8 @@
 /* ================= GLOBAL ================= */
+html {
+  overflow-y: scroll; /* Prevent page jump */
+}
+
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -16,10 +20,6 @@ body {
   text-align: center;
 }
 
-html {
-  overflow-y: scroll;
-}
-
 /* ================= HEADER ================= */
 .site-header {
   background-color: #ffffff;
@@ -31,31 +31,33 @@ html {
 .logo {
   display: block;
   margin: 0 auto;
-  max-width: 160px;   /* CONSISTENT SIZE ACROSS ALL PAGES */
+  max-width: 160px; /* CONSISTENT ACROSS ALL PAGES */
   width: 100%;
   height: auto;
-  background: none;
 }
 
-/* ================= NAV ================= */
+/* ================= NAV (FIXED – NO MOVEMENT) ================= */
 .main-nav {
   margin-top: 12px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: nowrap; /* ⬅ prevents reordering */
 }
 
 .main-nav a {
-  margin: 0 14px;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   color: #b11226;
   font-weight: bold;
   padding-bottom: 6px;
-  border-bottom: 3px solid transparent; /* RESERVE SPACE */
+  border-bottom: 3px solid transparent; /* reserve space */
+  white-space: nowrap;
 }
 
-.main-nav a:hover {
-  border-bottom-color: #b11226;
-}
-
+.main-nav a:hover,
 .main-nav a.active {
   border-bottom-color: #b11226;
 }
@@ -164,7 +166,7 @@ html {
 }
 
 .faq-item {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   border-radius: 6px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -232,6 +234,11 @@ html {
 @media (max-width: 768px) {
   .logo {
     max-width: 130px;
+  }
+
+  .main-nav {
+    gap: 18px;
+    font-size: 0.95rem;
   }
 
   .faq-question {
