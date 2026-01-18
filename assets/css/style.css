@@ -20,34 +20,39 @@ body {
 .site-header {
   background-color: #ffffff;
   padding: 20px 0;
+  border-bottom: 1px solid #eee;
 }
 
 /* ================= LOGO ================= */
 .logo {
   display: block;
   margin: 0 auto;
-  max-width: 220px;   /* adjust if needed */
+  max-width: 160px;   /* CONSISTENT SIZE ACROSS ALL PAGES */
   width: 100%;
   height: auto;
   background: none;
 }
 
-
 /* ================= NAV ================= */
 .main-nav {
-  margin-top: 10px;
+  margin-top: 12px;
+  text-align: center;
 }
 
 .main-nav a {
-  margin: 0 12px;
+  margin: 0 14px;
   text-decoration: none;
   color: #b11226;
   font-weight: bold;
+  padding-bottom: 4px;
 }
 
-.main-nav a:hover,
-.main-nav a.active {
+.main-nav a:hover {
   text-decoration: underline;
+}
+
+.main-nav a.active {
+  border-bottom: 3px solid #b11226;
 }
 
 /* ================= HERO ================= */
@@ -85,19 +90,35 @@ body {
   text-decoration: none;
 }
 
+/* ================= REGISTER BUTTON ================= */
+.register-btn {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 12px 26px;
+  background: #b11226;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.register-btn:hover {
+  background: #8f0f1f;
+}
+
 /* ================= TEAM PHOTO ================= */
 .team-photo {
   margin: 50px 0;
   text-align: center;
 }
 
-/* Wrapper effect */
 .team-img {
   max-width: 900px;
   width: 100%;
-  height: 420px;                 /* controls vertical crop */
-  object-fit: cover;             /* crops background */
-  object-position: center 40%;   /* shifts focus to players */
+  height: 420px;
+  object-fit: cover;
+  object-position: center 40%;
   border-radius: 14px;
   display: block;
   margin: 0 auto;
@@ -124,11 +145,63 @@ body {
   margin-top: 40px;
 }
 
-/* ================= CONTACT FORM CENTERING ================= */
+/* ================= FAQ ================= */
+.faq-container {
+  max-width: 900px;
+  margin: 40px auto;
+}
 
+.faq-section-title {
+  margin: 40px 0 15px;
+  color: #b11226;
+  border-bottom: 2px solid #b11226;
+  padding-bottom: 5px;
+}
+
+.faq-item {
+  margin-bottom: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.faq-question {
+  width: 100%;
+  background: #111;
+  color: #fff;
+  padding: 15px 20px;
+  text-align: left;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.faq-question::after {
+  content: "+";
+  position: absolute;
+  right: 20px;
+  font-size: 1.2rem;
+}
+
+.faq-question.active::after {
+  content: "–";
+}
+
+.faq-answer {
+  display: none;
+  background: #f9f9f9;
+  padding: 15px 20px;
+}
+
+.faq-answer ul {
+  padding-left: 20px;
+}
+
+/* ================= CONTACT ================= */
 .contact-form-section {
-  max-width: 700px;          /* controls form width */
-  margin: 0 auto 40px;       /* centers horizontally */
+  max-width: 700px;
+  margin: 0 auto 40px;
 }
 
 .contact-form {
@@ -138,16 +211,25 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* Optional: center the form heading */
 .contact-form-section h3 {
   text-align: center;
   margin-bottom: 20px;
 }
-
 
 /* ================= FOOTER ================= */
 .site-footer {
   background: #f4f4f4;
   padding: 20px 0;
   font-size: 0.9rem;
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 768px) {
+  .logo {
+    max-width: 130px;
+  }
+
+  .faq-question {
+    font-size: 0.95rem;
+  }
 }
