@@ -48,15 +48,16 @@ html {
   text-decoration: none;
   color: #b11226;
   font-weight: bold;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
+  border-bottom: 3px solid transparent; /* RESERVE SPACE */
 }
 
 .main-nav a:hover {
-  text-decoration: underline;
+  border-bottom-color: #b11226;
 }
 
 .main-nav a.active {
-  border-bottom: 3px solid #b11226;
+  border-bottom-color: #b11226;
 }
 
 /* ================= HERO ================= */
