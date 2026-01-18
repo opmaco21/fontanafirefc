@@ -1,9 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".faq-question").forEach(button => {
-    button.addEventListener("click", () => {
-      const answer = button.nextElementSibling;
+document.addEventListener("DOMContentLoaded", function () {
+  const questions = document.querySelectorAll(".faq-question");
 
-      button.classList.toggle("active");
+  questions.forEach((question) => {
+    question.addEventListener("click", () => {
+      // Toggle active state
+      question.classList.toggle("active");
+
+      // Get the answer div
+      const answer = question.nextElementSibling;
 
       if (answer.style.display === "block") {
         answer.style.display = "none";
