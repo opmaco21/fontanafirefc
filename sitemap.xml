@@ -2,28 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
-    <loc>https://fontanafirefc.com/</loc>
+    <loc>https://www.fontanafirefc.com/</loc>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://fontanafirefc.com/teams.html</loc>
+    <loc>https://www.fontanafirefc.com/teams.html</loc>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://fontanafirefc.com/faq.html</loc>
+    <loc>https://www.fontanafirefc.com/faq.html</loc>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://fontanafirefc.com/contact.html</loc>
+    <loc>https://www.fontanafirefc.com/contact.html</loc>
     <priority>0.7</priority>
   </url>
 
   <url>
-  <loc>https://fontanafirefc.com/thank-you.html</loc>
-  <priority>0.3</priority>
-</url>
+    <loc>https://www.fontanafirefc.com/thank-you.html</loc>
+    <priority>0.3</priority>
+  </url>
 
 </urlset>
