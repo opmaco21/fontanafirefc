@@ -16,12 +16,12 @@
 <!-- HEADER -->
 <header class="site-header">
   <div class="container center-text">
-    <a href="index.html">
+    <a href="/">
       <img src="assets/images/TeamLogoCropped.png" class="logo" alt="Fontana Fire FC Logo">
     </a>
 
     <nav class="main-nav">
-      <a href="index.html">Home</a>
+      <a href="/">Home</a>
       <a href="teams.html">Teams</a>
       <a href="faq.html">FAQ</a>
       <a href="contact.html" class="active">Contact</a>
@@ -55,6 +55,7 @@
         <!-- FORMSPREE SETTINGS -->
         <input type="hidden" name="_subject" value="New Player Signup – Fontana Fire FC">
         <input type="hidden" name="_template" value="table">
+        <!-- IMPORTANT: keep redirect on www -->
         <input type="hidden" name="_redirect" value="https://www.fontanafirefc.com/thank-you.html">
 
         <!-- HONEYPOT -->
@@ -141,8 +142,7 @@
 
 <!-- AUTO YEAR -->
 <script>
-  document.getElementById("year").textContent =
-    new Date().getFullYear();
+  document.getElementById("year").textContent = new Date().getFullYear();
 </script>
 
 </body>
