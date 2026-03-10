@@ -13,7 +13,6 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="site-header">
   <div class="container center-text">
     <a href="/">
@@ -29,7 +28,10 @@
   </div>
 </header>
 
-<!-- MAIN -->
+<div class="announcement">
+  Practice Location Update: Practices are currently held at Central Park, 8380 Cypress Ave, Fontana, CA 92335.
+</div>
+
 <main>
   <div class="container content-box">
 
@@ -56,13 +58,11 @@
         action="https://formspree.io/f/xnjjjynn"
         method="POST"
       >
-        <!-- FORMSPREE SETTINGS -->
+
         <input type="hidden" name="_subject" value="New Player Signup – Fontana Fire FC">
         <input type="hidden" name="_template" value="table">
-        <!-- IMPORTANT: keep redirect on www -->
         <input type="hidden" name="_redirect" value="https://www.fontanafirefc.com/thank-you.html">
 
-        <!-- HONEYPOT -->
         <input type="text" name="_gotcha" style="display:none">
 
         <div class="form-group">
@@ -115,6 +115,10 @@
       </p>
 
       <p class="form-note">
+        📍 Practice location: Central Park – 8380 Cypress Ave, Fontana, CA 92335.
+      </p>
+
+      <p class="form-note">
         We do our best to respond to all inquiries as quickly as possible.
       </p>
     </section>
@@ -124,12 +128,12 @@
       <h3>📍 Practice Location</h3>
 
       <p class="location-highlight">
-        <strong>Fontana Middle School</strong><br>
-        8425 Mango Ave, Fontana, CA 92335
+        <strong>Central Park</strong><br>
+        8380 Cypress Ave, Fontana, CA 92335
       </p>
 
       <p>
-        All teams currently practice at Fontana Middle School in Fontana, California.
+        All teams currently practice at Central Park in Fontana, California.
         Visit the Teams page for current age groups, schedule details, and season information.
       </p>
 
@@ -143,7 +147,7 @@
       <h3 class="center-text">Our Practice Field</h3>
 
       <iframe
-        src="https://www.google.com/maps?q=8425+Mango+Ave+Fontana+CA+92335&output=embed"
+        src="https://www.google.com/maps?q=8380+Cypress+Ave+Fontana+CA+92335&output=embed"
         width="100%"
         height="400"
         style="border:0; border-radius:12px;"
@@ -155,14 +159,12 @@
   </div>
 </main>
 
-<!-- FOOTER -->
 <footer class="site-footer">
   <div class="container center-text">
     <p>&copy; <span id="year"></span> Fontana Fire FC. All rights reserved.</p>
   </div>
 </footer>
 
-<!-- AUTO YEAR -->
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
 </script>
