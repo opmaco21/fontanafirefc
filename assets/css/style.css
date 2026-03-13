@@ -43,7 +43,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: 28px;
-  flex-wrap: nowrap; /* ⬅ prevents reordering */
+  flex-wrap: nowrap; /* prevents reordering */
 }
 
 .main-nav a {
@@ -148,10 +148,6 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-.map-section {
-  margin-top: 40px;
-}
-
 /* ================= FAQ ================= */
 .faq-container {
   max-width: 900px;
@@ -206,11 +202,40 @@ body {
 }
 
 /* ================= CONTACT ================= */
+.contact-form-section {
+  margin-top: 30px;
+}
+
+.contact-form-section h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-card {
+  max-width: 900px;
+  margin: 25px auto 0;
+  padding: 18px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
 .contact-form-section iframe {
   display: block;
-  max-width: 900px;
-  margin: 20px auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
   border: none;
+  border-radius: 12px;
+}
+
+.contact-notes {
+  max-width: 900px;
+  margin: 20px auto 0;
+}
+
+.contact-notes .form-note {
+  margin: 10px 0;
 }
 
 .contact-form {
@@ -220,9 +245,9 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.contact-form-section h3 {
-  text-align: center;
-  margin-bottom: 20px;
+/* ================= MAP ================= */
+.map-section {
+  margin-top: 40px;
 }
 
 /* ================= FOOTER ================= */
@@ -245,5 +270,14 @@ body {
 
   .faq-question {
     font-size: 0.95rem;
+  }
+
+  .form-card {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .contact-form-section iframe {
+    border-radius: 8px;
   }
 }
