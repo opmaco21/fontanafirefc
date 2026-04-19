@@ -1,1 +1,102 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fontana Fire FC Attendance App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">🔥</div>
+        <div>
+          <h1>Fontana Fire FC</h1>
+          <p>Coach Attendance App</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- LOGIN SCREEN -->
+      <section id="loginScreen" class="card">
+        <h2>Login</h2>
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="coach@email.com" />
+        </div>
+        <div class="form-row">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="Password" />
+        </div>
+        <button id="loginBtn" class="btn btn-primary">Login</button>
+        <p id="loginMessage" class="message"></p>
+      </section>
+
+      <!-- APP SCREEN -->
+      <section id="appScreen" class="hidden">
+        <div class="card">
+          <div class="welcome-row">
+            <div>
+              <h2 id="welcomeText">Welcome</h2>
+              <p id="roleText" class="subtext"></p>
+            </div>
+            <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Attendance Setup</h3>
+
+          <div class="grid-2">
+            <div class="form-row">
+              <label for="groupSelect">Group</label>
+              <select id="groupSelect">
+                <option value="">Select group</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="eventSelect">Event</label>
+              <select id="eventSelect">
+                <option value="">Select event</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="loadAttendanceBtn" class="btn btn-primary">Load Attendance</button>
+        </div>
+
+        <div id="attendanceCard" class="card hidden">
+          <div class="attendance-header">
+            <div>
+              <h3 id="attendanceTitle">Attendance</h3>
+              <p id="attendanceSubtitle" class="subtext"></p>
+            </div>
+            <button id="saveAttendanceBtn" class="btn btn-primary">Save Attendance</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Player</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTableBody"></tbody>
+            </table>
+          </div>
+
+          <p id="saveMessage" class="message"></p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
