@@ -1,1 +1,162 @@
+* {
+  box-sizing: border-box;
+}
 
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #222;
+}
+
+.topbar {
+  background: #111;
+  color: #fff;
+  padding: 16px 20px;
+  border-bottom: 4px solid #f57c00;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 28px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  color: #ddd;
+  font-size: 14px;
+}
+
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 14px 30px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.hidden {
+  display: none;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+input,
+select {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #f57c00;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #d96d00;
+}
+
+.btn-secondary {
+  background: #444;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background: #333;
+}
+
+.message {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.subtext {
+  color: #666;
+  margin-top: 4px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.welcome-row,
+.attendance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #e6e6e6;
+  text-align: left;
+}
+
+tbody tr:hover {
+  background: #fafafa;
+}
+
+.status-select {
+  min-width: 140px;
+}
+
+@media (max-width: 700px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-row,
+  .attendance-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
