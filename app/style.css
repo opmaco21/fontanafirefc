@@ -38,16 +38,15 @@ body {
 }
 
 .container {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 0 14px 30px;
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 0 14px;
 }
 
 .card {
   background: #fff;
   border-radius: 12px;
   padding: 18px;
-  margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
@@ -66,8 +65,7 @@ label {
   margin-bottom: 6px;
 }
 
-input,
-select {
+input {
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -87,17 +85,10 @@ select {
   color: #fff;
 }
 
-.btn-primary:hover {
-  background: #d96d00;
-}
-
 .btn-secondary {
   background: #444;
   color: #fff;
-}
-
-.btn-secondary:hover {
-  background: #333;
+  margin-top: 12px;
 }
 
 .message {
@@ -107,56 +98,4 @@ select {
 
 .subtext {
   color: #666;
-  margin-top: 4px;
-}
-
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.welcome-row,
-.attendance-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.table-wrap {
-  overflow-x: auto;
-  margin-top: 12px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 12px 10px;
-  border-bottom: 1px solid #e6e6e6;
-  text-align: left;
-}
-
-tbody tr:hover {
-  background: #fafafa;
-}
-
-.status-select {
-  min-width: 140px;
-}
-
-@media (max-width: 700px) {
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
-
-  .welcome-row,
-  .attendance-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
