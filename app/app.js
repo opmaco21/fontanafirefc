@@ -7,11 +7,14 @@ const appScreen = document.getElementById("appScreen");
 const loginMessage = document.getElementById("loginMessage");
 const welcomeText = document.getElementById("welcomeText");
 const roleText = document.getElementById("roleText");
+const groupSelect = document.getElementById("groupSelect");
+const eventSelect = document.getElementById("eventSelect");
 
 let currentUser = null;
 
 loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
+groupSelect.addEventListener("change", loadEvents);
 
 function setMessage(el, text, isError = false) {
   el.textContent = text;
@@ -53,8 +56,65 @@ async function login() {
 
     loginScreen.classList.add("hidden");
     appScreen.classList.remove("hidden");
+
+    await loadGroups();
   } catch (err) {
     setMessage(loginMessage, "Could not connect to server.", true);
+  }
+}
+
+async function loadGroups() {
+  groupSelect.innerHTML = `<option value="">Select group</option>`;
+  eventSelect.innerHTML = `<option value="">Select event</option>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/groups`);
+    const groups = await res.json();
+
+    let availableGroups = groups;
+
+    if (currentUser.RoleName === "Coach" && currentUser.GroupID) {
+      availableGroups = groups.filter(g => g.GroupID === currentUser.GroupID);
+    }
+
+    availableGroups.forEach(group => {
+      const option = document.createElement("option");
+      option.value = group.GroupID;
+      option.textContent = group.GroupName;
+      groupSelect.appendChild(option);
+    });
+
+    if (currentUser.RoleName === "Coach" && currentUser.GroupID) {
+      groupSelect.value = currentUser.GroupID;
+      await loadEvents();
+    }
+  } catch (err) {
+    console.error("Failed to load groups", err);
+  }
+}
+
+async function loadEvents() {
+  const groupId = groupSelect.value;
+  eventSelect.innerHTML = `<option value="">Select event</option>`;
+
+  if (!groupId) return;
+
+  try {
+    const month = "2026-04";
+    const res = await fetch(`${API_BASE}/events?groupId=${groupId}&month=${month}`);
+    const events = await res.json();
+
+    events.forEach(event => {
+      const option = document.createElement("option");
+      option.value = event.EventID;
+
+      const eventDate = new Date(event.EventDate).toLocaleDateString();
+      option.textContent = `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
+
+      eventSelect.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Failed to load events", err);
   }
 }
 
@@ -68,6 +128,8 @@ function logout() {
   document.getElementById("email").value = "";
   document.getElementById("password").value = "";
   loginMessage.textContent = "";
+  groupSelect.innerHTML = `<option value="">Select group</option>`;
+  eventSelect.innerHTML = `<option value="">Select event</option>`;
 }
 
 function restoreSession() {
@@ -81,6 +143,8 @@ function restoreSession() {
 
     loginScreen.classList.add("hidden");
     appScreen.classList.remove("hidden");
+
+    loadGroups();
   } catch (err) {
     localStorage.removeItem("attendanceUser");
   }
