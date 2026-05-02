@@ -175,3 +175,36 @@ hr {
     width: 100%;
   }
 }
+/* =========================
+   PRACTICE / GAMES TABS
+   ========================= */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  flex: 1;
+  padding: 13px;
+  border: none;
+  border-radius: 12px;
+  background: #e5e7eb;
+  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: #f57c00;
+  color: #fff;
+}
+
+.tab:hover {
+  background: #d6d8dc;
+}
+
+.tab.active:hover {
+  background: #e86f00;
+}
