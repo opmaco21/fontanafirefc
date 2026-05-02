@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- PAGE SETTINGS -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- PAGE TITLE -->
   <title>Fontana Fire FC Attendance App</title>
+
+  <!-- CSS FILE -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="app-shell">
+
+    <!-- TOP HEADER / BRANDING -->
     <header class="topbar">
       <div class="brand">
         <div class="logo">🔥</div>
@@ -18,28 +26,38 @@
       </div>
     </header>
 
+    <!-- MAIN APP AREA -->
     <main class="container">
+
+      <!-- LOGIN SCREEN -->
       <section id="loginScreen" class="card">
         <h2>Login</h2>
 
+        <!-- EMAIL INPUT -->
         <div class="form-row">
           <label for="email">Email</label>
           <input id="email" type="email" placeholder="Email" />
         </div>
 
+        <!-- PASSWORD INPUT -->
         <div class="form-row">
           <label for="password">Password</label>
           <input id="password" type="password" placeholder="Password" />
         </div>
 
+        <!-- LOGIN BUTTON / MESSAGE -->
         <button id="loginBtn" class="btn btn-primary">Login</button>
         <p id="loginMessage" class="message"></p>
       </section>
 
+      <!-- LOGGED-IN APP SCREEN -->
       <section id="appScreen" class="card hidden">
+
+        <!-- USER WELCOME INFO -->
         <h2 id="welcomeText">Welcome</h2>
         <p id="roleText" class="subtext"></p>
 
+        <!-- GROUP FILTER -->
         <div class="form-row">
           <label for="groupSelect">Group</label>
           <select id="groupSelect">
@@ -47,6 +65,13 @@
           </select>
         </div>
 
+        <!-- PRACTICE / GAME TABS -->
+        <div class="tabs">
+          <button id="practiceTab" class="tab active">Practice</button>
+          <button id="gamesTab" class="tab">Games</button>
+        </div>
+
+        <!-- EVENT SELECTOR -->
         <div class="form-row">
           <label for="eventSelect">Event</label>
           <select id="eventSelect">
@@ -54,29 +79,41 @@
           </select>
         </div>
 
+        <!-- PLAYER ATTENDANCE LIST -->
         <div class="form-row">
           <h3>Players</h3>
           <div id="playerList"></div>
         </div>
 
-        <button id="saveAttendanceBtn" class="btn btn-primary">Submit Attendance</button>
+        <!-- SUBMIT ATTENDANCE -->
+        <button id="saveAttendanceBtn" class="btn btn-primary">
+          Submit Attendance
+        </button>
         <p id="attendanceMessage" class="message"></p>
 
         <hr />
 
+        <!-- ADD PLAYER SECTION -->
         <div class="form-row">
           <h3>Add Player</h3>
+
           <input id="newFirstName" type="text" placeholder="First name" />
           <input id="newLastName" type="text" placeholder="Last name" />
-          <button id="addPlayerBtn" class="btn btn-primary">Add Player</button>
+
+          <button id="addPlayerBtn" class="btn btn-primary">
+            Add Player
+          </button>
+
           <p id="addPlayerMessage" class="message"></p>
         </div>
 
+        <!-- LOGOUT BUTTON -->
         <button id="logoutBtn" class="btn btn-secondary">Logout</button>
       </section>
     </main>
   </div>
 
+  <!-- JAVASCRIPT FILE -->
   <script src="app.js"></script>
 </body>
 </html>
