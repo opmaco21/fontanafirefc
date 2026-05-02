@@ -37,7 +37,7 @@ const addPlayerMessage = document.getElementById("addPlayerMessage");
    APP STATE
    ========================= */
 let currentUser = null;
-let currentTab = "Practice"; // Practice or Game
+let currentTab = "Practice";
 
 /* =========================
    EVENT LISTENERS
@@ -72,7 +72,6 @@ if (gamesTab) {
 
 /* =========================
    MESSAGE HELPER
-   Shows green success or red error text
    ========================= */
 function setMessage(el, text, isError = false) {
   if (!el) return;
@@ -83,7 +82,6 @@ function setMessage(el, text, isError = false) {
 
 /* =========================
    LOGIN
-   Sends email/password to backend
    ========================= */
 async function login() {
   loginMessage.textContent = "";
@@ -122,8 +120,7 @@ async function login() {
 }
 
 /* =========================
-   SHOW MAIN APP AFTER LOGIN
-   Loads groups, events, and players
+   SHOW MAIN APP
    ========================= */
 async function showApp() {
   welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
@@ -141,7 +138,6 @@ async function showApp() {
 
 /* =========================
    LOAD GROUPS
-   Groups stay available for future filtering
    ========================= */
 async function loadGroups() {
   if (!groupSelect) return;
@@ -164,8 +160,7 @@ async function loadGroups() {
 }
 
 /* =========================
-   SET ACTIVE TAB STYLE
-   Practice button or Games button
+   ACTIVE TAB STYLE
    ========================= */
 function setActiveTab() {
   if (!practiceTab || !gamesTab) return;
@@ -181,10 +176,31 @@ function setActiveTab() {
 }
 
 /* =========================
+   DATE HELPER
+   Prevents timezone date shift
+   ========================= */
+function getEventDateParts(eventDateValue) {
+  const dateOnly = eventDateValue.split("T")[0];
+  const parts = dateOnly.split("-");
+
+  const year = Number(parts[0]);
+  const month = Number(parts[1]) - 1;
+  const day = Number(parts[2]);
+
+  const localDate = new Date(year, month, day);
+
+  return {
+    dateOnly,
+    localDate,
+    dayOfWeek: localDate.getDay()
+  };
+}
+
+/* =========================
    LOAD EVENTS
-   Practice tab: Monday / Wednesday practices
-   Games tab: Friday / Saturday / Sunday games
-   Optional group dropdown still filters by GroupID
+   Practice: Monday / Wednesday
+   Games: Friday / Saturday / Sunday
+   Group filter still works
    ========================= */
 async function loadEvents() {
   eventSelect.innerHTML = `<option value="">Select event</option>`;
@@ -196,8 +212,8 @@ async function loadEvents() {
     const selectedGroupId = groupSelect ? groupSelect.value : "";
 
     const filteredEvents = events.filter(event => {
-      const eventDate = new Date(event.EventDate);
-      const day = eventDate.getDay();
+      const dateInfo = getEventDateParts(event.EventDate);
+      const day = dateInfo.dayOfWeek;
 
       const matchesGroup =
         !selectedGroupId || String(event.GroupID) === String(selectedGroupId);
@@ -232,7 +248,8 @@ function addEventOption(event) {
   const option = document.createElement("option");
   option.value = event.EventID;
 
-  const eventDate = new Date(event.EventDate).toLocaleDateString();
+  const dateInfo = getEventDateParts(event.EventDate);
+  const eventDate = dateInfo.localDate.toLocaleDateString();
 
   option.textContent =
     `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
@@ -242,7 +259,6 @@ function addEventOption(event) {
 
 /* =========================
    LOAD PLAYERS
-   Loads all active players by default
    ========================= */
 async function loadPlayers() {
   try {
@@ -282,7 +298,6 @@ async function loadPlayers() {
 
 /* =========================
    SAVE / UPDATE ATTENDANCE
-   Same EventID + PlayerID updates existing record
    ========================= */
 async function saveAttendance() {
   attendanceMessage.textContent = "";
@@ -341,7 +356,6 @@ async function saveAttendance() {
 
 /* =========================
    ADD PLAYER
-   Adds a new active player using first and last name
    ========================= */
 async function addPlayer() {
   addPlayerMessage.textContent = "";
@@ -386,7 +400,6 @@ async function addPlayer() {
 
 /* =========================
    LOGOUT
-   Clears session and resets screen
    ========================= */
 function logout() {
   currentUser = null;
@@ -417,7 +430,6 @@ function logout() {
 
 /* =========================
    RESTORE SESSION
-   Keeps user logged in after page refresh
    ========================= */
 function restoreSession() {
   const savedUser = localStorage.getItem("attendanceUser");
