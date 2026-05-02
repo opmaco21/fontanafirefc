@@ -46,27 +46,34 @@ loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
 saveAttendanceBtn.addEventListener("click", saveAttendance);
 
+eventSelect.addEventListener("change", loadAttendanceForEvent);
+
 if (addPlayerBtn) {
   addPlayerBtn.addEventListener("click", addPlayer);
 }
 
 if (groupSelect) {
-  groupSelect.addEventListener("change", loadEvents);
+  groupSelect.addEventListener("change", async () => {
+    await loadEvents();
+    clearPlayerAttendanceSelections();
+  });
 }
 
 if (practiceTab) {
-  practiceTab.addEventListener("click", () => {
+  practiceTab.addEventListener("click", async () => {
     currentTab = "Practice";
     setActiveTab();
-    loadEvents();
+    await loadEvents();
+    clearPlayerAttendanceSelections();
   });
 }
 
 if (gamesTab) {
-  gamesTab.addEventListener("click", () => {
+  gamesTab.addEventListener("click", async () => {
     currentTab = "Game";
     setActiveTab();
-    loadEvents();
+    await loadEvents();
+    clearPlayerAttendanceSelections();
   });
 }
 
@@ -291,8 +298,68 @@ async function loadPlayers() {
 
       playerList.appendChild(row);
     });
+
+    if (eventSelect.value) {
+      await loadAttendanceForEvent();
+    }
   } catch (err) {
     console.error("Failed to load players", err);
+  }
+}
+
+/* =========================
+   CLEAR ATTENDANCE SELECTIONS
+   Used when changing tab/group/event list
+   ========================= */
+function clearPlayerAttendanceSelections() {
+  const selects = document.querySelectorAll("#playerList select");
+
+  selects.forEach(select => {
+    select.value = "";
+  });
+
+  if (attendanceMessage) {
+    attendanceMessage.textContent = "";
+  }
+}
+
+/* =========================
+   LOAD SAVED ATTENDANCE
+   Auto-fills player dropdowns when event is selected
+   ========================= */
+async function loadAttendanceForEvent() {
+  const eventId = eventSelect.value;
+
+  clearPlayerAttendanceSelections();
+
+  if (!eventId) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/attendance/${eventId}`);
+    const savedAttendance = await res.json();
+
+    const attendanceMap = {};
+
+    savedAttendance.forEach(record => {
+      attendanceMap[record.PlayerID] = record.AttendanceStatus;
+    });
+
+    const playerSelects = document.querySelectorAll("#playerList select");
+
+    playerSelects.forEach(select => {
+      const playerId = select.dataset.playerId;
+
+      if (attendanceMap[playerId]) {
+        select.value = attendanceMap[playerId];
+      }
+    });
+
+    if (savedAttendance.length > 0) {
+      setMessage(attendanceMessage, "Saved attendance loaded.", false);
+    }
+  } catch (err) {
+    console.error("Failed to load saved attendance", err);
+    setMessage(attendanceMessage, "Could not load saved attendance.", true);
   }
 }
 
@@ -349,6 +416,8 @@ async function saveAttendance() {
     }
 
     setMessage(attendanceMessage, "✅ Attendance saved / updated.", false);
+
+    await loadAttendanceForEvent();
   } catch (err) {
     setMessage(attendanceMessage, "Could not save attendance.", true);
   }
