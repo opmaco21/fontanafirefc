@@ -9,13 +9,21 @@ const welcomeText = document.getElementById("welcomeText");
 const roleText = document.getElementById("roleText");
 const groupSelect = document.getElementById("groupSelect");
 const eventSelect = document.getElementById("eventSelect");
+const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
+const attendanceMessage = document.getElementById("attendanceMessage");
+const addPlayerBtn = document.getElementById("addPlayerBtn");
+const addPlayerMessage = document.getElementById("addPlayerMessage");
 
 let currentUser = null;
 
 loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
+saveAttendanceBtn.addEventListener("click", saveAttendance);
 
-// Keep groups available for later, but do not require group first
+if (addPlayerBtn) {
+  addPlayerBtn.addEventListener("click", addPlayer);
+}
+
 if (groupSelect) {
   groupSelect.addEventListener("change", loadEventsByGroup);
 }
@@ -39,9 +47,7 @@ async function login() {
   try {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
     });
 
@@ -68,9 +74,9 @@ async function showApp() {
   loginScreen.classList.add("hidden");
   appScreen.classList.remove("hidden");
 
-  await loadGroups();   // keep groups ready for later
-  await loadEvents();   // load events by default
-  await loadPlayers();  // load all active players by default
+  await loadGroups();
+  await loadEvents();
+  await loadPlayers();
 }
 
 async function loadGroups() {
@@ -100,15 +106,7 @@ async function loadEvents() {
     const res = await fetch(`${API_BASE}/events`);
     const events = await res.json();
 
-    events.forEach(event => {
-      const option = document.createElement("option");
-      option.value = event.EventID;
-
-      const eventDate = new Date(event.EventDate).toLocaleDateString();
-      option.textContent = `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
-
-      eventSelect.appendChild(option);
-    });
+    events.forEach(event => addEventOption(event));
   } catch (err) {
     console.error("Failed to load events", err);
   }
@@ -125,30 +123,29 @@ async function loadEventsByGroup() {
   eventSelect.innerHTML = `<option value="">Select event</option>`;
 
   try {
-    const month = "2026-04";
-    const res = await fetch(`${API_BASE}/events?groupId=${groupId}&month=${month}`);
+    const res = await fetch(`${API_BASE}/events?groupId=${groupId}`);
     const events = await res.json();
 
-    events.forEach(event => {
-      const option = document.createElement("option");
-      option.value = event.EventID;
-
-      const eventDate = new Date(event.EventDate).toLocaleDateString();
-      option.textContent = `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
-
-      eventSelect.appendChild(option);
-    });
+    events.forEach(event => addEventOption(event));
   } catch (err) {
     console.error("Failed to load events by group", err);
   }
+}
+
+function addEventOption(event) {
+  const option = document.createElement("option");
+  option.value = event.EventID;
+
+  const eventDate = new Date(event.EventDate).toLocaleDateString();
+  option.textContent = `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
+
+  eventSelect.appendChild(option);
 }
 
 async function loadPlayers() {
   try {
     const res = await fetch(`${API_BASE}/players`);
     const players = await res.json();
-
-    console.log("Players loaded:", players);
 
     const playerList = document.getElementById("playerList");
 
@@ -180,6 +177,101 @@ async function loadPlayers() {
   }
 }
 
+async function saveAttendance() {
+  attendanceMessage.textContent = "";
+
+  const eventId = eventSelect.value;
+
+  if (!eventId) {
+    setMessage(attendanceMessage, "Select an event first.", true);
+    return;
+  }
+
+  const rows = document.querySelectorAll("#playerList select");
+  const attendance = [];
+
+  rows.forEach(row => {
+    const playerId = row.dataset.playerId;
+    const status = row.value;
+
+    if (status) {
+      attendance.push({
+        playerId: Number(playerId),
+        status
+      });
+    }
+  });
+
+  if (attendance.length === 0) {
+    setMessage(attendanceMessage, "Select attendance for at least one player.", true);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/attendance`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        eventId: Number(eventId),
+        attendance
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(attendanceMessage, data.message || "Error saving attendance.", true);
+      return;
+    }
+
+    setMessage(attendanceMessage, "✅ Attendance saved / updated.", false);
+  } catch (err) {
+    setMessage(attendanceMessage, "Could not save attendance.", true);
+  }
+}
+
+async function addPlayer() {
+  addPlayerMessage.textContent = "";
+
+  const firstName = document.getElementById("newFirstName").value.trim();
+  const lastName = document.getElementById("newLastName").value.trim();
+
+  if (!firstName || !lastName) {
+    setMessage(addPlayerMessage, "Enter first and last name.", true);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/players`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        firstName,
+        lastName
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(addPlayerMessage, data.message || "Could not add player.", true);
+      return;
+    }
+
+    document.getElementById("newFirstName").value = "";
+    document.getElementById("newLastName").value = "";
+
+    setMessage(addPlayerMessage, "✅ Player added.", false);
+    await loadPlayers();
+  } catch (err) {
+    setMessage(addPlayerMessage, "Server error adding player.", true);
+  }
+}
+
 function logout() {
   currentUser = null;
   localStorage.removeItem("attendanceUser");
@@ -201,6 +293,9 @@ function logout() {
   if (playerList) {
     playerList.innerHTML = "";
   }
+
+  if (attendanceMessage) attendanceMessage.textContent = "";
+  if (addPlayerMessage) addPlayerMessage.textContent = "";
 }
 
 function restoreSession() {
