@@ -14,6 +14,7 @@ const attendanceMessage = document.getElementById("attendanceMessage");
 const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
 
+let currentTab = "Practice";
 let currentUser = null;
 
 loginBtn.addEventListener("click", login);
