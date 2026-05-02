@@ -14,7 +14,11 @@ let currentUser = null;
 
 loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
-groupSelect.addEventListener("change", loadEvents);
+
+// Keep groups available for later, but do not require group first
+if (groupSelect) {
+  groupSelect.addEventListener("change", loadEventsByGroup);
+}
 
 function setMessage(el, text, isError = false) {
   el.textContent = text;
@@ -51,57 +55,49 @@ async function login() {
     currentUser = data.user;
     localStorage.setItem("attendanceUser", JSON.stringify(currentUser));
 
-    welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
-    roleText.textContent = `${currentUser.RoleName}${currentUser.GroupID ? ` • Group ${currentUser.GroupID}` : " • All Groups"}`;
-
-    loginScreen.classList.add("hidden");
-    appScreen.classList.remove("hidden");
-
-    await loadGroups();
+    showApp();
   } catch (err) {
     setMessage(loginMessage, "Could not connect to server.", true);
   }
 }
 
+async function showApp() {
+  welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
+  roleText.textContent = `${currentUser.RoleName}`;
+
+  loginScreen.classList.add("hidden");
+  appScreen.classList.remove("hidden");
+
+  await loadGroups();   // keep groups ready for later
+  await loadEvents();   // load events by default
+  await loadPlayers();  // load all active players by default
+}
+
 async function loadGroups() {
-  groupSelect.innerHTML = `<option value="">Select group</option>`;
-  eventSelect.innerHTML = `<option value="">Select event</option>`;
+  if (!groupSelect) return;
+
+  groupSelect.innerHTML = `<option value="">All Groups</option>`;
 
   try {
     const res = await fetch(`${API_BASE}/groups`);
     const groups = await res.json();
 
-    let availableGroups = groups;
-
-    if (currentUser.RoleName === "Coach" && currentUser.GroupID) {
-      availableGroups = groups.filter(g => g.GroupID === currentUser.GroupID);
-    }
-
-    availableGroups.forEach(group => {
+    groups.forEach(group => {
       const option = document.createElement("option");
       option.value = group.GroupID;
       option.textContent = group.GroupName;
       groupSelect.appendChild(option);
     });
-
-    if (currentUser.RoleName === "Coach" && currentUser.GroupID) {
-      groupSelect.value = currentUser.GroupID;
-      await loadEvents();
-    }
   } catch (err) {
     console.error("Failed to load groups", err);
   }
 }
 
 async function loadEvents() {
-  const groupId = groupSelect.value;
   eventSelect.innerHTML = `<option value="">Select event</option>`;
 
-  if (!groupId) return;
-
   try {
-    const month = "2026-04";
-    const res = await fetch(`${API_BASE}/events?groupId=${groupId}&month=${month}`);
+    const res = await fetch(`${API_BASE}/events`);
     const events = await res.json();
 
     events.forEach(event => {
@@ -118,6 +114,72 @@ async function loadEvents() {
   }
 }
 
+async function loadEventsByGroup() {
+  const groupId = groupSelect.value;
+
+  if (!groupId) {
+    await loadEvents();
+    return;
+  }
+
+  eventSelect.innerHTML = `<option value="">Select event</option>`;
+
+  try {
+    const month = "2026-04";
+    const res = await fetch(`${API_BASE}/events?groupId=${groupId}&month=${month}`);
+    const events = await res.json();
+
+    events.forEach(event => {
+      const option = document.createElement("option");
+      option.value = event.EventID;
+
+      const eventDate = new Date(event.EventDate).toLocaleDateString();
+      option.textContent = `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
+
+      eventSelect.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Failed to load events by group", err);
+  }
+}
+
+async function loadPlayers() {
+  try {
+    const res = await fetch(`${API_BASE}/players`);
+    const players = await res.json();
+
+    console.log("Players loaded:", players);
+
+    const playerList = document.getElementById("playerList");
+
+    if (!playerList) {
+      console.warn("Missing element: playerList");
+      return;
+    }
+
+    playerList.innerHTML = "";
+
+    players.forEach(player => {
+      const row = document.createElement("div");
+      row.className = "player-row";
+
+      row.innerHTML = `
+        <span>${player.FirstName} ${player.LastName}</span>
+        <select data-player-id="${player.PlayerID}">
+          <option value="">Select</option>
+          <option value="Present">Present</option>
+          <option value="Absent">Absent</option>
+          <option value="Excused">Excused</option>
+        </select>
+      `;
+
+      playerList.appendChild(row);
+    });
+  } catch (err) {
+    console.error("Failed to load players", err);
+  }
+}
+
 function logout() {
   currentUser = null;
   localStorage.removeItem("attendanceUser");
@@ -128,8 +190,17 @@ function logout() {
   document.getElementById("email").value = "";
   document.getElementById("password").value = "";
   loginMessage.textContent = "";
-  groupSelect.innerHTML = `<option value="">Select group</option>`;
+
+  if (groupSelect) {
+    groupSelect.innerHTML = `<option value="">All Groups</option>`;
+  }
+
   eventSelect.innerHTML = `<option value="">Select event</option>`;
+
+  const playerList = document.getElementById("playerList");
+  if (playerList) {
+    playerList.innerHTML = "";
+  }
 }
 
 function restoreSession() {
@@ -138,13 +209,7 @@ function restoreSession() {
 
   try {
     currentUser = JSON.parse(savedUser);
-    welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
-    roleText.textContent = `${currentUser.RoleName}${currentUser.GroupID ? ` • Group ${currentUser.GroupID}` : " • All Groups"}`;
-
-    loginScreen.classList.add("hidden");
-    appScreen.classList.remove("hidden");
-
-    loadGroups();
+    showApp();
   } catch (err) {
     localStorage.removeItem("attendanceUser");
   }
