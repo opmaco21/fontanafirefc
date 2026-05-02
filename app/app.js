@@ -1,22 +1,47 @@
+/* =========================================================
+   FONTANA FIRE FC ATTENDANCE APP
+   Frontend JavaScript
+   ========================================================= */
+
+/* =========================
+   API SETTINGS
+   ========================= */
 const API_BASE = "http://192.168.1.174:3000/api";
 
+/* =========================
+   HTML ELEMENT REFERENCES
+   ========================= */
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
+
 const loginScreen = document.getElementById("loginScreen");
 const appScreen = document.getElementById("appScreen");
+
 const loginMessage = document.getElementById("loginMessage");
 const welcomeText = document.getElementById("welcomeText");
 const roleText = document.getElementById("roleText");
+
 const groupSelect = document.getElementById("groupSelect");
 const eventSelect = document.getElementById("eventSelect");
+
+const practiceTab = document.getElementById("practiceTab");
+const gamesTab = document.getElementById("gamesTab");
+
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
 const attendanceMessage = document.getElementById("attendanceMessage");
+
 const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
 
-let currentTab = "Practice";
+/* =========================
+   APP STATE
+   ========================= */
 let currentUser = null;
+let currentTab = "Practice"; // Practice or Game
 
+/* =========================
+   EVENT LISTENERS
+   ========================= */
 loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
 saveAttendanceBtn.addEventListener("click", saveAttendance);
@@ -26,14 +51,40 @@ if (addPlayerBtn) {
 }
 
 if (groupSelect) {
-  groupSelect.addEventListener("change", loadEventsByGroup);
+  groupSelect.addEventListener("change", loadEvents);
 }
 
+if (practiceTab) {
+  practiceTab.addEventListener("click", () => {
+    currentTab = "Practice";
+    setActiveTab();
+    loadEvents();
+  });
+}
+
+if (gamesTab) {
+  gamesTab.addEventListener("click", () => {
+    currentTab = "Game";
+    setActiveTab();
+    loadEvents();
+  });
+}
+
+/* =========================
+   MESSAGE HELPER
+   Shows green success or red error text
+   ========================= */
 function setMessage(el, text, isError = false) {
+  if (!el) return;
+
   el.textContent = text;
   el.style.color = isError ? "#c62828" : "#2e7d32";
 }
 
+/* =========================
+   LOGIN
+   Sends email/password to backend
+   ========================= */
 async function login() {
   loginMessage.textContent = "";
 
@@ -48,7 +99,9 @@ async function login() {
   try {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ email, password })
     });
 
@@ -68,6 +121,10 @@ async function login() {
   }
 }
 
+/* =========================
+   SHOW MAIN APP AFTER LOGIN
+   Loads groups, events, and players
+   ========================= */
 async function showApp() {
   welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
   roleText.textContent = `${currentUser.RoleName}`;
@@ -75,11 +132,17 @@ async function showApp() {
   loginScreen.classList.add("hidden");
   appScreen.classList.remove("hidden");
 
+  setActiveTab();
+
   await loadGroups();
   await loadEvents();
   await loadPlayers();
 }
 
+/* =========================
+   LOAD GROUPS
+   Groups stay available for future filtering
+   ========================= */
 async function loadGroups() {
   if (!groupSelect) return;
 
@@ -100,6 +163,29 @@ async function loadGroups() {
   }
 }
 
+/* =========================
+   SET ACTIVE TAB STYLE
+   Practice button or Games button
+   ========================= */
+function setActiveTab() {
+  if (!practiceTab || !gamesTab) return;
+
+  practiceTab.classList.remove("active");
+  gamesTab.classList.remove("active");
+
+  if (currentTab === "Practice") {
+    practiceTab.classList.add("active");
+  } else {
+    gamesTab.classList.add("active");
+  }
+}
+
+/* =========================
+   LOAD EVENTS
+   Practice tab: Monday / Wednesday practices
+   Games tab: Friday / Saturday / Sunday games
+   Optional group dropdown still filters by GroupID
+   ========================= */
 async function loadEvents() {
   eventSelect.innerHTML = `<option value="">Select event</option>`;
 
@@ -107,42 +193,57 @@ async function loadEvents() {
     const res = await fetch(`${API_BASE}/events`);
     const events = await res.json();
 
-    events.forEach(event => addEventOption(event));
+    const selectedGroupId = groupSelect ? groupSelect.value : "";
+
+    const filteredEvents = events.filter(event => {
+      const eventDate = new Date(event.EventDate);
+      const day = eventDate.getDay();
+
+      const matchesGroup =
+        !selectedGroupId || String(event.GroupID) === String(selectedGroupId);
+
+      const isPractice =
+        event.EventType === "Practice" && (day === 1 || day === 3);
+
+      const isGame =
+        event.EventType === "Game" && (day === 5 || day === 6 || day === 0);
+
+      if (currentTab === "Practice") {
+        return matchesGroup && isPractice;
+      }
+
+      if (currentTab === "Game") {
+        return matchesGroup && isGame;
+      }
+
+      return matchesGroup;
+    });
+
+    filteredEvents.forEach(event => addEventOption(event));
   } catch (err) {
     console.error("Failed to load events", err);
   }
 }
 
-async function loadEventsByGroup() {
-  const groupId = groupSelect.value;
-
-  if (!groupId) {
-    await loadEvents();
-    return;
-  }
-
-  eventSelect.innerHTML = `<option value="">Select event</option>`;
-
-  try {
-    const res = await fetch(`${API_BASE}/events?groupId=${groupId}`);
-    const events = await res.json();
-
-    events.forEach(event => addEventOption(event));
-  } catch (err) {
-    console.error("Failed to load events by group", err);
-  }
-}
-
+/* =========================
+   ADD EVENT TO DROPDOWN
+   ========================= */
 function addEventOption(event) {
   const option = document.createElement("option");
   option.value = event.EventID;
 
   const eventDate = new Date(event.EventDate).toLocaleDateString();
-  option.textContent = `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
+
+  option.textContent =
+    `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
 
   eventSelect.appendChild(option);
 }
 
+/* =========================
+   LOAD PLAYERS
+   Loads all active players by default
+   ========================= */
 async function loadPlayers() {
   try {
     const res = await fetch(`${API_BASE}/players`);
@@ -163,6 +264,7 @@ async function loadPlayers() {
 
       row.innerHTML = `
         <span>${player.FirstName} ${player.LastName}</span>
+
         <select data-player-id="${player.PlayerID}">
           <option value="">Select</option>
           <option value="Present">Present</option>
@@ -178,6 +280,10 @@ async function loadPlayers() {
   }
 }
 
+/* =========================
+   SAVE / UPDATE ATTENDANCE
+   Same EventID + PlayerID updates existing record
+   ========================= */
 async function saveAttendance() {
   attendanceMessage.textContent = "";
 
@@ -233,6 +339,10 @@ async function saveAttendance() {
   }
 }
 
+/* =========================
+   ADD PLAYER
+   Adds a new active player using first and last name
+   ========================= */
 async function addPlayer() {
   addPlayerMessage.textContent = "";
 
@@ -267,12 +377,17 @@ async function addPlayer() {
     document.getElementById("newLastName").value = "";
 
     setMessage(addPlayerMessage, "✅ Player added.", false);
+
     await loadPlayers();
   } catch (err) {
     setMessage(addPlayerMessage, "Server error adding player.", true);
   }
 }
 
+/* =========================
+   LOGOUT
+   Clears session and resets screen
+   ========================= */
 function logout() {
   currentUser = null;
   localStorage.removeItem("attendanceUser");
@@ -282,6 +397,7 @@ function logout() {
 
   document.getElementById("email").value = "";
   document.getElementById("password").value = "";
+
   loginMessage.textContent = "";
 
   if (groupSelect) {
@@ -299,8 +415,13 @@ function logout() {
   if (addPlayerMessage) addPlayerMessage.textContent = "";
 }
 
+/* =========================
+   RESTORE SESSION
+   Keeps user logged in after page refresh
+   ========================= */
 function restoreSession() {
   const savedUser = localStorage.getItem("attendanceUser");
+
   if (!savedUser) return;
 
   try {
@@ -311,4 +432,7 @@ function restoreSession() {
   }
 }
 
+/* =========================
+   START APP
+   ========================= */
 restoreSession();
