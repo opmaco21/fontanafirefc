@@ -3,9 +3,6 @@
    Frontend JavaScript
    ========================================================= */
 
-/* =========================
-   API SETTINGS
-   ========================= */
 const API_BASE = "http://192.168.1.174:3000/api";
 
 /* =========================
@@ -32,6 +29,7 @@ const attendanceMessage = document.getElementById("attendanceMessage");
 
 const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
+const addPlayerSection = document.getElementById("addPlayerSection");
 
 /* =========================
    APP STATE
@@ -45,7 +43,6 @@ let currentTab = "Practice";
 loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
 saveAttendanceBtn.addEventListener("click", saveAttendance);
-
 eventSelect.addEventListener("change", loadAttendanceForEvent);
 
 if (addPlayerBtn) {
@@ -82,9 +79,25 @@ if (gamesTab) {
    ========================= */
 function setMessage(el, text, isError = false) {
   if (!el) return;
-
   el.textContent = text;
   el.style.color = isError ? "#c62828" : "#2e7d32";
+}
+
+/* =========================
+   ROLE PERMISSIONS
+   ========================= */
+function applyRolePermissions() {
+  if (!currentUser) return;
+
+  if (currentUser.RoleName === "MainCoach") {
+    if (addPlayerSection) {
+      addPlayerSection.style.display = "none";
+    }
+  } else {
+    if (addPlayerSection) {
+      addPlayerSection.style.display = "block";
+    }
+  }
 }
 
 /* =========================
@@ -104,6 +117,7 @@ async function login() {
   try {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
@@ -120,7 +134,8 @@ async function login() {
     currentUser = data.user;
     localStorage.setItem("attendanceUser", JSON.stringify(currentUser));
 
-    showApp();
+    await showApp();
+
   } catch (err) {
     setMessage(loginMessage, "Could not connect to server.", true);
   }
@@ -136,6 +151,7 @@ async function showApp() {
   loginScreen.classList.add("hidden");
   appScreen.classList.remove("hidden");
 
+  applyRolePermissions();
   setActiveTab();
 
   await loadGroups();
@@ -152,7 +168,10 @@ async function loadGroups() {
   groupSelect.innerHTML = `<option value="">All Groups</option>`;
 
   try {
-    const res = await fetch(`${API_BASE}/groups`);
+    const res = await fetch(`${API_BASE}/groups`, {
+      credentials: "include"
+    });
+
     const groups = await res.json();
 
     groups.forEach(group => {
@@ -161,6 +180,7 @@ async function loadGroups() {
       option.textContent = group.GroupName;
       groupSelect.appendChild(option);
     });
+
   } catch (err) {
     console.error("Failed to load groups", err);
   }
@@ -184,7 +204,6 @@ function setActiveTab() {
 
 /* =========================
    DATE HELPER
-   Prevents timezone date shift
    ========================= */
 function getEventDateParts(eventDateValue) {
   const dateOnly = eventDateValue.split("T")[0];
@@ -205,17 +224,16 @@ function getEventDateParts(eventDateValue) {
 
 /* =========================
    LOAD EVENTS
-   Practice: Monday / Wednesday
-   Games: Friday / Saturday / Sunday
-   Group filter still works
    ========================= */
 async function loadEvents() {
   eventSelect.innerHTML = `<option value="">Select event</option>`;
 
   try {
-    const res = await fetch(`${API_BASE}/events`);
-    const events = await res.json();
+    const res = await fetch(`${API_BASE}/events`, {
+      credentials: "include"
+    });
 
+    const events = await res.json();
     const selectedGroupId = groupSelect ? groupSelect.value : "";
 
     const filteredEvents = events.filter(event => {
@@ -231,18 +249,14 @@ async function loadEvents() {
       const isGame =
         event.EventType === "Game" && (day === 5 || day === 6 || day === 0);
 
-      if (currentTab === "Practice") {
-        return matchesGroup && isPractice;
-      }
-
-      if (currentTab === "Game") {
-        return matchesGroup && isGame;
-      }
+      if (currentTab === "Practice") return matchesGroup && isPractice;
+      if (currentTab === "Game") return matchesGroup && isGame;
 
       return matchesGroup;
     });
 
     filteredEvents.forEach(event => addEventOption(event));
+
   } catch (err) {
     console.error("Failed to load events", err);
   }
@@ -269,15 +283,19 @@ function addEventOption(event) {
    ========================= */
 async function loadPlayers() {
   try {
-    const res = await fetch(`${API_BASE}/players`);
-    const players = await res.json();
+    const res = await fetch(`${API_BASE}/players`, {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    const players = Array.isArray(data)
+      ? data
+      : data.players || [];
 
     const playerList = document.getElementById("playerList");
 
-    if (!playerList) {
-      console.warn("Missing element: playerList");
-      return;
-    }
+    if (!playerList) return;
 
     playerList.innerHTML = "";
 
@@ -302,6 +320,7 @@ async function loadPlayers() {
     if (eventSelect.value) {
       await loadAttendanceForEvent();
     }
+
   } catch (err) {
     console.error("Failed to load players", err);
   }
@@ -309,7 +328,6 @@ async function loadPlayers() {
 
 /* =========================
    CLEAR ATTENDANCE SELECTIONS
-   Used when changing tab/group/event list
    ========================= */
 function clearPlayerAttendanceSelections() {
   const selects = document.querySelectorAll("#playerList select");
@@ -325,7 +343,6 @@ function clearPlayerAttendanceSelections() {
 
 /* =========================
    LOAD SAVED ATTENDANCE
-   Auto-fills player dropdowns when event is selected
    ========================= */
 async function loadAttendanceForEvent() {
   const eventId = eventSelect.value;
@@ -335,9 +352,11 @@ async function loadAttendanceForEvent() {
   if (!eventId) return;
 
   try {
-    const res = await fetch(`${API_BASE}/attendance/${eventId}`);
-    const savedAttendance = await res.json();
+    const res = await fetch(`${API_BASE}/attendance/${eventId}`, {
+      credentials: "include"
+    });
 
+    const savedAttendance = await res.json();
     const attendanceMap = {};
 
     savedAttendance.forEach(record => {
@@ -357,6 +376,7 @@ async function loadAttendanceForEvent() {
     if (savedAttendance.length > 0) {
       setMessage(attendanceMessage, "Saved attendance loaded.", false);
     }
+
   } catch (err) {
     console.error("Failed to load saved attendance", err);
     setMessage(attendanceMessage, "Could not load saved attendance.", true);
@@ -399,6 +419,7 @@ async function saveAttendance() {
   try {
     const res = await fetch(`${API_BASE}/attendance`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
@@ -416,8 +437,8 @@ async function saveAttendance() {
     }
 
     setMessage(attendanceMessage, "✅ Attendance saved / updated.", false);
-
     await loadAttendanceForEvent();
+
   } catch (err) {
     setMessage(attendanceMessage, "Could not save attendance.", true);
   }
@@ -428,6 +449,15 @@ async function saveAttendance() {
    ========================= */
 async function addPlayer() {
   addPlayerMessage.textContent = "";
+
+  if (currentUser?.RoleName === "MainCoach") {
+    setMessage(
+      addPlayerMessage,
+      "Access denied. Only Admin and Team Mom can add players.",
+      true
+    );
+    return;
+  }
 
   const firstName = document.getElementById("newFirstName").value.trim();
   const lastName = document.getElementById("newLastName").value.trim();
@@ -440,6 +470,7 @@ async function addPlayer() {
   try {
     const res = await fetch(`${API_BASE}/players`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
@@ -460,8 +491,8 @@ async function addPlayer() {
     document.getElementById("newLastName").value = "";
 
     setMessage(addPlayerMessage, "✅ Player added.", false);
-
     await loadPlayers();
+
   } catch (err) {
     setMessage(addPlayerMessage, "Server error adding player.", true);
   }
@@ -470,7 +501,16 @@ async function addPlayer() {
 /* =========================
    LOGOUT
    ========================= */
-function logout() {
+async function logout() {
+  try {
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      credentials: "include"
+    });
+  } catch (err) {
+    console.error("Logout request failed", err);
+  }
+
   currentUser = null;
   localStorage.removeItem("attendanceUser");
 
@@ -500,14 +540,23 @@ function logout() {
 /* =========================
    RESTORE SESSION
    ========================= */
-function restoreSession() {
-  const savedUser = localStorage.getItem("attendanceUser");
-
-  if (!savedUser) return;
-
+async function restoreSession() {
   try {
-    currentUser = JSON.parse(savedUser);
-    showApp();
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      currentUser = data.user;
+      localStorage.setItem("attendanceUser", JSON.stringify(currentUser));
+      await showApp();
+      return;
+    }
+
+    localStorage.removeItem("attendanceUser");
+
   } catch (err) {
     localStorage.removeItem("attendanceUser");
   }
