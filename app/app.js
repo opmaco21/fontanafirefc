@@ -483,7 +483,13 @@ async function addPlayer() {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      setMessage(addPlayerMessage, data.message || "Could not add player.", true);
+      if (res.status === 401) {
+        setMessage(addPlayerMessage, "Session expired. Please login again.", true);
+      } else if (res.status === 403) {
+        setMessage(addPlayerMessage, "Access denied.", true);
+      } else {
+        setMessage(addPlayerMessage, data.message || "Could not add player.", true);
+      }
       return;
     }
 
