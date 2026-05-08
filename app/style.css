@@ -354,3 +354,7 @@ hr {
     width: 100%;
   }
 }
+.player-row.status-clear {
+  background: #eef2f7;
+  border-left: 5px solid #6b7280;
+}
