@@ -1,3 +1,17 @@
+/* =========================================================
+   FONTANA FIRE FC ATTENDANCE APP - STYLE.CSS
+   Purpose:
+   Controls the full mobile-friendly design for the login,
+   attendance screen, player list, tabs, buttons, and the
+   new attendance summary / hide completed player tools.
+   ========================================================= */
+
+
+/* =========================================================
+   GLOBAL RESET / BASE SETTINGS
+   Applies consistent sizing across all elements.
+   ========================================================= */
+
 * {
   box-sizing: border-box;
 }
@@ -8,6 +22,12 @@ body {
   background: #f3f4f6;
   color: #1f2933;
 }
+
+
+/* =========================================================
+   TOP HEADER / BRANDING
+   Black header with orange club accent border.
+   ========================================================= */
 
 .topbar {
   background: #111;
@@ -39,6 +59,12 @@ body {
   font-size: 14px;
 }
 
+
+/* =========================================================
+   MAIN PAGE LAYOUT
+   Centers the app card and keeps it mobile friendly.
+   ========================================================= */
+
 .container {
   max-width: 620px;
   margin: 28px auto;
@@ -49,12 +75,18 @@ body {
   background: #fff;
   border-radius: 18px;
   padding: 22px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
+
+
+/* =========================================================
+   HEADINGS / TEXT
+   Basic heading spacing and smaller role text.
+   ========================================================= */
 
 h2 {
   margin-top: 0;
@@ -68,6 +100,18 @@ h3 {
   color: #666;
   margin-bottom: 20px;
 }
+
+.message {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   FORM FIELDS
+   Applies to login fields, group/event dropdowns,
+   add player inputs, and attendance dropdowns.
+   ========================================================= */
 
 .form-row {
   display: flex;
@@ -97,6 +141,15 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.15);
 }
 
+
+/* =========================================================
+   BUTTONS
+   Primary button is orange.
+   Secondary button is dark.
+   Used for login, submit attendance, add player, logout,
+   and show/hide completed attendance.
+   ========================================================= */
+
 .btn {
   border: none;
   border-radius: 12px;
@@ -125,59 +178,13 @@ select:focus {
   background: #111;
 }
 
-.message {
-  margin-top: 10px;
-  font-size: 14px;
-}
 
-#playerList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.player-row {
-  display: grid;
-  grid-template-columns: 1fr 145px;
-  gap: 10px;
-  align-items: center;
-  padding: 12px;
-  border: 1px solid #e1e5ea;
-  border-radius: 14px;
-  background: #fafafa;
-}
-
-.player-row span {
-  font-weight: bold;
-}
-
-hr {
-  border: none;
-  border-top: 1px solid #e1e5ea;
-  margin: 22px 0;
-}
-
-@media (max-width: 520px) {
-  .container {
-    margin: 18px auto;
-  }
-
-  .card {
-    padding: 18px;
-    border-radius: 16px;
-  }
-
-  .player-row {
-    grid-template-columns: 1fr;
-  }
-
-  .btn {
-    width: 100%;
-  }
-}
-/* =========================
+/* =========================================================
    PRACTICE / GAMES TABS
-   ========================= */
+   Lets coaches switch between practice attendance and
+   game attendance.
+   ========================================================= */
+
 .tabs {
   display: flex;
   gap: 10px;
@@ -208,6 +215,15 @@ hr {
 .tab.active:hover {
   background: #e86f00;
 }
+
+
+/* =========================================================
+   ATTENDANCE TOOLS
+   New section above player list.
+   Shows live attendance counts and lets coaches hide or
+   show completed attendance rows.
+   ========================================================= */
+
 .attendance-tools {
   background: #ffffff;
   border: 1px solid #ddd;
@@ -228,11 +244,64 @@ hr {
   font-size: 0.95rem;
 }
 
+.hide-marked-toggle input {
+  width: auto;
+  margin-right: 6px;
+}
+
+
+/* =========================================================
+   PLAYER ATTENDANCE LIST
+   Main list of players who still need attendance marked.
+   Each row has the player name and attendance dropdown.
+   ========================================================= */
+
+#playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-row {
+  display: grid;
+  grid-template-columns: 1fr 145px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.player-row span {
+  font-weight: bold;
+}
+
+
+/* =========================================================
+   COMPLETED ATTENDANCE LIST
+   Marked players move here when "Hide marked players" is on.
+   Coaches can expand this section to review or fix mistakes.
+   ========================================================= */
+
 .completed-player-list {
   margin-top: 12px;
   border-top: 2px solid #ddd;
   padding-top: 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+
+
+/* =========================================================
+   ATTENDANCE STATUS COLORS
+   Color codes rows after a player is marked.
+   Present = green
+   Absent = red
+   Excused = yellow
+   ========================================================= */
 
 .player-row.status-present {
   background: #e6f4ea;
@@ -247,4 +316,41 @@ hr {
 .player-row.status-excused {
   background: #fff8e1;
   border-left: 5px solid #f9a825;
+}
+
+
+/* =========================================================
+   DIVIDER LINE
+   Separates attendance section from add player/logout area.
+   ========================================================= */
+
+hr {
+  border: none;
+  border-top: 1px solid #e1e5ea;
+  margin: 22px 0;
+}
+
+
+/* =========================================================
+   MOBILE RESPONSIVE DESIGN
+   Makes player rows stack on smaller phone screens.
+   ========================================================= */
+
+@media (max-width: 520px) {
+  .container {
+    margin: 18px auto;
+  }
+
+  .card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .player-row {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }
