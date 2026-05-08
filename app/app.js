@@ -31,6 +31,12 @@ const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
 const addPlayerSection = document.getElementById("addPlayerSection");
 
+// Attendance summary / hide completed tools
+const attendanceSummary = document.getElementById("attendanceSummary");
+const hideMarkedToggle = document.getElementById("hideMarkedToggle");
+const showCompletedBtn = document.getElementById("showCompletedBtn");
+const completedPlayerList = document.getElementById("completedPlayerList");
+
 /* =========================
    APP STATE
    ========================= */
@@ -71,6 +77,19 @@ if (gamesTab) {
     setActiveTab();
     await loadEvents();
     clearPlayerAttendanceSelections();
+  });
+}
+
+if (hideMarkedToggle) {
+  hideMarkedToggle.addEventListener("change", updateAttendanceDisplay);
+}
+
+if (showCompletedBtn) {
+  showCompletedBtn.addEventListener("click", () => {
+    if (!completedPlayerList) return;
+
+    completedPlayerList.classList.toggle("hidden");
+    updateAttendanceDisplay();
   });
 }
 
@@ -299,9 +318,15 @@ async function loadPlayers() {
 
     playerList.innerHTML = "";
 
+    if (completedPlayerList) {
+      completedPlayerList.innerHTML = "";
+      completedPlayerList.classList.add("hidden");
+    }
+
     players.forEach(player => {
       const row = document.createElement("div");
       row.className = "player-row";
+      row.dataset.status = "";
 
       row.innerHTML = `
         <span>${player.FirstName} ${player.LastName}</span>
@@ -314,8 +339,19 @@ async function loadPlayers() {
         </select>
       `;
 
+      const select = row.querySelector("select");
+
+      if (select) {
+        select.addEventListener("change", () => {
+          row.dataset.status = select.value;
+          updateAttendanceDisplay();
+        });
+      }
+
       playerList.appendChild(row);
     });
+
+    updateAttendanceDisplay();
 
     if (eventSelect.value) {
       await loadAttendanceForEvent();
@@ -330,15 +366,30 @@ async function loadPlayers() {
    CLEAR ATTENDANCE SELECTIONS
    ========================= */
 function clearPlayerAttendanceSelections() {
-  const selects = document.querySelectorAll("#playerList select");
+  const selects = document.querySelectorAll(
+    "#playerList select, #completedPlayerList select"
+  );
 
   selects.forEach(select => {
     select.value = "";
+
+    const row = select.closest(".player-row");
+
+    if (row) {
+      row.dataset.status = "";
+      row.classList.remove("status-present", "status-absent", "status-excused");
+    }
   });
+
+  if (completedPlayerList) {
+    completedPlayerList.classList.add("hidden");
+  }
 
   if (attendanceMessage) {
     attendanceMessage.textContent = "";
   }
+
+  updateAttendanceDisplay();
 }
 
 /* =========================
@@ -363,7 +414,9 @@ async function loadAttendanceForEvent() {
       attendanceMap[record.PlayerID] = record.AttendanceStatus;
     });
 
-    const playerSelects = document.querySelectorAll("#playerList select");
+    const playerSelects = document.querySelectorAll(
+      "#playerList select, #completedPlayerList select"
+    );
 
     playerSelects.forEach(select => {
       const playerId = select.dataset.playerId;
@@ -371,7 +424,15 @@ async function loadAttendanceForEvent() {
       if (attendanceMap[playerId]) {
         select.value = attendanceMap[playerId];
       }
+
+      const row = select.closest(".player-row");
+
+      if (row) {
+        row.dataset.status = select.value;
+      }
     });
+
+    updateAttendanceDisplay();
 
     if (savedAttendance.length > 0) {
       setMessage(attendanceMessage, "Saved attendance loaded.", false);
@@ -380,6 +441,80 @@ async function loadAttendanceForEvent() {
   } catch (err) {
     console.error("Failed to load saved attendance", err);
     setMessage(attendanceMessage, "Could not load saved attendance.", true);
+  }
+}
+
+/* =========================
+   UPDATE ATTENDANCE DISPLAY
+   Updates:
+   - Present / Absent / Excused / Remaining counts
+   - Row colors
+   - Moves marked players to completed section
+   ========================= */
+function updateAttendanceDisplay() {
+  const playerList = document.getElementById("playerList");
+  if (!playerList) return;
+
+  const allRows = Array.from(
+    document.querySelectorAll("#playerList .player-row, #completedPlayerList .player-row")
+  );
+
+  let present = 0;
+  let absent = 0;
+  let excused = 0;
+  let remaining = 0;
+  let completed = 0;
+
+  allRows.forEach(row => {
+    const select = row.querySelector("select");
+    const status = select ? select.value : "";
+
+    row.dataset.status = status;
+    row.classList.remove("status-present", "status-absent", "status-excused");
+
+    if (status === "Present") {
+      present++;
+      completed++;
+      row.classList.add("status-present");
+    } else if (status === "Absent") {
+      absent++;
+      completed++;
+      row.classList.add("status-absent");
+    } else if (status === "Excused") {
+      excused++;
+      completed++;
+      row.classList.add("status-excused");
+    } else {
+      remaining++;
+    }
+  });
+
+  if (attendanceSummary) {
+    attendanceSummary.textContent =
+      `Present: ${present} | Absent: ${absent} | Excused: ${excused} | Remaining: ${remaining}`;
+  }
+
+  const hideMarked = hideMarkedToggle ? hideMarkedToggle.checked : true;
+
+  allRows.forEach(row => {
+    const select = row.querySelector("select");
+    const status = select ? select.value : "";
+
+    if (status && hideMarked && completedPlayerList) {
+      completedPlayerList.appendChild(row);
+    } else {
+      playerList.appendChild(row);
+    }
+  });
+
+  if (showCompletedBtn) {
+    const completedHidden = completedPlayerList
+      ? completedPlayerList.classList.contains("hidden")
+      : true;
+
+    showCompletedBtn.textContent = completedHidden
+      ? `Show Completed Attendance (${completed})`
+      : `Hide Completed Attendance (${completed})`;
   }
 }
 
@@ -396,7 +531,10 @@ async function saveAttendance() {
     return;
   }
 
-  const rows = document.querySelectorAll("#playerList select");
+  const rows = document.querySelectorAll(
+    "#playerList select, #completedPlayerList select"
+  );
+
   const attendance = [];
 
   rows.forEach(row => {
@@ -535,9 +673,17 @@ async function logout() {
   eventSelect.innerHTML = `<option value="">Select event</option>`;
 
   const playerList = document.getElementById("playerList");
+
   if (playerList) {
     playerList.innerHTML = "";
   }
+
+  if (completedPlayerList) {
+    completedPlayerList.innerHTML = "";
+    completedPlayerList.classList.add("hidden");
+  }
+
+  updateAttendanceDisplay();
 
   if (attendanceMessage) attendanceMessage.textContent = "";
   if (addPlayerMessage) addPlayerMessage.textContent = "";
