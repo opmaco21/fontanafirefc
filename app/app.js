@@ -344,6 +344,7 @@ async function loadPlayers() {
       if (select) {
         select.addEventListener("change", () => {
           row.dataset.status = select.value;
+          saveAttendanceDraft();
           updateAttendanceDisplay();
         });
       }
@@ -393,7 +394,83 @@ function clearPlayerAttendanceSelections() {
 }
 
 /* =========================
+   LOCAL ATTENDANCE DRAFTS
+   Saves unfinished attendance on this browser/device.
+   SQL is only updated after Submit Attendance is clicked.
+   This keeps future SQL/Excel sync clean.
+   ========================= */
+
+function getDraftKey(eventId) {
+  return `attendanceDraft_event_${eventId}`;
+}
+
+function saveAttendanceDraft() {
+  const eventId = eventSelect.value;
+
+  if (!eventId) return;
+
+  const selects = document.querySelectorAll(
+    "#playerList select, #completedPlayerList select"
+  );
+
+  const draft = {};
+
+  selects.forEach(select => {
+    const playerId = select.dataset.playerId;
+    const status = select.value;
+
+    if (playerId && status) {
+      draft[playerId] = status;
+    }
+  });
+
+  localStorage.setItem(getDraftKey(eventId), JSON.stringify(draft));
+}
+
+function loadAttendanceDraft(eventId) {
+  const savedDraft = localStorage.getItem(getDraftKey(eventId));
+
+  if (!savedDraft) return false;
+
+  try {
+    const draft = JSON.parse(savedDraft);
+
+    const selects = document.querySelectorAll(
+      "#playerList select, #completedPlayerList select"
+    );
+
+    selects.forEach(select => {
+      const playerId = select.dataset.playerId;
+
+      if (draft[playerId]) {
+        select.value = draft[playerId];
+
+        const row = select.closest(".player-row");
+
+        if (row) {
+          row.dataset.status = select.value;
+        }
+      }
+    });
+
+    updateAttendanceDisplay();
+    return true;
+
+  } catch (err) {
+    console.error("Could not load attendance draft", err);
+    return false;
+  }
+}
+
+function clearAttendanceDraft(eventId) {
+  if (!eventId) return;
+  localStorage.removeItem(getDraftKey(eventId));
+}
+
+/* =========================
    LOAD SAVED ATTENDANCE
+   Loads saved SQL attendance first.
+   Then restores local draft if one exists for the same event.
    ========================= */
 async function loadAttendanceForEvent() {
   const eventId = eventSelect.value;
@@ -434,7 +511,15 @@ async function loadAttendanceForEvent() {
 
     updateAttendanceDisplay();
 
-    if (savedAttendance.length > 0) {
+    const draftRestored = loadAttendanceDraft(eventId);
+
+    if (draftRestored) {
+      setMessage(
+        attendanceMessage,
+        "Draft restored. Review and submit when ready.",
+        false
+      );
+    } else if (savedAttendance.length > 0) {
       setMessage(attendanceMessage, "Saved attendance loaded.", false);
     }
 
@@ -520,6 +605,8 @@ function updateAttendanceDisplay() {
 
 /* =========================
    SAVE / UPDATE ATTENDANCE
+   Saves final attendance to SQL through Render API.
+   After SQL saves successfully, local draft is cleared.
    ========================= */
 async function saveAttendance() {
   attendanceMessage.textContent = "";
@@ -573,6 +660,8 @@ async function saveAttendance() {
       setMessage(attendanceMessage, data.message || "Error saving attendance.", true);
       return;
     }
+
+    clearAttendanceDraft(eventId);
 
     setMessage(attendanceMessage, "✅ Attendance saved / updated.", false);
     await loadAttendanceForEvent();
