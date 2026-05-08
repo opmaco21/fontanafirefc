@@ -337,10 +337,10 @@ async function loadPlayers() {
 
         <select data-player-id="${player.PlayerID}">
           <option value="">Select</option>
-<option value="Present">Present</option>
-<option value="Absent">Absent</option>
-<option value="Excused">Excused</option>
-<option value="Clear">Remove / Reset</option>
+          <option value="Present">Present</option>
+          <option value="Absent">Absent</option>
+          <option value="Excused">Excused</option>
+          <option value="Clear">Remove / Reset</option>
         </select>
       `;
 
@@ -353,7 +353,15 @@ async function loadPlayers() {
           updateAttendanceDisplay();
 
           if (attendanceMessage) {
-            setMessage(attendanceMessage, "Draft saved automatically.", false);
+            if (select.value === "Clear") {
+              setMessage(
+                attendanceMessage,
+                "Reset selected. Submit attendance to remove this saved status.",
+                false
+              );
+            } else {
+              setMessage(attendanceMessage, "Draft saved automatically.", false);
+            }
           }
         });
       }
@@ -405,7 +413,12 @@ function clearPlayerAttendanceSelections() {
 
     if (row) {
       row.dataset.status = "";
-      row.classList.remove("status-present", "status-absent", "status-excused");
+      row.classList.remove(
+        "status-present",
+        "status-absent",
+        "status-excused",
+        "status-clear"
+      );
     }
   });
 
@@ -448,7 +461,12 @@ function saveAttendanceDraft() {
     const playerId = select.dataset.playerId;
     const status = select.value;
 
-    if (playerId && status) {
+    /*
+      Save every player, including blank Select.
+      This prevents an older draft status from coming back
+      if the coach changes a player back to Select.
+    */
+    if (playerId) {
       draft[playerId] = status;
     }
   });
@@ -471,7 +489,10 @@ function loadAttendanceDraft(eventId) {
     selects.forEach(select => {
       const playerId = select.dataset.playerId;
 
-      if (draft[playerId]) {
+      /*
+        Use hasOwnProperty so blank Select values can restore too.
+      */
+      if (Object.prototype.hasOwnProperty.call(draft, playerId)) {
         select.value = draft[playerId];
 
         const row = select.closest(".player-row");
@@ -584,6 +605,7 @@ async function loadAttendanceForEvent() {
    - Present / Absent / Excused / Remaining counts
    - Row colors
    - Moves marked players to completed section
+   - Includes Remove / Reset as an action item
    ========================= */
 function updateAttendanceDisplay() {
   const playerList = document.getElementById("playerList");
@@ -604,7 +626,12 @@ function updateAttendanceDisplay() {
     const status = select ? select.value : "";
 
     row.dataset.status = status;
-    row.classList.remove("status-present", "status-absent", "status-excused");
+    row.classList.remove(
+      "status-present",
+      "status-absent",
+      "status-excused",
+      "status-clear"
+    );
 
     if (status === "Present") {
       present++;
@@ -618,6 +645,9 @@ function updateAttendanceDisplay() {
       excused++;
       completed++;
       row.classList.add("status-excused");
+    } else if (status === "Clear") {
+      completed++;
+      row.classList.add("status-clear");
     } else {
       remaining++;
     }
@@ -677,6 +707,11 @@ async function saveAttendance() {
     const playerId = row.dataset.playerId;
     const status = row.value;
 
+    /*
+      Send Present / Absent / Excused / Clear.
+      Blank Select is not sent.
+      To remove a saved SQL record, use Remove / Reset.
+    */
     if (status) {
       attendance.push({
         playerId: Number(playerId),
@@ -686,7 +721,11 @@ async function saveAttendance() {
   });
 
   if (attendance.length === 0) {
-    setMessage(attendanceMessage, "Select attendance for at least one player.", true);
+    setMessage(
+      attendanceMessage,
+      "Select Present, Absent, Excused, or Remove / Reset for at least one player.",
+      true
+    );
     return;
   }
 
