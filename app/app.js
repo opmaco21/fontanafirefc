@@ -3,7 +3,7 @@
    Frontend JavaScript
    ========================================================= */
 
-const API_BASE = "http://76.86.134.157:3000/api";
+const API_BASE = "https://attendance-api-xb3v.onrender.com/api";
 
 /* =========================
    HTML ELEMENT REFERENCES
