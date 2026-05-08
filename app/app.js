@@ -280,19 +280,6 @@ async function loadEvents() {
 
     filteredEvents.forEach(event => addEventOption(event));
 
-    const lastSelectedEventId = getSelectedEvent();
-
-    if (lastSelectedEventId) {
-      const matchingOption = eventSelect.querySelector(
-        `option[value="${lastSelectedEventId}"]`
-      );
-
-      if (matchingOption) {
-        eventSelect.value = lastSelectedEventId;
-        await loadAttendanceForEvent();
-      }
-    }
-
   } catch (err) {
     console.error("Failed to load events", err);
   }
@@ -363,6 +350,10 @@ async function loadPlayers() {
           row.dataset.status = select.value;
           saveAttendanceDraft();
           updateAttendanceDisplay();
+
+          if (attendanceMessage) {
+            setMessage(attendanceMessage, "Draft saved automatically.", false);
+          }
         });
       }
 
@@ -370,6 +361,24 @@ async function loadPlayers() {
     });
 
     updateAttendanceDisplay();
+
+    /*
+      Restore selected event AFTER player rows exist.
+      This fixes refresh/app-close draft restore timing.
+    */
+    const lastSelectedEventId = getSelectedEvent();
+
+    if (lastSelectedEventId) {
+      const matchingOption = eventSelect.querySelector(
+        `option[value="${lastSelectedEventId}"]`
+      );
+
+      if (matchingOption) {
+        eventSelect.value = lastSelectedEventId;
+        await loadAttendanceForEvent();
+        return;
+      }
+    }
 
     if (eventSelect.value) {
       await loadAttendanceForEvent();
@@ -425,6 +434,8 @@ function saveAttendanceDraft() {
   const eventId = eventSelect.value;
 
   if (!eventId) return;
+
+  saveSelectedEvent();
 
   const selects = document.querySelectorAll(
     "#playerList select, #completedPlayerList select"
