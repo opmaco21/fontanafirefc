@@ -337,9 +337,10 @@ async function loadPlayers() {
 
         <select data-player-id="${player.PlayerID}">
           <option value="">Select</option>
-          <option value="Present">Present</option>
-          <option value="Absent">Absent</option>
-          <option value="Excused">Excused</option>
+<option value="Present">Present</option>
+<option value="Absent">Absent</option>
+<option value="Excused">Excused</option>
+<option value="Clear">Remove / Reset</option>
         </select>
       `;
 
