@@ -208,3 +208,43 @@ hr {
 .tab.active:hover {
   background: #e86f00;
 }
+.attendance-tools {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.attendance-summary {
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.hide-marked-toggle {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.completed-player-list {
+  margin-top: 12px;
+  border-top: 2px solid #ddd;
+  padding-top: 12px;
+}
+
+.player-row.status-present {
+  background: #e6f4ea;
+  border-left: 5px solid #2e7d32;
+}
+
+.player-row.status-absent {
+  background: #fdecea;
+  border-left: 5px solid #c62828;
+}
+
+.player-row.status-excused {
+  background: #fff8e1;
+  border-left: 5px solid #f9a825;
+}
