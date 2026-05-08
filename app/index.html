@@ -80,10 +80,31 @@
         </div>
 
         <!-- PLAYER ATTENDANCE LIST -->
-        <div class="form-row">
-          <h3>Players</h3>
-          <div id="playerList"></div>
-        </div>
+<div class="form-row">
+  <h3>Players</h3>
+
+  <!-- ATTENDANCE SUMMARY / HIDE COMPLETED TOOLS -->
+  <div class="attendance-tools">
+    <div id="attendanceSummary" class="attendance-summary">
+      Present: 0 | Absent: 0 | Excused: 0 | Remaining: 0
+    </div>
+
+    <label class="hide-marked-toggle">
+      <input type="checkbox" id="hideMarkedToggle" checked />
+      Hide marked players
+    </label>
+
+    <button id="showCompletedBtn" type="button" class="btn btn-secondary">
+      Show Completed Attendance (0)
+    </button>
+  </div>
+
+  <!-- PLAYERS STILL NEEDING ATTENDANCE -->
+  <div id="playerList"></div>
+
+  <!-- COMPLETED / MARKED PLAYERS -->
+  <div id="completedPlayerList" class="completed-player-list hidden"></div>
+</div>
 
         <!-- SUBMIT ATTENDANCE -->
         <button id="saveAttendanceBtn" class="btn btn-primary">
