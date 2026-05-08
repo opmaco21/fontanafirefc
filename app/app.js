@@ -49,7 +49,11 @@ let currentTab = "Practice";
 loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
 saveAttendanceBtn.addEventListener("click", saveAttendance);
-eventSelect.addEventListener("change", loadAttendanceForEvent);
+
+eventSelect.addEventListener("change", async () => {
+  saveSelectedEvent();
+  await loadAttendanceForEvent();
+});
 
 if (addPlayerBtn) {
   addPlayerBtn.addEventListener("click", addPlayer);
@@ -276,6 +280,19 @@ async function loadEvents() {
 
     filteredEvents.forEach(event => addEventOption(event));
 
+    const lastSelectedEventId = getSelectedEvent();
+
+    if (lastSelectedEventId) {
+      const matchingOption = eventSelect.querySelector(
+        `option[value="${lastSelectedEventId}"]`
+      );
+
+      if (matchingOption) {
+        eventSelect.value = lastSelectedEventId;
+        await loadAttendanceForEvent();
+      }
+    }
+
   } catch (err) {
     console.error("Failed to load events", err);
   }
@@ -465,6 +482,26 @@ function loadAttendanceDraft(eventId) {
 function clearAttendanceDraft(eventId) {
   if (!eventId) return;
   localStorage.removeItem(getDraftKey(eventId));
+}
+
+/* =========================
+   REMEMBER SELECTED EVENT
+   Saves the selected event on this browser/device.
+   This lets the app reopen the same event after refresh
+   or if the coach accidentally closes the browser.
+   ========================= */
+
+function saveSelectedEvent() {
+  if (!eventSelect || !eventSelect.value) return;
+  localStorage.setItem("lastSelectedEventId", eventSelect.value);
+}
+
+function getSelectedEvent() {
+  return localStorage.getItem("lastSelectedEventId");
+}
+
+function clearSelectedEvent() {
+  localStorage.removeItem("lastSelectedEventId");
 }
 
 /* =========================
@@ -746,6 +783,7 @@ async function logout() {
 
   currentUser = null;
   localStorage.removeItem("attendanceUser");
+  clearSelectedEvent();
 
   loginScreen.classList.remove("hidden");
   appScreen.classList.add("hidden");
