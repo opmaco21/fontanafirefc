@@ -32,7 +32,6 @@ const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
 const addPlayerSection = document.getElementById("addPlayerSection");
 
-// Attendance summary / hide completed tools
 const attendanceSummary = document.getElementById("attendanceSummary");
 const hideMarkedToggle = document.getElementById("hideMarkedToggle");
 const showCompletedBtn = document.getElementById("showCompletedBtn");
@@ -47,18 +46,28 @@ let currentTab = "Practice";
 /* =========================
    EVENT LISTENERS
    ========================= */
-loginBtn.addEventListener("click", login);
-logoutBtn.addEventListener("click", logout);
-saveAttendanceBtn.addEventListener("click", saveAttendance);
+if (loginBtn) {
+  loginBtn.addEventListener("click", login);
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", logout);
+}
+
+if (saveAttendanceBtn) {
+  saveAttendanceBtn.addEventListener("click", saveAttendance);
+}
 
 if (cancelEventBtn) {
   cancelEventBtn.addEventListener("click", cancelSelectedEvent);
 }
 
-eventSelect.addEventListener("change", async () => {
-  saveSelectedEvent();
-  await loadAttendanceForEvent();
-});
+if (eventSelect) {
+  eventSelect.addEventListener("change", async () => {
+    saveSelectedEvent();
+    await loadAttendanceForEvent();
+  });
+}
 
 if (addPlayerBtn) {
   addPlayerBtn.addEventListener("click", addPlayer);
@@ -108,6 +117,7 @@ if (showCompletedBtn) {
    ========================= */
 function setMessage(el, text, isError = false) {
   if (!el) return;
+
   el.textContent = text;
   el.style.color = isError ? "#c62828" : "#2e7d32";
 }
@@ -133,10 +143,15 @@ function applyRolePermissions() {
    LOGIN
    ========================= */
 async function login() {
-  loginMessage.textContent = "";
+  if (loginMessage) {
+    loginMessage.textContent = "";
+  }
 
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+
+  const email = emailInput ? emailInput.value.trim() : "";
+  const password = passwordInput ? passwordInput.value.trim() : "";
 
   if (!email || !password) {
     setMessage(loginMessage, "Enter email and password.", true);
@@ -166,6 +181,7 @@ async function login() {
     await showApp();
 
   } catch (err) {
+    console.error("Login error:", err);
     setMessage(loginMessage, "Could not connect to server.", true);
   }
 }
@@ -174,11 +190,23 @@ async function login() {
    SHOW MAIN APP
    ========================= */
 async function showApp() {
-  welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
-  roleText.textContent = `${currentUser.RoleName}`;
+  if (!currentUser) return;
 
-  loginScreen.classList.add("hidden");
-  appScreen.classList.remove("hidden");
+  if (welcomeText) {
+    welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
+  }
+
+  if (roleText) {
+    roleText.textContent = `${currentUser.RoleName}`;
+  }
+
+  if (loginScreen) {
+    loginScreen.classList.add("hidden");
+  }
+
+  if (appScreen) {
+    appScreen.classList.remove("hidden");
+  }
 
   applyRolePermissions();
   setActiveTab();
@@ -253,13 +281,10 @@ function getEventDateParts(eventDateValue) {
 
 /* =========================
    LOAD EVENTS
-
-   Notes:
-   - All Groups loads general event list from /api/events.
-   - Specific group loads /api/events?groupId=ID.
-   - This keeps group-specific attendance accurate.
    ========================= */
 async function loadEvents() {
+  if (!eventSelect) return;
+
   eventSelect.innerHTML = `<option value="">Select event</option>`;
 
   try {
@@ -304,6 +329,8 @@ async function loadEvents() {
    ADD EVENT TO DROPDOWN
    ========================= */
 function addEventOption(event) {
+  if (!eventSelect) return;
+
   const option = document.createElement("option");
   option.value = event.EventID;
 
@@ -332,10 +359,6 @@ function addEventOption(event) {
 
 /* =========================
    LOAD PLAYERS
-
-   Notes:
-   - All Groups loads all active players.
-   - Specific group loads only players in that age group.
    ========================= */
 async function loadPlayers() {
   try {
@@ -413,13 +436,9 @@ async function loadPlayers() {
 
     updateAttendanceDisplay();
 
-    /*
-      Restore selected event AFTER player rows exist.
-      This fixes refresh/app-close draft restore timing.
-    */
     const lastSelectedEventId = getSelectedEvent();
 
-    if (lastSelectedEventId) {
+    if (lastSelectedEventId && eventSelect) {
       const matchingOption = eventSelect.querySelector(
         `option[value="${lastSelectedEventId}"]`
       );
@@ -431,7 +450,7 @@ async function loadPlayers() {
       }
     }
 
-    if (eventSelect.value) {
+    if (eventSelect && eventSelect.value) {
       await loadAttendanceForEvent();
     }
 
@@ -478,16 +497,14 @@ function clearPlayerAttendanceSelections() {
 
 /* =========================
    LOCAL ATTENDANCE DRAFTS
-   Saves unfinished attendance on this browser/device.
-   SQL is only updated after Submit Attendance is clicked.
-   This keeps future SQL/Excel sync clean.
    ========================= */
-
 function getDraftKey(eventId) {
   return `attendanceDraft_event_${eventId}`;
 }
 
 function saveAttendanceDraft() {
+  if (!eventSelect) return;
+
   const eventId = eventSelect.value;
 
   if (!eventId) return;
@@ -555,7 +572,6 @@ function clearAttendanceDraft(eventId) {
 /* =========================
    REMEMBER SELECTED EVENT
    ========================= */
-
 function saveSelectedEvent() {
   if (!eventSelect || !eventSelect.value) return;
   localStorage.setItem("lastSelectedEventId", eventSelect.value);
@@ -573,6 +589,8 @@ function clearSelectedEvent() {
    LOAD SAVED ATTENDANCE
    ========================= */
 async function loadAttendanceForEvent() {
+  if (!eventSelect) return;
+
   const eventId = eventSelect.value;
 
   clearPlayerAttendanceSelections();
@@ -717,7 +735,11 @@ function updateAttendanceDisplay() {
    SAVE / UPDATE ATTENDANCE
    ========================= */
 async function saveAttendance() {
-  attendanceMessage.textContent = "";
+  if (attendanceMessage) {
+    attendanceMessage.textContent = "";
+  }
+
+  if (!eventSelect) return;
 
   const eventId = eventSelect.value;
 
@@ -736,11 +758,6 @@ async function saveAttendance() {
     const playerId = row.dataset.playerId;
     const status = row.value;
 
-    /*
-      Send Present / Absent / Excused / Cancelled / Clear.
-      Blank Select is not sent.
-      Remove / Reset sends Clear and deletes saved SQL attendance.
-    */
     if (status) {
       attendance.push({
         playerId: Number(playerId),
@@ -784,27 +801,13 @@ async function saveAttendance() {
     await loadAttendanceForEvent();
 
   } catch (err) {
+    console.error("Save attendance error:", err);
     setMessage(attendanceMessage, "Could not save attendance.", true);
   }
 }
 
 /* =========================
    CANCEL SELECTED EVENT
-
-   Purpose:
-   - Cancels the selected event.
-   - Backend handles the correct cancellation logic.
-
-   Backend rules:
-   - Practice:
-       Marks active players in that practice GroupID as Cancelled.
-
-   - Game / Team Event:
-       Marks players assigned in dbo.EventPlayers as Cancelled.
-
-   Important:
-   - Frontend does not decide which players to cancel.
-   - SQL/backend remain the source of truth.
    ========================= */
 async function cancelSelectedEvent() {
   if (!eventSelect || !eventSelect.value) {
@@ -855,9 +858,14 @@ async function cancelSelectedEvent() {
 
     clearAttendanceDraft(eventId);
 
+    const cancelledPlayers =
+      data.event && data.event.CancelledPlayers
+        ? data.event.CancelledPlayers
+        : 0;
+
     setMessage(
       attendanceMessage,
-      `✅ Event cancelled. ${data.event?.CancelledPlayers || 0} player(s) marked Cancelled.`,
+      `✅ Event cancelled. ${cancelledPlayers} player(s) marked Cancelled.`,
       false
     );
 
@@ -879,9 +887,11 @@ async function cancelSelectedEvent() {
    ADD PLAYER
    ========================= */
 async function addPlayer() {
-  addPlayerMessage.textContent = "";
+  if (addPlayerMessage) {
+    addPlayerMessage.textContent = "";
+  }
 
-  if (currentUser?.RoleName === "MainCoach") {
+  if (currentUser && currentUser.RoleName === "MainCoach") {
     setMessage(
       addPlayerMessage,
       "Access denied. Only Admin and Team Mom can add players.",
@@ -890,8 +900,11 @@ async function addPlayer() {
     return;
   }
 
-  const firstName = document.getElementById("newFirstName").value.trim();
-  const lastName = document.getElementById("newLastName").value.trim();
+  const firstNameInput = document.getElementById("newFirstName");
+  const lastNameInput = document.getElementById("newLastName");
+
+  const firstName = firstNameInput ? firstNameInput.value.trim() : "";
+  const lastName = lastNameInput ? lastNameInput.value.trim() : "";
 
   if (!firstName || !lastName) {
     setMessage(addPlayerMessage, "Enter first and last name.", true);
@@ -924,13 +937,14 @@ async function addPlayer() {
       return;
     }
 
-    document.getElementById("newFirstName").value = "";
-    document.getElementById("newLastName").value = "";
+    if (firstNameInput) firstNameInput.value = "";
+    if (lastNameInput) lastNameInput.value = "";
 
     setMessage(addPlayerMessage, "✅ Player added.", false);
     await loadPlayers();
 
   } catch (err) {
+    console.error("Add player error:", err);
     setMessage(addPlayerMessage, "Server error adding player.", true);
   }
 }
@@ -952,19 +966,31 @@ async function logout() {
   localStorage.removeItem("attendanceUser");
   clearSelectedEvent();
 
-  loginScreen.classList.remove("hidden");
-  appScreen.classList.add("hidden");
+  if (loginScreen) {
+    loginScreen.classList.remove("hidden");
+  }
 
-  document.getElementById("email").value = "";
-  document.getElementById("password").value = "";
+  if (appScreen) {
+    appScreen.classList.add("hidden");
+  }
 
-  loginMessage.textContent = "";
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+
+  if (emailInput) emailInput.value = "";
+  if (passwordInput) passwordInput.value = "";
+
+  if (loginMessage) {
+    loginMessage.textContent = "";
+  }
 
   if (groupSelect) {
     groupSelect.innerHTML = `<option value="">All Groups</option>`;
   }
 
-  eventSelect.innerHTML = `<option value="">Select event</option>`;
+  if (eventSelect) {
+    eventSelect.innerHTML = `<option value="">Select event</option>`;
+  }
 
   const playerList = document.getElementById("playerList");
 
@@ -1004,21 +1030,11 @@ async function restoreSession() {
     localStorage.removeItem("attendanceUser");
 
   } catch (err) {
+    console.error("Restore session error:", err);
     localStorage.removeItem("attendanceUser");
   }
 }
-/* =========================
-   APP VERSION DISPLAY
-   ========================= */
-.app-version {
-  margin: 18px 0 12px;
-  padding: 10px;
-  text-align: center;
-  font-size: 12px;
-  color: #666;
-  background: #f5f5f5;
-  border-radius: 10px;
-}
+
 /* =========================
    START APP
    ========================= */
