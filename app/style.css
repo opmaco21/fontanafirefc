@@ -444,3 +444,49 @@ hr {
     width: 100%;
   }
 }
+
+/* =========================================================
+   LOGIN LOADING CUE
+   Shows an animated soccer ball while login is processing.
+   ========================================================= */
+
+.login-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-weight: bold;
+  color: #f57c00;
+}
+
+.soccer-ball {
+  display: inline-block;
+  font-size: 24px;
+  animation: soccer-bounce 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes soccer-bounce {
+  from {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  to {
+    transform: translateY(-8px) rotate(18deg);
+  }
+}
+
+.btn:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+/* Keeps Team Event field labels visually separated from
+   the input directly above them on mobile and desktop. */
+#teamEventSection > label {
+  margin-top: 10px;
+}
+
+#teamEventSection > label:first-of-type {
+  margin-top: 0;
+}

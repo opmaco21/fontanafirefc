@@ -15,6 +15,8 @@ const loginScreen = document.getElementById("loginScreen");
 const appScreen = document.getElementById("appScreen");
 
 const loginMessage = document.getElementById("loginMessage");
+const loginLoading = document.getElementById("loginLoading");
+const loginBtnText = document.getElementById("loginBtnText");
 const welcomeText = document.getElementById("welcomeText");
 const roleText = document.getElementById("roleText");
 
@@ -52,6 +54,9 @@ const attendanceSummary = document.getElementById("attendanceSummary");
 const hideMarkedToggle = document.getElementById("hideMarkedToggle");
 const showCompletedBtn = document.getElementById("showCompletedBtn");
 const completedPlayerList = document.getElementById("completedPlayerList");
+
+const webVersionText = document.getElementById("webVersionText");
+const apiVersionText = document.getElementById("apiVersionText");
 
 /* =========================
    APP STATE
@@ -175,6 +180,23 @@ function setMessage(el, text, isError = false) {
 }
 
 /* =========================
+   LOGIN LOADING STATE
+   ========================= */
+function setLoginLoading(isLoading) {
+  if (loginBtn) {
+    loginBtn.disabled = isLoading;
+  }
+
+  if (loginBtnText) {
+    loginBtnText.textContent = isLoading ? "Logging in..." : "Login";
+  }
+
+  if (loginLoading) {
+    loginLoading.classList.toggle("hidden", !isLoading);
+  }
+}
+
+/* =========================
    ROLE PERMISSIONS
    ========================= */
 function applyRolePermissions() {
@@ -212,6 +234,9 @@ async function login() {
     return;
   }
 
+  setLoginLoading(true);
+  setMessage(loginMessage, "Connecting to server...", false);
+
   try {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
@@ -237,6 +262,8 @@ async function login() {
   } catch (err) {
     console.error("Login error:", err);
     setMessage(loginMessage, "Could not connect to server.", true);
+  } finally {
+    setLoginLoading(false);
   }
 }
 
@@ -327,7 +354,19 @@ async function loadGroups() {
 
     const groups = await res.json();
 
-    groups.forEach(group => {
+    /*
+      Defensive cleanup:
+      - Keeps only one checkbox/dropdown option per GroupID.
+      - Prevents duplicate age groups from appearing even if
+        the route ever returns repeated rows.
+    */
+    const uniqueGroups = Array.from(
+      new Map(
+        groups.map(group => [String(group.GroupID), group])
+      ).values()
+    );
+
+    uniqueGroups.forEach(group => {
       const option = document.createElement("option");
       option.value = group.GroupID;
       option.textContent = group.GroupName;
@@ -1433,6 +1472,53 @@ async function addPlayer() {
 }
 
 /* =========================
+   LOAD VERSION DISPLAY
+
+   Web version:
+   - Generated automatically by push-website.bat into
+     /app/version.json.
+   - index.html reads it before loading app.js and exposes it
+     as window.WEB_APP_VERSION.
+
+   API version:
+   - Generated automatically by push-backend.bat into the
+     backend version.json file.
+   - Loaded from /api/version.
+   ========================= */
+async function loadVersionDisplay() {
+  const webVersion =
+    window.WEB_APP_VERSION && window.WEB_APP_VERSION.webVersion
+      ? window.WEB_APP_VERSION.webVersion
+      : "web-version-unavailable";
+
+  if (webVersionText) {
+    webVersionText.textContent = webVersion;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/version`, {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (apiVersionText) {
+      apiVersionText.textContent =
+        res.ok && data.success && data.version
+          ? data.version
+          : "api-version-unavailable";
+    }
+
+  } catch (err) {
+    console.error("Could not load API version:", err);
+
+    if (apiVersionText) {
+      apiVersionText.textContent = "api-version-unavailable";
+    }
+  }
+}
+
+/* =========================
    RESTORE SESSION
    ========================= */
 async function restoreSession() {
@@ -1461,4 +1547,5 @@ async function restoreSession() {
 /* =========================
    START APP
    ========================= */
+loadVersionDisplay();
 restoreSession();

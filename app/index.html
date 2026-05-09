@@ -8,8 +8,11 @@
   <!-- PAGE TITLE -->
   <title>Fontana Fire FC Attendance App</title>
 
-  <!-- CSS FILE -->
-  <link rel="stylesheet" href="style.css" />
+  <!-- CSS FILE
+       appLoader below updates this href with the current
+       automatic web build version before app.js is loaded.
+  -->
+  <link id="appStylesheet" rel="stylesheet" href="style.css" />
 </head>
 
 <body>
@@ -46,7 +49,16 @@
         </div>
 
         <!-- LOGIN BUTTON / MESSAGE -->
-        <button id="loginBtn" class="btn btn-primary">Login</button>
+        <button id="loginBtn" class="btn btn-primary">
+          <span id="loginBtnText">Login</span>
+        </button>
+
+        <!-- LOGIN LOADING CUE -->
+        <div id="loginLoading" class="login-loading hidden" aria-live="polite">
+          <span class="soccer-ball" aria-hidden="true">&#9917;</span>
+          <span>Connecting...</span>
+        </div>
+
         <p id="loginMessage" class="message"></p>
       </section>
 
@@ -103,6 +115,7 @@
           <h3>Add Team Event</h3>
 
           <!-- MULTI-GROUP SELECTOR -->
+          <label>Teams Included</label>
           <div class="team-event-group-box">
             <label class="team-event-group-option">
               <input type="checkbox" id="teamEventAllGroups" />
@@ -112,24 +125,30 @@
             <div id="teamEventGroupCheckboxes"></div>
           </div>
 
+          <label for="newTeamEventName">Event Name</label>
           <input
             id="newTeamEventName"
             type="text"
             placeholder="Event name, such as Scrimmage"
           />
 
+          <label for="newTeamEventDate">Event Date</label>
           <input id="newTeamEventDate" type="date" />
 
+          <label for="newTeamEventStartTime">Start Time</label>
           <input id="newTeamEventStartTime" type="time" />
 
+          <label for="newTeamEventEndTime">End Time</label>
           <input id="newTeamEventEndTime" type="time" />
 
+          <label for="newTeamEventLocation">Location</label>
           <input
             id="newTeamEventLocation"
             type="text"
             placeholder="Location"
           />
 
+          <label for="newTeamEventNotes">Notes</label>
           <textarea
             id="newTeamEventNotes"
             placeholder="Notes"
@@ -207,7 +226,8 @@
 
         <!-- APP VERSION -->
         <div class="app-version">
-          Fontana Fire FC Attendance App v0.6.0-test
+          <div>Web App: <span id="webVersionText">loading...</span></div>
+          <div>API: <span id="apiVersionText">loading...</span></div>
         </div>
 
         <!-- LOGOUT BUTTON -->
@@ -216,7 +236,45 @@
     </main>
   </div>
 
-  <!-- JAVASCRIPT FILE -->
-  <script src="app.js?v=11"></script>
+  <!-- AUTOMATIC VERSION LOADER
+       - Reads app/version.json created by push-website.bat
+       - Adds that version to style.css and app.js URLs
+       - Avoids manually changing ?v= numbers in index.html
+  -->
+  <script>
+    (async function loadVersionedAssets() {
+      let versionInfo = {
+        webVersion: "web-dev",
+        buildDate: null
+      };
+
+      try {
+        const response = await fetch("version.json?ts=" + Date.now(), {
+          cache: "no-store"
+        });
+
+        if (response.ok) {
+          versionInfo = await response.json();
+        }
+      } catch (err) {
+        console.warn("Could not load version.json. Using fallback version.", err);
+      }
+
+      window.WEB_APP_VERSION = versionInfo;
+
+      const assetVersion = encodeURIComponent(
+        versionInfo.webVersion || String(Date.now())
+      );
+
+      const stylesheet = document.getElementById("appStylesheet");
+      if (stylesheet) {
+        stylesheet.href = "style.css?v=" + assetVersion;
+      }
+
+      const script = document.createElement("script");
+      script.src = "app.js?v=" + assetVersion;
+      document.body.appendChild(script);
+    })();
+  </script>
 </body>
 </html>
