@@ -26,6 +26,7 @@ const gamesTab = document.getElementById("gamesTab");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
 const cancelEventBtn = document.getElementById("cancelEventBtn");
+const restoreEventBtn = document.getElementById("restoreEventBtn");
 const attendanceMessage = document.getElementById("attendanceMessage");
 
 const addPlayerBtn = document.getElementById("addPlayerBtn");
@@ -62,9 +63,14 @@ if (cancelEventBtn) {
   cancelEventBtn.addEventListener("click", cancelSelectedEvent);
 }
 
+if (restoreEventBtn) {
+  restoreEventBtn.addEventListener("click", restoreSelectedEvent);
+}
+
 if (eventSelect) {
   eventSelect.addEventListener("change", async () => {
     saveSelectedEvent();
+    updateEventActionButtons();
     await loadAttendanceForEvent();
   });
 }
@@ -320,6 +326,8 @@ async function loadEvents() {
 
     filteredEvents.forEach(event => addEventOption(event));
 
+    updateEventActionButtons();
+
   } catch (err) {
     console.error("Failed to load events", err);
   }
@@ -355,6 +363,43 @@ function addEventOption(event) {
   option.dataset.groupId = event.GroupID || "";
 
   eventSelect.appendChild(option);
+}
+
+/* =========================
+   UPDATE EVENT ACTION BUTTONS
+
+   Purpose:
+   - Scheduled events show Cancel Event.
+   - Cancelled events show Restore Event.
+   - No selected event hides both.
+   ========================= */
+function updateEventActionButtons() {
+  if (!eventSelect) return;
+
+  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+  const eventStatus = selectedOption ? selectedOption.dataset.eventStatus : "";
+
+  if (cancelEventBtn) {
+    cancelEventBtn.classList.add("hidden");
+  }
+
+  if (restoreEventBtn) {
+    restoreEventBtn.classList.add("hidden");
+  }
+
+  if (!eventSelect.value || !eventStatus) {
+    return;
+  }
+
+  if (eventStatus === "Cancelled") {
+    if (restoreEventBtn) {
+      restoreEventBtn.classList.remove("hidden");
+    }
+  } else {
+    if (cancelEventBtn) {
+      cancelEventBtn.classList.remove("hidden");
+    }
+  }
 }
 
 /* =========================
@@ -445,12 +490,14 @@ async function loadPlayers() {
 
       if (matchingOption) {
         eventSelect.value = lastSelectedEventId;
+        updateEventActionButtons();
         await loadAttendanceForEvent();
         return;
       }
     }
 
     if (eventSelect && eventSelect.value) {
+      updateEventActionButtons();
       await loadAttendanceForEvent();
     }
 
@@ -875,11 +922,83 @@ async function cancelSelectedEvent() {
       eventSelect.value = eventId;
     }
 
+    updateEventActionButtons();
+
     await loadAttendanceForEvent();
 
   } catch (err) {
     console.error("Error cancelling event:", err);
     setMessage(attendanceMessage, "Server error cancelling event.", true);
+  }
+}
+
+/* =========================
+   RESTORE SELECTED EVENT
+
+   Purpose:
+   - Restores a cancelled event back to Scheduled.
+   - Backend restores previous attendance from backup.
+   - If no previous attendance existed, cancelled rows are removed
+     and players return to Select.
+   ========================= */
+async function restoreSelectedEvent() {
+  if (!eventSelect || !eventSelect.value) {
+    setMessage(attendanceMessage, "Select an event first.", true);
+    return;
+  }
+
+  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+  const eventText = selectedOption ? selectedOption.textContent : "this event";
+
+  const confirmed = confirm(
+    `Restore this cancelled event?\n\n${eventText}\n\nPrevious attendance will be recovered if a backup exists.`
+  );
+
+  if (!confirmed) return;
+
+  const eventId = eventSelect.value;
+
+  try {
+    const res = await fetch(`${API_BASE}/events/${eventId}/restore`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(
+        attendanceMessage,
+        data.message || "Could not restore event.",
+        true
+      );
+      return;
+    }
+
+    clearAttendanceDraft(eventId);
+
+    setMessage(
+      attendanceMessage,
+      "✅ Event restored and previous attendance recovered.",
+      false
+    );
+
+    await loadEvents();
+
+    if (eventSelect) {
+      eventSelect.value = eventId;
+    }
+
+    updateEventActionButtons();
+
+    await loadAttendanceForEvent();
+
+  } catch (err) {
+    console.error("Error restoring event:", err);
+    setMessage(attendanceMessage, "Server error restoring event.", true);
   }
 }
 

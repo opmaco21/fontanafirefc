@@ -78,9 +78,20 @@
             <option value="">Select event</option>
           </select>
 
-          <!-- CANCEL EVENT BUTTON -->
-          <button id="cancelEventBtn" type="button" class="btn btn-danger">
+          <!-- CANCEL EVENT BUTTON
+               Shows only when a Scheduled event is selected.
+               Controlled by app.js updateEventActionButtons().
+          -->
+          <button id="cancelEventBtn" type="button" class="btn btn-danger hidden">
             Cancel Event
+          </button>
+
+          <!-- RESTORE EVENT BUTTON
+               Shows only when a Cancelled event is selected.
+               Controlled by app.js updateEventActionButtons().
+          -->
+          <button id="restoreEventBtn" type="button" class="btn btn-secondary hidden">
+            Restore Event
           </button>
         </div>
 
@@ -145,6 +156,6 @@
   </div>
 
   <!-- JAVASCRIPT FILE -->
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
