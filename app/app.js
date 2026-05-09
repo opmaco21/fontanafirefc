@@ -855,6 +855,14 @@ async function saveAttendance() {
 
 /* =========================
    CANCEL SELECTED EVENT
+
+   Behavior:
+   - If one age group is selected:
+       Cancels only that selected EventID.
+
+   - If All Groups is selected:
+       Sends ?allMatching=1 so the backend can cancel
+       all events on the same date and event type.
    ========================= */
 async function cancelSelectedEvent() {
   if (!eventSelect || !eventSelect.value) {
@@ -863,10 +871,11 @@ async function cancelSelectedEvent() {
   }
 
   const selectedGroupId = groupSelect ? groupSelect.value : "";
+  const allMatchingParam = selectedGroupId ? "" : "?allMatching=1";
 
   if (!selectedGroupId) {
     const continueCancel = confirm(
-      "All Groups is selected.\n\nFor safety, it is better to select a specific age group before cancelling a practice or game.\n\nDo you still want to continue?"
+      "All Groups is selected.\n\nThis will cancel all matching events on the same date and event type for every group.\n\nDo you want to continue?"
     );
 
     if (!continueCancel) return;
@@ -884,7 +893,7 @@ async function cancelSelectedEvent() {
   const eventId = eventSelect.value;
 
   try {
-    const res = await fetch(`${API_BASE}/events/${eventId}/cancel`, {
+    const res = await fetch(`${API_BASE}/events/${eventId}/cancel${allMatchingParam}`, {
       method: "PATCH",
       credentials: "include",
       headers: {
@@ -906,9 +915,10 @@ async function cancelSelectedEvent() {
     clearAttendanceDraft(eventId);
 
     const cancelledPlayers =
-      data.event && data.event.CancelledPlayers
-        ? data.event.CancelledPlayers
-        : 0;
+      data.cancelledPlayers ||
+      data.CancelledPlayers ||
+      (data.event && data.event.CancelledPlayers) ||
+      0;
 
     setMessage(
       attendanceMessage,
@@ -935,11 +945,13 @@ async function cancelSelectedEvent() {
 /* =========================
    RESTORE SELECTED EVENT
 
-   Purpose:
-   - Restores a cancelled event back to Scheduled.
-   - Backend restores previous attendance from backup.
-   - If no previous attendance existed, cancelled rows are removed
-     and players return to Select.
+   Behavior:
+   - If one age group is selected:
+       Restores only that selected EventID.
+
+   - If All Groups is selected:
+       Sends ?allMatching=1 so the backend can restore
+       all events on the same date and event type.
    ========================= */
 async function restoreSelectedEvent() {
   if (!eventSelect || !eventSelect.value) {
@@ -947,11 +959,16 @@ async function restoreSelectedEvent() {
     return;
   }
 
+  const selectedGroupId = groupSelect ? groupSelect.value : "";
+  const allMatchingParam = selectedGroupId ? "" : "?allMatching=1";
+
   const selectedOption = eventSelect.options[eventSelect.selectedIndex];
   const eventText = selectedOption ? selectedOption.textContent : "this event";
 
   const confirmed = confirm(
-    `Restore this cancelled event?\n\n${eventText}\n\nPrevious attendance will be recovered if a backup exists.`
+    selectedGroupId
+      ? `Restore this cancelled event?\n\n${eventText}\n\nPrevious attendance will be recovered if a backup exists.`
+      : `All Groups is selected.\n\nThis will restore all matching events on the same date and event type.\n\nPrevious attendance will be recovered if backups exist.\n\nDo you want to continue?`
   );
 
   if (!confirmed) return;
@@ -959,7 +976,7 @@ async function restoreSelectedEvent() {
   const eventId = eventSelect.value;
 
   try {
-    const res = await fetch(`${API_BASE}/events/${eventId}/restore`, {
+    const res = await fetch(`${API_BASE}/events/${eventId}/restore${allMatchingParam}`, {
       method: "PATCH",
       credentials: "include",
       headers: {
