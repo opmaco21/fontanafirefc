@@ -1056,6 +1056,11 @@ async function restoreSelectedEvent() {
 
 /* =========================
    ADD PLAYER
+
+   Purpose:
+   - Adds a player using first name, last name, and birth year only.
+   - Backend automatically finds the correct age group.
+   - Full DOB will be synced later from Excel.
    ========================= */
 async function addPlayer() {
   if (addPlayerMessage) {
@@ -1073,12 +1078,18 @@ async function addPlayer() {
 
   const firstNameInput = document.getElementById("newFirstName");
   const lastNameInput = document.getElementById("newLastName");
+  const birthYearInput = document.getElementById("newBirthYear");
 
   const firstName = firstNameInput ? firstNameInput.value.trim() : "";
   const lastName = lastNameInput ? lastNameInput.value.trim() : "";
+  const birthYear = birthYearInput ? birthYearInput.value : "";
 
-  if (!firstName || !lastName) {
-    setMessage(addPlayerMessage, "Enter first and last name.", true);
+  if (!firstName || !lastName || !birthYear) {
+    setMessage(
+      addPlayerMessage,
+      "Enter first name, last name, and birth year.",
+      true
+    );
     return;
   }
 
@@ -1091,7 +1102,8 @@ async function addPlayer() {
       },
       body: JSON.stringify({
         firstName,
-        lastName
+        lastName,
+        birthYear: Number(birthYear)
       })
     });
 
@@ -1110,74 +1122,20 @@ async function addPlayer() {
 
     if (firstNameInput) firstNameInput.value = "";
     if (lastNameInput) lastNameInput.value = "";
+    if (birthYearInput) birthYearInput.value = "";
 
-    setMessage(addPlayerMessage, "✅ Player added.", false);
+    setMessage(
+      addPlayerMessage,
+      `✅ Player added to ${data.player.GroupName} age group.`,
+      false
+    );
+
     await loadPlayers();
 
   } catch (err) {
     console.error("Add player error:", err);
     setMessage(addPlayerMessage, "Server error adding player.", true);
   }
-}
-
-/* =========================
-   LOGOUT
-   ========================= */
-async function logout() {
-  try {
-    await fetch(`${API_BASE}/auth/logout`, {
-      method: "POST",
-      credentials: "include"
-    });
-  } catch (err) {
-    console.error("Logout request failed", err);
-  }
-
-  currentUser = null;
-  localStorage.removeItem("attendanceUser");
-  clearSelectedEvent();
-
-  if (loginScreen) {
-    loginScreen.classList.remove("hidden");
-  }
-
-  if (appScreen) {
-    appScreen.classList.add("hidden");
-  }
-
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
-
-  if (emailInput) emailInput.value = "";
-  if (passwordInput) passwordInput.value = "";
-
-  if (loginMessage) {
-    loginMessage.textContent = "";
-  }
-
-  if (groupSelect) {
-    groupSelect.innerHTML = `<option value="">All Groups</option>`;
-  }
-
-  if (eventSelect) {
-    eventSelect.innerHTML = `<option value="">Select event</option>`;
-  }
-
-  const playerList = document.getElementById("playerList");
-
-  if (playerList) {
-    playerList.innerHTML = "";
-  }
-
-  if (completedPlayerList) {
-    completedPlayerList.innerHTML = "";
-    completedPlayerList.classList.add("hidden");
-  }
-
-  updateAttendanceDisplay();
-
-  if (attendanceMessage) attendanceMessage.textContent = "";
-  if (addPlayerMessage) addPlayerMessage.textContent = "";
 }
 
 /* =========================
