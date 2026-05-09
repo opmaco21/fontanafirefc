@@ -1007,7 +1007,18 @@ async function restoreSession() {
     localStorage.removeItem("attendanceUser");
   }
 }
-
+/* =========================
+   APP VERSION DISPLAY
+   ========================= */
+.app-version {
+  margin: 18px 0 12px;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 10px;
+}
 /* =========================
    START APP
    ========================= */
