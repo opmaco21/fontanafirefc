@@ -23,6 +23,7 @@ const eventSelect = document.getElementById("eventSelect");
 
 const practiceTab = document.getElementById("practiceTab");
 const gamesTab = document.getElementById("gamesTab");
+const teamEventsTab = document.getElementById("teamEventsTab");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
 const cancelEventBtn = document.getElementById("cancelEventBtn");
@@ -32,6 +33,18 @@ const attendanceMessage = document.getElementById("attendanceMessage");
 const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
 const addPlayerSection = document.getElementById("addPlayerSection");
+
+const teamEventSection = document.getElementById("teamEventSection");
+const addTeamEventBtn = document.getElementById("addTeamEventBtn");
+const teamEventMessage = document.getElementById("teamEventMessage");
+
+const newTeamEventGroup = document.getElementById("newTeamEventGroup");
+const newTeamEventName = document.getElementById("newTeamEventName");
+const newTeamEventDate = document.getElementById("newTeamEventDate");
+const newTeamEventStartTime = document.getElementById("newTeamEventStartTime");
+const newTeamEventEndTime = document.getElementById("newTeamEventEndTime");
+const newTeamEventLocation = document.getElementById("newTeamEventLocation");
+const newTeamEventNotes = document.getElementById("newTeamEventNotes");
 
 const attendanceSummary = document.getElementById("attendanceSummary");
 const hideMarkedToggle = document.getElementById("hideMarkedToggle");
@@ -79,6 +92,10 @@ if (addPlayerBtn) {
   addPlayerBtn.addEventListener("click", addPlayer);
 }
 
+if (addTeamEventBtn) {
+  addTeamEventBtn.addEventListener("click", addTeamEvent);
+}
+
 if (groupSelect) {
   groupSelect.addEventListener("change", async () => {
     await loadEvents();
@@ -99,6 +116,15 @@ if (practiceTab) {
 if (gamesTab) {
   gamesTab.addEventListener("click", async () => {
     currentTab = "Game";
+    setActiveTab();
+    await loadEvents();
+    clearPlayerAttendanceSelections();
+  });
+}
+
+if (teamEventsTab) {
+  teamEventsTab.addEventListener("click", async () => {
+    currentTab = "Team Event";
     setActiveTab();
     await loadEvents();
     clearPlayerAttendanceSelections();
@@ -143,6 +169,8 @@ function applyRolePermissions() {
       addPlayerSection.style.display = "block";
     }
   }
+
+  updateTeamEventSection();
 }
 
 /* =========================
@@ -193,6 +221,40 @@ async function login() {
 }
 
 /* =========================
+   LOGOUT
+   ========================= */
+async function logout() {
+  try {
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      credentials: "include"
+    });
+  } catch (err) {
+    console.error("Logout error:", err);
+  }
+
+  currentUser = null;
+  localStorage.removeItem("attendanceUser");
+  clearSelectedEvent();
+
+  if (appScreen) {
+    appScreen.classList.add("hidden");
+  }
+
+  if (loginScreen) {
+    loginScreen.classList.remove("hidden");
+  }
+
+  if (welcomeText) {
+    welcomeText.textContent = "Welcome";
+  }
+
+  if (roleText) {
+    roleText.textContent = "";
+  }
+}
+
+/* =========================
    SHOW MAIN APP
    ========================= */
 async function showApp() {
@@ -230,6 +292,10 @@ async function loadGroups() {
 
   groupSelect.innerHTML = `<option value="">All Groups</option>`;
 
+  if (newTeamEventGroup) {
+    newTeamEventGroup.innerHTML = `<option value="">Select group</option>`;
+  }
+
   try {
     const res = await fetch(`${API_BASE}/groups`, {
       credentials: "include"
@@ -242,6 +308,13 @@ async function loadGroups() {
       option.value = group.GroupID;
       option.textContent = group.GroupName;
       groupSelect.appendChild(option);
+
+      if (newTeamEventGroup) {
+        const teamEventOption = document.createElement("option");
+        teamEventOption.value = group.GroupID;
+        teamEventOption.textContent = group.GroupName;
+        newTeamEventGroup.appendChild(teamEventOption);
+      }
     });
 
   } catch (err) {
@@ -253,15 +326,37 @@ async function loadGroups() {
    ACTIVE TAB STYLE
    ========================= */
 function setActiveTab() {
-  if (!practiceTab || !gamesTab) return;
+  if (!practiceTab || !gamesTab || !teamEventsTab) return;
 
   practiceTab.classList.remove("active");
   gamesTab.classList.remove("active");
+  teamEventsTab.classList.remove("active");
 
   if (currentTab === "Practice") {
     practiceTab.classList.add("active");
-  } else {
+  } else if (currentTab === "Game") {
     gamesTab.classList.add("active");
+  } else if (currentTab === "Team Event") {
+    teamEventsTab.classList.add("active");
+  }
+
+  updateTeamEventSection();
+}
+
+/* =========================
+   SHOW / HIDE TEAM EVENT FORM
+   ========================= */
+function updateTeamEventSection() {
+  if (!teamEventSection) return;
+
+  const canAddTeamEvents =
+    currentUser &&
+    currentUser.RoleName !== "MainCoach";
+
+  if (currentTab === "Team Event" && canAddTeamEvents) {
+    teamEventSection.classList.remove("hidden");
+  } else {
+    teamEventSection.classList.add("hidden");
   }
 }
 
@@ -318,8 +413,12 @@ async function loadEvents() {
       const isGame =
         event.EventType === "Game" && (day === 5 || day === 6 || day === 0);
 
+      const isTeamEvent =
+        event.EventType === "Team Event";
+
       if (currentTab === "Practice") return isPractice;
       if (currentTab === "Game") return isGame;
+      if (currentTab === "Team Event") return isTeamEvent;
 
       return true;
     });
@@ -640,9 +739,16 @@ function clearSelectedEvent() {
      All Groups mode.
    - Backend routes use ?allMatching=1 so grouped events
      load/save/cancel/restore across matching EventIDs.
+   - Team Events are manual events and should not use the
+     grouped allMatching behavior.
    ========================= */
 function getAllMatchingParam() {
   const selectedGroupId = groupSelect ? groupSelect.value : "";
+
+  if (currentTab === "Team Event") {
+    return "";
+  }
+
   return selectedGroupId ? "" : "?allMatching=1";
 }
 
@@ -656,6 +762,9 @@ function getAllMatchingParam() {
    - All Groups selected:
        Loads attendance across all matching EventIDs using
        ?allMatching=1.
+
+   - Team Events:
+       Always load only the selected manual event.
    ========================= */
 async function loadAttendanceForEvent() {
   if (!eventSelect) return;
@@ -813,6 +922,9 @@ function updateAttendanceDisplay() {
        Sends ?allMatching=1 so the backend can save each
        player to the correct matching EventID for that
        player's age group.
+
+   - Team Events:
+       Saves only to the selected manual event.
    ========================= */
 async function saveAttendance() {
   if (attendanceMessage) {
@@ -898,6 +1010,9 @@ async function saveAttendance() {
    - If All Groups is selected:
        Sends ?allMatching=1 so the backend can cancel
        all events on the same date and event type.
+
+   - Team Events:
+       Cancels only the selected manual event.
    ========================= */
 async function cancelSelectedEvent() {
   if (!eventSelect || !eventSelect.value) {
@@ -908,7 +1023,7 @@ async function cancelSelectedEvent() {
   const selectedGroupId = groupSelect ? groupSelect.value : "";
   const allMatchingParam = getAllMatchingParam();
 
-  if (!selectedGroupId) {
+  if (!selectedGroupId && currentTab !== "Team Event") {
     const continueCancel = confirm(
       "All Groups is selected.\n\nThis will cancel all matching events on the same date and event type for every group.\n\nDo you want to continue?"
     );
@@ -987,6 +1102,9 @@ async function cancelSelectedEvent() {
    - If All Groups is selected:
        Sends ?allMatching=1 so the backend can restore
        all events on the same date and event type.
+
+   - Team Events:
+       Restores only the selected manual event.
    ========================= */
 async function restoreSelectedEvent() {
   if (!eventSelect || !eventSelect.value) {
@@ -1001,7 +1119,7 @@ async function restoreSelectedEvent() {
   const eventText = selectedOption ? selectedOption.textContent : "this event";
 
   const confirmed = confirm(
-    selectedGroupId
+    selectedGroupId || currentTab === "Team Event"
       ? `Restore this cancelled event?\n\n${eventText}\n\nPrevious attendance will be recovered if a backup exists.`
       : `All Groups is selected.\n\nThis will restore all matching events on the same date and event type.\n\nPrevious attendance will be recovered if backups exist.\n\nDo you want to continue?`
   );
@@ -1051,6 +1169,101 @@ async function restoreSelectedEvent() {
   } catch (err) {
     console.error("Error restoring event:", err);
     setMessage(attendanceMessage, "Server error restoring event.", true);
+  }
+}
+
+/* =========================
+   ADD TEAM EVENT
+
+   Purpose:
+   - Creates a manual event such as:
+       Scrimmage
+       Team get-together
+       Other team activity
+   - Team Events are created for one selected age group.
+   ========================= */
+async function addTeamEvent() {
+  if (teamEventMessage) {
+    teamEventMessage.textContent = "";
+  }
+
+  if (currentUser && currentUser.RoleName === "MainCoach") {
+    setMessage(
+      teamEventMessage,
+      "Access denied. Only Admin and Team Mom can add team events.",
+      true
+    );
+    return;
+  }
+
+  const groupId = newTeamEventGroup ? newTeamEventGroup.value : "";
+  const eventName = newTeamEventName ? newTeamEventName.value.trim() : "";
+  const eventDate = newTeamEventDate ? newTeamEventDate.value : "";
+  const startTime = newTeamEventStartTime ? newTeamEventStartTime.value : "";
+  const endTime = newTeamEventEndTime ? newTeamEventEndTime.value : "";
+  const locationName = newTeamEventLocation ? newTeamEventLocation.value.trim() : "";
+  const notes = newTeamEventNotes ? newTeamEventNotes.value.trim() : "";
+
+  if (!groupId || !eventName || !eventDate) {
+    setMessage(
+      teamEventMessage,
+      "Select a group and enter an event name and date.",
+      true
+    );
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/events`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        groupId: Number(groupId),
+        eventDate,
+        eventType: "Team Event",
+        eventName,
+        startTime: startTime || null,
+        endTime: endTime || null,
+        locationName: locationName || null,
+        notes: notes || null
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      if (res.status === 401) {
+        setMessage(teamEventMessage, "Session expired. Please login again.", true);
+      } else if (res.status === 403) {
+        setMessage(teamEventMessage, "Access denied.", true);
+      } else {
+        setMessage(teamEventMessage, data.message || "Could not add team event.", true);
+      }
+      return;
+    }
+
+    if (newTeamEventName) newTeamEventName.value = "";
+    if (newTeamEventDate) newTeamEventDate.value = "";
+    if (newTeamEventStartTime) newTeamEventStartTime.value = "";
+    if (newTeamEventEndTime) newTeamEventEndTime.value = "";
+    if (newTeamEventLocation) newTeamEventLocation.value = "";
+    if (newTeamEventNotes) newTeamEventNotes.value = "";
+
+    if (groupSelect) {
+      groupSelect.value = groupId;
+    }
+
+    setMessage(teamEventMessage, "✅ Team event added.", false);
+
+    await loadEvents();
+    await loadPlayers();
+
+  } catch (err) {
+    console.error("Add team event error:", err);
+    setMessage(teamEventMessage, "Server error adding team event.", true);
   }
 }
 
