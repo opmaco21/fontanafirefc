@@ -25,6 +25,7 @@ const practiceTab = document.getElementById("practiceTab");
 const gamesTab = document.getElementById("gamesTab");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
+const cancelEventBtn = document.getElementById("cancelEventBtn");
 const attendanceMessage = document.getElementById("attendanceMessage");
 
 const addPlayerBtn = document.getElementById("addPlayerBtn");
@@ -50,6 +51,10 @@ loginBtn.addEventListener("click", login);
 logoutBtn.addEventListener("click", logout);
 saveAttendanceBtn.addEventListener("click", saveAttendance);
 
+if (cancelEventBtn) {
+  cancelEventBtn.addEventListener("click", cancelSelectedEvent);
+}
+
 eventSelect.addEventListener("change", async () => {
   saveSelectedEvent();
   await loadAttendanceForEvent();
@@ -62,6 +67,7 @@ if (addPlayerBtn) {
 if (groupSelect) {
   groupSelect.addEventListener("change", async () => {
     await loadEvents();
+    await loadPlayers();
     clearPlayerAttendanceSelections();
   });
 }
@@ -247,24 +253,33 @@ function getEventDateParts(eventDateValue) {
 
 /* =========================
    LOAD EVENTS
+
+   Notes:
+   - All Groups loads general event list from /api/events.
+   - Specific group loads /api/events?groupId=ID.
+   - This keeps group-specific attendance accurate.
    ========================= */
 async function loadEvents() {
   eventSelect.innerHTML = `<option value="">Select event</option>`;
 
   try {
-    const res = await fetch(`${API_BASE}/events`, {
+    const selectedGroupId = groupSelect ? groupSelect.value : "";
+
+    let eventsUrl = `${API_BASE}/events`;
+
+    if (selectedGroupId) {
+      eventsUrl += `?groupId=${encodeURIComponent(selectedGroupId)}`;
+    }
+
+    const res = await fetch(eventsUrl, {
       credentials: "include"
     });
 
     const events = await res.json();
-    const selectedGroupId = groupSelect ? groupSelect.value : "";
 
     const filteredEvents = events.filter(event => {
       const dateInfo = getEventDateParts(event.EventDate);
       const day = dateInfo.dayOfWeek;
-
-      const matchesGroup =
-        !selectedGroupId || String(event.GroupID) === String(selectedGroupId);
 
       const isPractice =
         event.EventType === "Practice" && (day === 1 || day === 3);
@@ -272,10 +287,10 @@ async function loadEvents() {
       const isGame =
         event.EventType === "Game" && (day === 5 || day === 6 || day === 0);
 
-      if (currentTab === "Practice") return matchesGroup && isPractice;
-      if (currentTab === "Game") return matchesGroup && isGame;
+      if (currentTab === "Practice") return isPractice;
+      if (currentTab === "Game") return isGame;
 
-      return matchesGroup;
+      return true;
     });
 
     filteredEvents.forEach(event => addEventOption(event));
@@ -295,18 +310,44 @@ function addEventOption(event) {
   const dateInfo = getEventDateParts(event.EventDate);
   const eventDate = dateInfo.localDate.toLocaleDateString();
 
+  const eventName =
+    event.EventName && event.EventName !== event.EventType
+      ? ` - ${event.EventName}`
+      : "";
+
+  const statusLabel =
+    event.EventStatus === "Cancelled"
+      ? " - CANCELLED"
+      : ` - ${event.EventStatus}`;
+
   option.textContent =
-    `${eventDate} - ${event.EventType} - ${event.EventStatus}`;
+    `${eventDate} - ${event.EventType}${eventName}${statusLabel}`;
+
+  option.dataset.eventStatus = event.EventStatus;
+  option.dataset.eventType = event.EventType;
+  option.dataset.groupId = event.GroupID || "";
 
   eventSelect.appendChild(option);
 }
 
 /* =========================
    LOAD PLAYERS
+
+   Notes:
+   - All Groups loads all active players.
+   - Specific group loads only players in that age group.
    ========================= */
 async function loadPlayers() {
   try {
-    const res = await fetch(`${API_BASE}/players`, {
+    const selectedGroupId = groupSelect ? groupSelect.value : "";
+
+    let playersUrl = `${API_BASE}/players`;
+
+    if (selectedGroupId) {
+      playersUrl += `?groupId=${encodeURIComponent(selectedGroupId)}`;
+    }
+
+    const res = await fetch(playersUrl, {
       credentials: "include"
     });
 
@@ -340,6 +381,7 @@ async function loadPlayers() {
           <option value="Present">Present</option>
           <option value="Absent">Absent</option>
           <option value="Excused">Excused</option>
+          <option value="Cancelled">Cancelled</option>
           <option value="Clear">Remove / Reset</option>
         </select>
       `;
@@ -417,6 +459,7 @@ function clearPlayerAttendanceSelections() {
         "status-present",
         "status-absent",
         "status-excused",
+        "status-cancelled",
         "status-clear"
       );
     }
@@ -461,11 +504,6 @@ function saveAttendanceDraft() {
     const playerId = select.dataset.playerId;
     const status = select.value;
 
-    /*
-      Save every player, including blank Select.
-      This prevents an older draft status from coming back
-      if the coach changes a player back to Select.
-    */
     if (playerId) {
       draft[playerId] = status;
     }
@@ -489,9 +527,6 @@ function loadAttendanceDraft(eventId) {
     selects.forEach(select => {
       const playerId = select.dataset.playerId;
 
-      /*
-        Use hasOwnProperty so blank Select values can restore too.
-      */
       if (Object.prototype.hasOwnProperty.call(draft, playerId)) {
         select.value = draft[playerId];
 
@@ -519,9 +554,6 @@ function clearAttendanceDraft(eventId) {
 
 /* =========================
    REMEMBER SELECTED EVENT
-   Saves the selected event on this browser/device.
-   This lets the app reopen the same event after refresh
-   or if the coach accidentally closes the browser.
    ========================= */
 
 function saveSelectedEvent() {
@@ -539,8 +571,6 @@ function clearSelectedEvent() {
 
 /* =========================
    LOAD SAVED ATTENDANCE
-   Loads saved SQL attendance first.
-   Then restores local draft if one exists for the same event.
    ========================= */
 async function loadAttendanceForEvent() {
   const eventId = eventSelect.value;
@@ -601,11 +631,6 @@ async function loadAttendanceForEvent() {
 
 /* =========================
    UPDATE ATTENDANCE DISPLAY
-   Updates:
-   - Present / Absent / Excused / Remaining counts
-   - Row colors
-   - Moves marked players to completed section
-   - Includes Remove / Reset as an action item
    ========================= */
 function updateAttendanceDisplay() {
   const playerList = document.getElementById("playerList");
@@ -618,6 +643,7 @@ function updateAttendanceDisplay() {
   let present = 0;
   let absent = 0;
   let excused = 0;
+  let cancelled = 0;
   let remaining = 0;
   let completed = 0;
 
@@ -630,6 +656,7 @@ function updateAttendanceDisplay() {
       "status-present",
       "status-absent",
       "status-excused",
+      "status-cancelled",
       "status-clear"
     );
 
@@ -645,6 +672,10 @@ function updateAttendanceDisplay() {
       excused++;
       completed++;
       row.classList.add("status-excused");
+    } else if (status === "Cancelled") {
+      cancelled++;
+      completed++;
+      row.classList.add("status-cancelled");
     } else if (status === "Clear") {
       completed++;
       row.classList.add("status-clear");
@@ -655,7 +686,7 @@ function updateAttendanceDisplay() {
 
   if (attendanceSummary) {
     attendanceSummary.textContent =
-      `Present: ${present} | Absent: ${absent} | Excused: ${excused} | Remaining: ${remaining}`;
+      `Present: ${present} | Absent: ${absent} | Excused: ${excused} | Cancelled: ${cancelled} | Remaining: ${remaining}`;
   }
 
   const hideMarked = hideMarkedToggle ? hideMarkedToggle.checked : true;
@@ -684,8 +715,6 @@ function updateAttendanceDisplay() {
 
 /* =========================
    SAVE / UPDATE ATTENDANCE
-   Saves final attendance to SQL through Render API.
-   After SQL saves successfully, local draft is cleared.
    ========================= */
 async function saveAttendance() {
   attendanceMessage.textContent = "";
@@ -708,9 +737,9 @@ async function saveAttendance() {
     const status = row.value;
 
     /*
-      Send Present / Absent / Excused / Clear.
+      Send Present / Absent / Excused / Cancelled / Clear.
       Blank Select is not sent.
-      To remove a saved SQL record, use Remove / Reset.
+      Remove / Reset sends Clear and deletes saved SQL attendance.
     */
     if (status) {
       attendance.push({
@@ -723,7 +752,7 @@ async function saveAttendance() {
   if (attendance.length === 0) {
     setMessage(
       attendanceMessage,
-      "Select Present, Absent, Excused, or Remove / Reset for at least one player.",
+      "Select Present, Absent, Excused, Cancelled, or Remove / Reset for at least one player.",
       true
     );
     return;
@@ -756,6 +785,93 @@ async function saveAttendance() {
 
   } catch (err) {
     setMessage(attendanceMessage, "Could not save attendance.", true);
+  }
+}
+
+/* =========================
+   CANCEL SELECTED EVENT
+
+   Purpose:
+   - Cancels the selected event.
+   - Backend handles the correct cancellation logic.
+
+   Backend rules:
+   - Practice:
+       Marks active players in that practice GroupID as Cancelled.
+
+   - Game / Team Event:
+       Marks players assigned in dbo.EventPlayers as Cancelled.
+
+   Important:
+   - Frontend does not decide which players to cancel.
+   - SQL/backend remain the source of truth.
+   ========================= */
+async function cancelSelectedEvent() {
+  if (!eventSelect || !eventSelect.value) {
+    setMessage(attendanceMessage, "Select an event first.", true);
+    return;
+  }
+
+  const selectedGroupId = groupSelect ? groupSelect.value : "";
+
+  if (!selectedGroupId) {
+    const continueCancel = confirm(
+      "All Groups is selected.\n\nFor safety, it is better to select a specific age group before cancelling a practice or game.\n\nDo you still want to continue?"
+    );
+
+    if (!continueCancel) return;
+  }
+
+  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+  const eventText = selectedOption ? selectedOption.textContent : "this event";
+
+  const confirmed = confirm(
+    `Are you sure you want to cancel this event?\n\n${eventText}\n\nThis will mark the assigned players as Cancelled.`
+  );
+
+  if (!confirmed) return;
+
+  const eventId = eventSelect.value;
+
+  try {
+    const res = await fetch(`${API_BASE}/events/${eventId}/cancel`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(
+        attendanceMessage,
+        data.message || "Could not cancel event.",
+        true
+      );
+      return;
+    }
+
+    clearAttendanceDraft(eventId);
+
+    setMessage(
+      attendanceMessage,
+      `✅ Event cancelled. ${data.event?.CancelledPlayers || 0} player(s) marked Cancelled.`,
+      false
+    );
+
+    await loadEvents();
+
+    if (eventSelect) {
+      eventSelect.value = eventId;
+    }
+
+    await loadAttendanceForEvent();
+
+  } catch (err) {
+    console.error("Error cancelling event:", err);
+    setMessage(attendanceMessage, "Server error cancelling event.", true);
   }
 }
 
