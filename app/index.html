@@ -102,9 +102,15 @@
         <div id="teamEventSection" class="form-row hidden">
           <h3>Add Team Event</h3>
 
-          <select id="newTeamEventGroup">
-            <option value="">Select group</option>
-          </select>
+          <!-- MULTI-GROUP SELECTOR -->
+          <div class="team-event-group-box">
+            <label class="team-event-group-option">
+              <input type="checkbox" id="teamEventAllGroups" />
+              All Groups
+            </label>
+
+            <div id="teamEventGroupCheckboxes"></div>
+          </div>
 
           <input
             id="newTeamEventName"
@@ -211,6 +217,6 @@
   </div>
 
   <!-- JAVASCRIPT FILE -->
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

@@ -38,7 +38,9 @@ const teamEventSection = document.getElementById("teamEventSection");
 const addTeamEventBtn = document.getElementById("addTeamEventBtn");
 const teamEventMessage = document.getElementById("teamEventMessage");
 
-const newTeamEventGroup = document.getElementById("newTeamEventGroup");
+const teamEventAllGroups = document.getElementById("teamEventAllGroups");
+const teamEventGroupCheckboxes = document.getElementById("teamEventGroupCheckboxes");
+
 const newTeamEventName = document.getElementById("newTeamEventName");
 const newTeamEventDate = document.getElementById("newTeamEventDate");
 const newTeamEventStartTime = document.getElementById("newTeamEventStartTime");
@@ -128,6 +130,24 @@ if (teamEventsTab) {
     setActiveTab();
     await loadEvents();
     clearPlayerAttendanceSelections();
+  });
+}
+
+if (teamEventAllGroups) {
+  teamEventAllGroups.addEventListener("change", () => {
+    const groupCheckboxes = document.querySelectorAll(".team-event-group-checkbox");
+
+    groupCheckboxes.forEach(checkbox => {
+      checkbox.checked = teamEventAllGroups.checked;
+    });
+  });
+}
+
+if (teamEventGroupCheckboxes) {
+  teamEventGroupCheckboxes.addEventListener("change", event => {
+    if (!event.target.classList.contains("team-event-group-checkbox")) return;
+
+    updateAllGroupsCheckboxState();
   });
 }
 
@@ -292,8 +312,12 @@ async function loadGroups() {
 
   groupSelect.innerHTML = `<option value="">All Groups</option>`;
 
-  if (newTeamEventGroup) {
-    newTeamEventGroup.innerHTML = `<option value="">Select group</option>`;
+  if (teamEventGroupCheckboxes) {
+    teamEventGroupCheckboxes.innerHTML = "";
+  }
+
+  if (teamEventAllGroups) {
+    teamEventAllGroups.checked = false;
   }
 
   try {
@@ -309,11 +333,20 @@ async function loadGroups() {
       option.textContent = group.GroupName;
       groupSelect.appendChild(option);
 
-      if (newTeamEventGroup) {
-        const teamEventOption = document.createElement("option");
-        teamEventOption.value = group.GroupID;
-        teamEventOption.textContent = group.GroupName;
-        newTeamEventGroup.appendChild(teamEventOption);
+      if (teamEventGroupCheckboxes) {
+        const label = document.createElement("label");
+        label.className = "team-event-group-option";
+
+        label.innerHTML = `
+          <input
+            type="checkbox"
+            class="team-event-group-checkbox"
+            value="${group.GroupID}"
+          />
+          ${group.GroupName}
+        `;
+
+        teamEventGroupCheckboxes.appendChild(label);
       }
     });
 
@@ -358,6 +391,48 @@ function updateTeamEventSection() {
   } else {
     teamEventSection.classList.add("hidden");
   }
+}
+
+/* =========================
+   TEAM EVENT GROUP HELPERS
+   ========================= */
+function getSelectedTeamEventGroupIds() {
+  const checkedBoxes = document.querySelectorAll(
+    ".team-event-group-checkbox:checked"
+  );
+
+  return Array.from(checkedBoxes)
+    .map(checkbox => Number(checkbox.value))
+    .filter(value => Number.isInteger(value) && value > 0);
+}
+
+function updateAllGroupsCheckboxState() {
+  if (!teamEventAllGroups) return;
+
+  const groupCheckboxes = Array.from(
+    document.querySelectorAll(".team-event-group-checkbox")
+  );
+
+  if (groupCheckboxes.length === 0) {
+    teamEventAllGroups.checked = false;
+    return;
+  }
+
+  teamEventAllGroups.checked = groupCheckboxes.every(
+    checkbox => checkbox.checked
+  );
+}
+
+function clearTeamEventGroupSelections() {
+  if (teamEventAllGroups) {
+    teamEventAllGroups.checked = false;
+  }
+
+  const groupCheckboxes = document.querySelectorAll(".team-event-group-checkbox");
+
+  groupCheckboxes.forEach(checkbox => {
+    checkbox.checked = false;
+  });
 }
 
 /* =========================
@@ -454,12 +529,18 @@ function addEventOption(event) {
       ? " - CANCELLED"
       : ` - ${event.EventStatus}`;
 
+  const groupCountLabel =
+    !event.GroupID && event.GroupCount > 1
+      ? ` - ${event.GroupCount} Groups`
+      : "";
+
   option.textContent =
-    `${eventDate} - ${event.EventType}${eventName}${statusLabel}`;
+    `${eventDate} - ${event.EventType}${eventName}${groupCountLabel}${statusLabel}`;
 
   option.dataset.eventStatus = event.EventStatus;
   option.dataset.eventType = event.EventType;
   option.dataset.groupId = event.GroupID || "";
+  option.dataset.groupCount = event.GroupCount || 1;
 
   eventSelect.appendChild(option);
 }
@@ -739,16 +820,9 @@ function clearSelectedEvent() {
      All Groups mode.
    - Backend routes use ?allMatching=1 so grouped events
      load/save/cancel/restore across matching EventIDs.
-   - Team Events are manual events and should not use the
-     grouped allMatching behavior.
    ========================= */
 function getAllMatchingParam() {
   const selectedGroupId = groupSelect ? groupSelect.value : "";
-
-  if (currentTab === "Team Event") {
-    return "";
-  }
-
   return selectedGroupId ? "" : "?allMatching=1";
 }
 
@@ -762,9 +836,6 @@ function getAllMatchingParam() {
    - All Groups selected:
        Loads attendance across all matching EventIDs using
        ?allMatching=1.
-
-   - Team Events:
-       Always load only the selected manual event.
    ========================= */
 async function loadAttendanceForEvent() {
   if (!eventSelect) return;
@@ -922,9 +993,6 @@ function updateAttendanceDisplay() {
        Sends ?allMatching=1 so the backend can save each
        player to the correct matching EventID for that
        player's age group.
-
-   - Team Events:
-       Saves only to the selected manual event.
    ========================= */
 async function saveAttendance() {
   if (attendanceMessage) {
@@ -1010,9 +1078,6 @@ async function saveAttendance() {
    - If All Groups is selected:
        Sends ?allMatching=1 so the backend can cancel
        all events on the same date and event type.
-
-   - Team Events:
-       Cancels only the selected manual event.
    ========================= */
 async function cancelSelectedEvent() {
   if (!eventSelect || !eventSelect.value) {
@@ -1023,9 +1088,9 @@ async function cancelSelectedEvent() {
   const selectedGroupId = groupSelect ? groupSelect.value : "";
   const allMatchingParam = getAllMatchingParam();
 
-  if (!selectedGroupId && currentTab !== "Team Event") {
+  if (!selectedGroupId) {
     const continueCancel = confirm(
-      "All Groups is selected.\n\nThis will cancel all matching events on the same date and event type for every group.\n\nDo you want to continue?"
+      "All Groups is selected.\n\nThis will cancel all matching events on the same date and event type for every group included in that event.\n\nDo you want to continue?"
     );
 
     if (!continueCancel) return;
@@ -1102,9 +1167,6 @@ async function cancelSelectedEvent() {
    - If All Groups is selected:
        Sends ?allMatching=1 so the backend can restore
        all events on the same date and event type.
-
-   - Team Events:
-       Restores only the selected manual event.
    ========================= */
 async function restoreSelectedEvent() {
   if (!eventSelect || !eventSelect.value) {
@@ -1119,9 +1181,9 @@ async function restoreSelectedEvent() {
   const eventText = selectedOption ? selectedOption.textContent : "this event";
 
   const confirmed = confirm(
-    selectedGroupId || currentTab === "Team Event"
+    selectedGroupId
       ? `Restore this cancelled event?\n\n${eventText}\n\nPrevious attendance will be recovered if a backup exists.`
-      : `All Groups is selected.\n\nThis will restore all matching events on the same date and event type.\n\nPrevious attendance will be recovered if backups exist.\n\nDo you want to continue?`
+      : `All Groups is selected.\n\nThis will restore all matching events on the same date and event type for every group included in that event.\n\nPrevious attendance will be recovered if backups exist.\n\nDo you want to continue?`
   );
 
   if (!confirmed) return;
@@ -1180,7 +1242,7 @@ async function restoreSelectedEvent() {
        Scrimmage
        Team get-together
        Other team activity
-   - Team Events are created for one selected age group.
+   - Supports one group or multiple selected groups.
    ========================= */
 async function addTeamEvent() {
   if (teamEventMessage) {
@@ -1196,7 +1258,8 @@ async function addTeamEvent() {
     return;
   }
 
-  const groupId = newTeamEventGroup ? newTeamEventGroup.value : "";
+  const selectedGroupIds = getSelectedTeamEventGroupIds();
+
   const eventName = newTeamEventName ? newTeamEventName.value.trim() : "";
   const eventDate = newTeamEventDate ? newTeamEventDate.value : "";
   const startTime = newTeamEventStartTime ? newTeamEventStartTime.value : "";
@@ -1204,10 +1267,10 @@ async function addTeamEvent() {
   const locationName = newTeamEventLocation ? newTeamEventLocation.value.trim() : "";
   const notes = newTeamEventNotes ? newTeamEventNotes.value.trim() : "";
 
-  if (!groupId || !eventName || !eventDate) {
+  if (selectedGroupIds.length === 0 || !eventName || !eventDate) {
     setMessage(
       teamEventMessage,
-      "Select a group and enter an event name and date.",
+      "Select at least one group and enter an event name and date.",
       true
     );
     return;
@@ -1221,7 +1284,7 @@ async function addTeamEvent() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        groupId: Number(groupId),
+        groupIds: selectedGroupIds,
         eventDate,
         eventType: "Team Event",
         eventName,
@@ -1252,11 +1315,29 @@ async function addTeamEvent() {
     if (newTeamEventLocation) newTeamEventLocation.value = "";
     if (newTeamEventNotes) newTeamEventNotes.value = "";
 
+    clearTeamEventGroupSelections();
+
+    /*
+      If one group was selected, move to that group.
+      If multiple groups were selected, move to All Groups
+      so the grouped Team Event appears as one dropdown option.
+    */
     if (groupSelect) {
-      groupSelect.value = groupId;
+      groupSelect.value =
+        selectedGroupIds.length === 1
+          ? String(selectedGroupIds[0])
+          : "";
     }
 
-    setMessage(teamEventMessage, "✅ Team event added.", false);
+    const createdCount = data.createdEvents || selectedGroupIds.length;
+
+    setMessage(
+      teamEventMessage,
+      createdCount === 1
+        ? "✅ Team event added."
+        : `✅ Team event added for ${createdCount} groups.`,
+      false
+    );
 
     await loadEvents();
     await loadPlayers();
