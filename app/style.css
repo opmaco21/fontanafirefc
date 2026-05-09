@@ -125,7 +125,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   padding: 13px;
   border: 1px solid #cfd4dc;
@@ -134,8 +135,15 @@ select {
   background: #fff;
 }
 
+textarea {
+  min-height: 72px;
+  resize: vertical;
+  font-family: Arial, sans-serif;
+}
+
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   outline: none;
   border-color: #f57c00;
   box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.15);
@@ -193,10 +201,11 @@ select:focus {
   border-left: 5px solid #757575;
 }
 
+
 /* =========================================================
-   PRACTICE / GAMES TABS
-   Lets coaches switch between practice attendance and
-   game attendance.
+   PRACTICE / GAMES / TEAM EVENTS TABS
+   Lets coaches switch between practice attendance,
+   game attendance, and manually created team events.
    ========================================================= */
 
 .tabs {
@@ -228,6 +237,46 @@ select:focus {
 
 .tab.active:hover {
   background: #e86f00;
+}
+
+
+/* =========================================================
+   TEAM EVENT GROUP CHECKBOXES
+   Lets Admin / Team Mom choose one or more groups when
+   creating a Team Event.
+   ========================================================= */
+
+.team-event-group-box {
+  border: 1px solid #f2dcc8;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #fffaf5;
+}
+
+.team-event-group-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.team-event-group-option:last-child {
+  margin-bottom: 0;
+}
+
+.team-event-group-option input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+#teamEventGroupCheckboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 
@@ -315,6 +364,8 @@ select:focus {
    Present = green
    Absent = red
    Excused = yellow
+   Cancelled = gray
+   Remove / Reset = light gray
    ========================================================= */
 
 .player-row.status-present {
@@ -332,6 +383,16 @@ select:focus {
   border-left: 5px solid #f9a825;
 }
 
+.player-row.status-cancelled {
+  background: #e0e0e0;
+  border-left: 5px solid #757575;
+}
+
+.player-row.status-clear {
+  background: #eef2f7;
+  border-left: 5px solid #6b7280;
+}
+
 
 /* =========================================================
    DIVIDER LINE
@@ -342,6 +403,21 @@ hr {
   border: none;
   border-top: 1px solid #e1e5ea;
   margin: 22px 0;
+}
+
+
+/* =========================================================
+   APP VERSION DISPLAY
+   ========================================================= */
+
+.app-version {
+  margin: 18px 0 12px;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 10px;
 }
 
 
@@ -367,20 +443,4 @@ hr {
   .btn {
     width: 100%;
   }
-}
-.player-row.status-clear {
-  background: #eef2f7;
-  border-left: 5px solid #6b7280;
-}
-/* =========================
-   APP VERSION DISPLAY
-   ========================= */
-.app-version {
-  margin: 18px 0 12px;
-  padding: 10px;
-  text-align: center;
-  font-size: 12px;
-  color: #666;
-  background: #f5f5f5;
-  border-radius: 10px;
 }
