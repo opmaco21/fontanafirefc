@@ -633,7 +633,29 @@ function clearSelectedEvent() {
 }
 
 /* =========================
+   ALL GROUPS HELPER
+
+   Purpose:
+   - When no specific age group is selected, the app is in
+     All Groups mode.
+   - Backend routes use ?allMatching=1 so grouped events
+     load/save/cancel/restore across matching EventIDs.
+   ========================= */
+function getAllMatchingParam() {
+  const selectedGroupId = groupSelect ? groupSelect.value : "";
+  return selectedGroupId ? "" : "?allMatching=1";
+}
+
+/* =========================
    LOAD SAVED ATTENDANCE
+
+   Behavior:
+   - Specific age group selected:
+       Loads attendance for one EventID.
+
+   - All Groups selected:
+       Loads attendance across all matching EventIDs using
+       ?allMatching=1.
    ========================= */
 async function loadAttendanceForEvent() {
   if (!eventSelect) return;
@@ -644,8 +666,10 @@ async function loadAttendanceForEvent() {
 
   if (!eventId) return;
 
+  const allMatchingParam = getAllMatchingParam();
+
   try {
-    const res = await fetch(`${API_BASE}/attendance/${eventId}`, {
+    const res = await fetch(`${API_BASE}/attendance/${eventId}${allMatchingParam}`, {
       credentials: "include"
     });
 
@@ -780,6 +804,15 @@ function updateAttendanceDisplay() {
 
 /* =========================
    SAVE / UPDATE ATTENDANCE
+
+   Behavior:
+   - Specific age group selected:
+       Saves to one selected EventID.
+
+   - All Groups selected:
+       Sends ?allMatching=1 so the backend can save each
+       player to the correct matching EventID for that
+       player's age group.
    ========================= */
 async function saveAttendance() {
   if (attendanceMessage) {
@@ -822,8 +855,10 @@ async function saveAttendance() {
     return;
   }
 
+  const allMatchingParam = getAllMatchingParam();
+
   try {
-    const res = await fetch(`${API_BASE}/attendance`, {
+    const res = await fetch(`${API_BASE}/attendance${allMatchingParam}`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -871,7 +906,7 @@ async function cancelSelectedEvent() {
   }
 
   const selectedGroupId = groupSelect ? groupSelect.value : "";
-  const allMatchingParam = selectedGroupId ? "" : "?allMatching=1";
+  const allMatchingParam = getAllMatchingParam();
 
   if (!selectedGroupId) {
     const continueCancel = confirm(
@@ -960,7 +995,7 @@ async function restoreSelectedEvent() {
   }
 
   const selectedGroupId = groupSelect ? groupSelect.value : "";
-  const allMatchingParam = selectedGroupId ? "" : "?allMatching=1";
+  const allMatchingParam = getAllMatchingParam();
 
   const selectedOption = eventSelect.options[eventSelect.selectedIndex];
   const eventText = selectedOption ? selectedOption.textContent : "this event";
