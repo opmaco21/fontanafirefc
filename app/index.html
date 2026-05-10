@@ -108,6 +108,55 @@
           </button>
         </div>
 
+        <!-- TEAM EVENT WORKFLOW BUTTON
+             Appears when an existing Team Event is selected so
+             creating a new event does not stay mixed with roster work.
+        -->
+        <div id="teamEventWorkflowBar" class="event-workflow-bar hidden">
+          <button id="showTeamEventFormBtn" type="button" class="btn btn-secondary">
+            + Add New Team Event
+          </button>
+        </div>
+
+        <!-- MANAGE EVENT ROSTER SECTION
+             Only shown for selected Games and Team Events.
+             Practices stay group-based and do not use custom rosters.
+        -->
+        <div id="eventRosterSection" class="form-row hidden">
+          <h3>Manage Event Roster</h3>
+
+          <p id="eventRosterHelp" class="subtext roster-help"></p>
+
+          <div class="roster-tools">
+            <div id="eventRosterSummary" class="roster-summary">
+              Selected Players: 0
+            </div>
+
+            <div class="roster-action-buttons">
+              <button id="selectAllRosterBtn" type="button" class="btn btn-secondary">
+                Select All
+              </button>
+              <button id="clearRosterBtn" type="button" class="btn btn-secondary">
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          <div id="eventRosterList" class="event-roster-list"></div>
+
+          <div class="roster-footer-actions">
+            <button id="saveRosterBtn" type="button" class="btn btn-primary">
+              Save Roster
+            </button>
+
+            <button id="continueToAttendanceBtn" type="button" class="btn btn-secondary hidden">
+              Continue to Attendance
+            </button>
+          </div>
+
+          <p id="eventRosterMessage" class="message"></p>
+        </div>
+
         <!-- ADD TEAM EVENT SECTION
              Only shown when the Team Events tab is selected.
         -->
@@ -161,71 +210,50 @@
           <p id="teamEventMessage" class="message"></p>
         </div>
 
-        <!-- MANAGE EVENT ROSTER SECTION
-             Only shown for selected Games and Team Events.
-             Practices stay group-based and do not use custom rosters.
+        <!-- ATTENDANCE SECTION
+             For Games and Team Events this stays hidden while
+             staff are still building the roster.
         -->
-        <div id="eventRosterSection" class="form-row hidden">
-          <h3>Manage Event Roster</h3>
-
-          <p id="eventRosterHelp" class="subtext roster-help"></p>
-
-          <div class="roster-tools">
-            <div id="eventRosterSummary" class="roster-summary">
-              Selected Players: 0
-            </div>
-
-            <div class="roster-action-buttons">
-              <button id="selectAllRosterBtn" type="button" class="btn btn-secondary">
-                Select All
-              </button>
-              <button id="clearRosterBtn" type="button" class="btn btn-secondary">
-                Clear All
-              </button>
-            </div>
-          </div>
-
-          <div id="eventRosterList" class="event-roster-list"></div>
-
-          <button id="saveRosterBtn" type="button" class="btn btn-primary">
-            Save Roster
-          </button>
-
-          <p id="eventRosterMessage" class="message"></p>
-        </div>
-
-        <!-- PLAYER ATTENDANCE LIST -->
-        <div class="form-row">
-          <h3>Players</h3>
-
-          <!-- ATTENDANCE SUMMARY / HIDE COMPLETED TOOLS -->
-          <div class="attendance-tools">
-            <div id="attendanceSummary" class="attendance-summary">
-              Present: 0 | Absent: 0 | Excused: 0 | Cancelled: 0 | Remaining: 0
-            </div>
-
-            <label class="hide-marked-toggle">
-              <input type="checkbox" id="hideMarkedToggle" checked />
-              Hide marked players
-            </label>
-
-            <button id="showCompletedBtn" type="button" class="btn btn-secondary">
-              Show Completed Attendance (0)
+        <section id="attendanceSection">
+          <div class="attendance-mode-header">
+            <button id="editRosterBtn" type="button" class="btn btn-secondary hidden">
+              Edit Roster
             </button>
           </div>
 
-          <!-- PLAYERS STILL NEEDING ATTENDANCE -->
-          <div id="playerList"></div>
+          <!-- PLAYER ATTENDANCE LIST -->
+          <div class="form-row">
+            <h3>Players</h3>
 
-          <!-- COMPLETED / MARKED PLAYERS -->
-          <div id="completedPlayerList" class="completed-player-list hidden"></div>
-        </div>
+            <!-- ATTENDANCE SUMMARY / HIDE COMPLETED TOOLS -->
+            <div class="attendance-tools">
+              <div id="attendanceSummary" class="attendance-summary">
+                Present: 0 | Absent: 0 | Excused: 0 | Cancelled: 0 | Remaining: 0
+              </div>
 
-        <!-- SUBMIT ATTENDANCE -->
-        <button id="saveAttendanceBtn" class="btn btn-primary">
-          Submit Attendance
-        </button>
-        <p id="attendanceMessage" class="message"></p>
+              <label class="hide-marked-toggle">
+                <input type="checkbox" id="hideMarkedToggle" checked />
+                Hide marked players
+              </label>
+
+              <button id="showCompletedBtn" type="button" class="btn btn-secondary">
+                Show Completed Attendance (0)
+              </button>
+            </div>
+
+            <!-- PLAYERS STILL NEEDING ATTENDANCE -->
+            <div id="playerList"></div>
+
+            <!-- COMPLETED / MARKED PLAYERS -->
+            <div id="completedPlayerList" class="completed-player-list hidden"></div>
+          </div>
+
+          <!-- SUBMIT ATTENDANCE -->
+          <button id="saveAttendanceBtn" class="btn btn-primary">
+            Submit Attendance
+          </button>
+          <p id="attendanceMessage" class="message"></p>
+        </section>
 
         <hr />
 

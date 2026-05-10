@@ -37,6 +37,8 @@ const addPlayerMessage = document.getElementById("addPlayerMessage");
 const addPlayerSection = document.getElementById("addPlayerSection");
 
 const teamEventSection = document.getElementById("teamEventSection");
+const teamEventWorkflowBar = document.getElementById("teamEventWorkflowBar");
+const showTeamEventFormBtn = document.getElementById("showTeamEventFormBtn");
 const addTeamEventBtn = document.getElementById("addTeamEventBtn");
 const teamEventMessage = document.getElementById("teamEventMessage");
 
@@ -55,10 +57,13 @@ const eventRosterHelp = document.getElementById("eventRosterHelp");
 const eventRosterSummary = document.getElementById("eventRosterSummary");
 const eventRosterList = document.getElementById("eventRosterList");
 const saveRosterBtn = document.getElementById("saveRosterBtn");
+const continueToAttendanceBtn = document.getElementById("continueToAttendanceBtn");
 const selectAllRosterBtn = document.getElementById("selectAllRosterBtn");
 const clearRosterBtn = document.getElementById("clearRosterBtn");
 const eventRosterMessage = document.getElementById("eventRosterMessage");
 
+const attendanceSection = document.getElementById("attendanceSection");
+const editRosterBtn = document.getElementById("editRosterBtn");
 const attendanceSummary = document.getElementById("attendanceSummary");
 const hideMarkedToggle = document.getElementById("hideMarkedToggle");
 const showCompletedBtn = document.getElementById("showCompletedBtn");
@@ -72,6 +77,8 @@ const apiVersionText = document.getElementById("apiVersionText");
    ========================= */
 let currentUser = null;
 let currentTab = "Practice";
+let isTeamEventFormOpen = false;
+let isAttendanceModeActive = true;
 
 /* =========================
    EVENT LISTENERS
@@ -99,7 +106,10 @@ if (restoreEventBtn) {
 if (eventSelect) {
   eventSelect.addEventListener("change", async () => {
     saveSelectedEvent();
+    resetWorkflowForSelectedEvent();
     updateEventActionButtons();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
   });
@@ -111,6 +121,49 @@ if (addPlayerBtn) {
 
 if (addTeamEventBtn) {
   addTeamEventBtn.addEventListener("click", addTeamEvent);
+}
+
+if (showTeamEventFormBtn) {
+  showTeamEventFormBtn.addEventListener("click", async () => {
+    isTeamEventFormOpen = true;
+    isAttendanceModeActive = false;
+
+    if (eventSelect) {
+      eventSelect.value = "";
+    }
+
+    saveSelectedEvent();
+    updateEventActionButtons();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+    await loadPlayers();
+  });
+}
+
+if (continueToAttendanceBtn) {
+  continueToAttendanceBtn.addEventListener("click", async () => {
+    isAttendanceModeActive = true;
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+    await loadPlayers();
+
+    if (attendanceSection) {
+      attendanceSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+}
+
+if (editRosterBtn) {
+  editRosterBtn.addEventListener("click", async () => {
+    isAttendanceModeActive = false;
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+
+    if (eventRosterSection) {
+      eventRosterSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
 }
 
 if (saveRosterBtn) {
@@ -139,6 +192,9 @@ if (eventRosterList) {
 if (groupSelect) {
   groupSelect.addEventListener("change", async () => {
     await loadEvents();
+    resetWorkflowForSelectedEvent();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
     clearPlayerAttendanceSelections();
@@ -150,6 +206,9 @@ if (practiceTab) {
     currentTab = "Practice";
     setActiveTab();
     await loadEvents();
+    resetWorkflowForSelectedEvent();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
     clearPlayerAttendanceSelections();
@@ -161,6 +220,9 @@ if (gamesTab) {
     currentTab = "Game";
     setActiveTab();
     await loadEvents();
+    resetWorkflowForSelectedEvent();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
     clearPlayerAttendanceSelections();
@@ -172,6 +234,9 @@ if (teamEventsTab) {
     currentTab = "Team Event";
     setActiveTab();
     await loadEvents();
+    resetWorkflowForSelectedEvent();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
     clearPlayerAttendanceSelections();
@@ -365,6 +430,8 @@ async function showApp() {
 
   applyRolePermissions();
   setActiveTab();
+  resetWorkflowForSelectedEvent();
+  updateAttendanceSectionVisibility();
 
   await loadGroups();
   await loadEvents();
@@ -466,10 +533,61 @@ function updateTeamEventSection() {
     currentUser &&
     currentUser.RoleName !== "MainCoach";
 
-  if (currentTab === "Team Event" && canAddTeamEvents) {
+  const hasSelectedTeamEvent =
+    currentTab === "Team Event" &&
+    eventSelect &&
+    eventSelect.value &&
+    getSelectedEventType() === "Team Event";
+
+  if (teamEventWorkflowBar) {
+    if (hasSelectedTeamEvent && canAddTeamEvents && !isTeamEventFormOpen) {
+      teamEventWorkflowBar.classList.remove("hidden");
+    } else {
+      teamEventWorkflowBar.classList.add("hidden");
+    }
+  }
+
+  if (currentTab === "Team Event" && canAddTeamEvents && isTeamEventFormOpen) {
     teamEventSection.classList.remove("hidden");
   } else {
     teamEventSection.classList.add("hidden");
+  }
+}
+
+function resetWorkflowForSelectedEvent() {
+  const eventType = getSelectedEventType();
+  const hasSelectedEvent = Boolean(eventSelect && eventSelect.value);
+
+  if (currentTab === "Team Event") {
+    isTeamEventFormOpen = !hasSelectedEvent;
+  } else {
+    isTeamEventFormOpen = false;
+  }
+
+  isAttendanceModeActive = !(hasSelectedEvent && (eventType === "Game" || eventType === "Team Event"));
+}
+
+function updateAttendanceSectionVisibility() {
+  if (!attendanceSection) return;
+
+  const eventType = getSelectedEventType();
+  const hasSelectedRosterEvent =
+    eventSelect &&
+    eventSelect.value &&
+    (eventType === "Game" || eventType === "Team Event");
+
+  if (hasSelectedRosterEvent && !isAttendanceModeActive) {
+    attendanceSection.classList.add("hidden");
+  } else {
+    attendanceSection.classList.remove("hidden");
+  }
+
+  if (editRosterBtn) {
+    if (hasSelectedRosterEvent && isAttendanceModeActive) {
+      editRosterBtn.classList.remove("hidden");
+    } else {
+      editRosterBtn.classList.add("hidden");
+    }
   }
 }
 
@@ -545,6 +663,10 @@ function clearEventRosterSection() {
   if (eventRosterSummary) {
     eventRosterSummary.textContent = "Selected Players: 0";
   }
+
+  if (continueToAttendanceBtn) {
+    continueToAttendanceBtn.classList.add("hidden");
+  }
 }
 
 function updateRosterSummary() {
@@ -555,6 +677,14 @@ function updateRosterSummary() {
   ).length;
 
   eventRosterSummary.textContent = `Selected Players: ${selectedCount}`;
+
+  if (continueToAttendanceBtn) {
+    if (selectedCount > 0) {
+      continueToAttendanceBtn.classList.remove("hidden");
+    } else {
+      continueToAttendanceBtn.classList.add("hidden");
+    }
+  }
 }
 
 function setAllRosterCheckboxes(isChecked) {
@@ -613,6 +743,11 @@ async function updateEventRosterSection() {
   clearEventRosterSection();
 
   if (!shouldShowRosterSection()) {
+    eventRosterSection.classList.add("hidden");
+    return;
+  }
+
+  if (isAttendanceModeActive) {
     eventRosterSection.classList.add("hidden");
     return;
   }
@@ -1687,6 +1822,23 @@ async function addTeamEvent() {
     );
 
     await loadEvents();
+
+    if (eventSelect && data.event && data.event.EventID) {
+      const createdEventOption = eventSelect.querySelector(
+        `option[value="${data.event.EventID}"]`
+      );
+
+      if (createdEventOption) {
+        eventSelect.value = String(data.event.EventID);
+        saveSelectedEvent();
+      }
+    }
+
+    resetWorkflowForSelectedEvent();
+    updateEventActionButtons();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
     await loadPlayers();
 
   } catch (err) {

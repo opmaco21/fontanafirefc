@@ -578,3 +578,43 @@ hr {
     flex-direction: column;
   }
 }
+
+
+/* =========================================================
+   EVENT WORKFLOW CLEANUP
+   Keeps event creation, roster management, and attendance
+   as separate steps so the page is easier to use.
+   ========================================================= */
+
+.event-workflow-bar {
+  margin-bottom: 16px;
+}
+
+.event-workflow-bar .btn-secondary {
+  margin-top: 0;
+}
+
+.roster-footer-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.roster-footer-actions .btn-secondary {
+  margin-top: 0;
+}
+
+.attendance-mode-header {
+  margin-bottom: 12px;
+}
+
+.attendance-mode-header .btn-secondary {
+  margin-top: 0;
+}
+
+@media (max-width: 520px) {
+  .roster-footer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
