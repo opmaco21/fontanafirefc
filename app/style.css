@@ -421,6 +421,76 @@ hr {
 }
 
 
+
+
+/* =========================================================
+   EVENT ACTION BUTTONS / DETAILS PANEL
+   Keeps event actions together and makes the selected event
+   easy to review before roster work or attendance.
+   ========================================================= */
+
+.event-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.event-action-buttons .btn {
+  margin-top: 0;
+}
+
+.btn-delete {
+  background: #7f1d1d;
+  color: #ffffff;
+}
+
+.btn-delete:hover {
+  background: #641818;
+}
+
+.event-details-card {
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.event-details-card h3 {
+  margin-top: 0;
+}
+
+.event-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.event-details-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-detail-wide {
+  grid-column: 1 / -1;
+}
+
+.event-detail-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.event-detail-value {
+  font-weight: bold;
+  line-height: 1.35;
+}
+
+
 /* =========================================================
    MOBILE RESPONSIVE DESIGN
    Makes player rows stack on smaller phone screens.
@@ -442,6 +512,10 @@ hr {
 
   .btn {
     width: 100%;
+  }
+
+  .event-details-grid {
+    grid-template-columns: 1fr;
   }
 }
 

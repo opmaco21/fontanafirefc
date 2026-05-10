@@ -28,9 +28,21 @@ const gamesTab = document.getElementById("gamesTab");
 const teamEventsTab = document.getElementById("teamEventsTab");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
+const eventActionButtons = document.getElementById("eventActionButtons");
 const cancelEventBtn = document.getElementById("cancelEventBtn");
 const restoreEventBtn = document.getElementById("restoreEventBtn");
+const deleteEventBtn = document.getElementById("deleteEventBtn");
 const attendanceMessage = document.getElementById("attendanceMessage");
+
+const eventDetailsSection = document.getElementById("eventDetailsSection");
+const eventDetailDate = document.getElementById("eventDetailDate");
+const eventDetailType = document.getElementById("eventDetailType");
+const eventDetailTeams = document.getElementById("eventDetailTeams");
+const eventDetailStatus = document.getElementById("eventDetailStatus");
+const eventDetailStartTime = document.getElementById("eventDetailStartTime");
+const eventDetailEndTime = document.getElementById("eventDetailEndTime");
+const eventDetailLocation = document.getElementById("eventDetailLocation");
+const eventDetailNotes = document.getElementById("eventDetailNotes");
 
 const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
@@ -103,11 +115,16 @@ if (restoreEventBtn) {
   restoreEventBtn.addEventListener("click", restoreSelectedEvent);
 }
 
+if (deleteEventBtn) {
+  deleteEventBtn.addEventListener("click", deleteSelectedEvent);
+}
+
 if (eventSelect) {
   eventSelect.addEventListener("change", async () => {
     saveSelectedEvent();
     resetWorkflowForSelectedEvent();
     updateEventActionButtons();
+    await loadSelectedEventDetails();
     updateTeamEventSection();
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
@@ -134,6 +151,7 @@ if (showTeamEventFormBtn) {
 
     saveSelectedEvent();
     updateEventActionButtons();
+    clearSelectedEventDetails();
     updateTeamEventSection();
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
@@ -193,6 +211,7 @@ if (groupSelect) {
   groupSelect.addEventListener("change", async () => {
     await loadEvents();
     resetWorkflowForSelectedEvent();
+    await loadSelectedEventDetails();
     updateTeamEventSection();
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
@@ -207,6 +226,7 @@ if (practiceTab) {
     setActiveTab();
     await loadEvents();
     resetWorkflowForSelectedEvent();
+    await loadSelectedEventDetails();
     updateTeamEventSection();
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
@@ -221,6 +241,7 @@ if (gamesTab) {
     setActiveTab();
     await loadEvents();
     resetWorkflowForSelectedEvent();
+    await loadSelectedEventDetails();
     updateTeamEventSection();
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
@@ -235,6 +256,7 @@ if (teamEventsTab) {
     setActiveTab();
     await loadEvents();
     resetWorkflowForSelectedEvent();
+    await loadSelectedEventDetails();
     updateTeamEventSection();
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
@@ -1005,18 +1027,116 @@ function addEventOption(event) {
 }
 
 /* =========================
+   SELECTED EVENT DETAILS
+   ========================= */
+function clearSelectedEventDetails() {
+  if (eventDetailsSection) {
+    eventDetailsSection.classList.add("hidden");
+  }
+
+  const detailFields = [
+    eventDetailDate,
+    eventDetailType,
+    eventDetailTeams,
+    eventDetailStatus,
+    eventDetailStartTime,
+    eventDetailEndTime,
+    eventDetailLocation,
+    eventDetailNotes
+  ];
+
+  detailFields.forEach(field => {
+    if (field) field.textContent = "-";
+  });
+}
+
+function formatEventTime(timeValue) {
+  if (!timeValue) return "-";
+
+  const raw = String(timeValue);
+  const parts = raw.split(":");
+
+  if (parts.length < 2) return raw;
+
+  const hour = Number(parts[0]);
+  const minute = parts[1];
+
+  if (!Number.isInteger(hour)) return raw;
+
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+
+  return `${displayHour}:${minute} ${suffix}`;
+}
+
+async function loadSelectedEventDetails() {
+  if (!eventSelect || !eventSelect.value) {
+    clearSelectedEventDetails();
+    return;
+  }
+
+  const eventId = eventSelect.value;
+  const allMatchingParam = getAllMatchingParam();
+
+  try {
+    const res = await fetch(`${API_BASE}/events/${eventId}/details${allMatchingParam}`, {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success || !data.event) {
+      clearSelectedEventDetails();
+      return;
+    }
+
+    const event = data.event;
+    const dateInfo = getEventDateParts(event.EventDate);
+    const teams = Array.isArray(data.groups) && data.groups.length > 0
+      ? data.groups.map(group => group.GroupName || group.GroupCode).join(", ")
+      : event.GroupName || event.GroupCode || "-";
+
+    if (eventDetailDate) eventDetailDate.textContent = dateInfo.localDate.toLocaleDateString();
+    if (eventDetailType) eventDetailType.textContent = event.EventType || "-";
+    if (eventDetailTeams) eventDetailTeams.textContent = teams;
+    if (eventDetailStatus) eventDetailStatus.textContent = event.EventStatus || "-";
+    if (eventDetailStartTime) eventDetailStartTime.textContent = formatEventTime(event.StartTime);
+    if (eventDetailEndTime) eventDetailEndTime.textContent = formatEventTime(event.EndTime);
+    if (eventDetailLocation) eventDetailLocation.textContent = event.LocationName || "-";
+    if (eventDetailNotes) eventDetailNotes.textContent = event.Notes || "-";
+
+    if (eventDetailsSection) {
+      eventDetailsSection.classList.remove("hidden");
+    }
+
+  } catch (err) {
+    console.error("Could not load selected event details:", err);
+    clearSelectedEventDetails();
+  }
+}
+
+/* =========================
    UPDATE EVENT ACTION BUTTONS
 
    Purpose:
    - Scheduled events show Cancel Event.
    - Cancelled events show Restore Event.
-   - No selected event hides both.
+   - Delete Event is available to Admin / Team Mom for
+     accidental events or duplicates.
+   - No selected event hides all event action buttons.
    ========================= */
 function updateEventActionButtons() {
   if (!eventSelect) return;
 
   const selectedOption = eventSelect.options[eventSelect.selectedIndex];
   const eventStatus = selectedOption ? selectedOption.dataset.eventStatus : "";
+  const canDeleteEvents =
+    currentUser &&
+    currentUser.RoleName !== "MainCoach";
+
+  if (eventActionButtons) {
+    eventActionButtons.classList.add("hidden");
+  }
 
   if (cancelEventBtn) {
     cancelEventBtn.classList.add("hidden");
@@ -1026,8 +1146,16 @@ function updateEventActionButtons() {
     restoreEventBtn.classList.add("hidden");
   }
 
+  if (deleteEventBtn) {
+    deleteEventBtn.classList.add("hidden");
+  }
+
   if (!eventSelect.value || !eventStatus) {
     return;
+  }
+
+  if (eventActionButtons) {
+    eventActionButtons.classList.remove("hidden");
   }
 
   if (eventStatus === "Cancelled") {
@@ -1038,6 +1166,10 @@ function updateEventActionButtons() {
     if (cancelEventBtn) {
       cancelEventBtn.classList.remove("hidden");
     }
+  }
+
+  if (deleteEventBtn && canDeleteEvents) {
+    deleteEventBtn.classList.remove("hidden");
   }
 }
 
@@ -1147,6 +1279,7 @@ async function loadPlayers() {
       if (matchingOption) {
         eventSelect.value = lastSelectedEventId;
         updateEventActionButtons();
+        await loadSelectedEventDetails();
         await loadAttendanceForEvent();
         return;
       }
@@ -1154,6 +1287,7 @@ async function loadPlayers() {
 
     if (eventSelect && eventSelect.value) {
       updateEventActionButtons();
+      await loadSelectedEventDetails();
       await loadAttendanceForEvent();
     }
 
@@ -1713,6 +1847,97 @@ async function restoreSelectedEvent() {
   } catch (err) {
     console.error("Error restoring event:", err);
     setMessage(attendanceMessage, "Server error restoring event.", true);
+  }
+}
+
+/* =========================
+   DELETE SELECTED EVENT
+
+   Use only for mistakes such as:
+   - duplicate event
+   - wrong date
+   - event created accidentally
+
+   Normal rainouts / cancellations should use Cancel Event
+   so history remains available for reports.
+   ========================= */
+async function deleteSelectedEvent() {
+  if (!eventSelect || !eventSelect.value) {
+    setMessage(attendanceMessage, "Select an event first.", true);
+    return;
+  }
+
+  const selectedGroupId = groupSelect ? groupSelect.value : "";
+  const allMatchingParam = getAllMatchingParam();
+  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+  const eventText = selectedOption ? selectedOption.textContent : "this event";
+
+  const scopeMessage = !selectedGroupId
+    ? "All Groups is selected. This will permanently delete every matching event row included in this grouped event."
+    : "This will permanently delete the selected event row.";
+
+  const confirmed = confirm(
+    `Delete this event permanently?
+
+${eventText}
+
+${scopeMessage}
+
+Use Delete only for mistakes or duplicates. Normal cancelled events should stay as Cancelled.`
+  );
+
+  if (!confirmed) return;
+
+  const secondConfirm = confirm(
+    "This cannot be undone. Delete this event now?"
+  );
+
+  if (!secondConfirm) return;
+
+  const eventId = eventSelect.value;
+
+  try {
+    const res = await fetch(`${API_BASE}/events/${eventId}${allMatchingParam}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(
+        attendanceMessage,
+        data.message || "Could not delete event.",
+        true
+      );
+      return;
+    }
+
+    clearAttendanceDraft(eventId);
+    clearSelectedEvent();
+
+    if (eventSelect) {
+      eventSelect.value = "";
+    }
+
+    setMessage(
+      attendanceMessage,
+      `✅ Event deleted. ${data.deletedEvents || 0} event row(s) removed.`,
+      false
+    );
+
+    await loadEvents();
+    resetWorkflowForSelectedEvent();
+    updateEventActionButtons();
+    clearSelectedEventDetails();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+    await loadPlayers();
+
+  } catch (err) {
+    console.error("Error deleting event:", err);
+    setMessage(attendanceMessage, "Server error deleting event.", true);
   }
 }
 

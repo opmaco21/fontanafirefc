@@ -91,21 +91,65 @@
             <option value="">Select event</option>
           </select>
 
-          <!-- CANCEL EVENT BUTTON
-               Shows only when a Scheduled event is selected.
-               Controlled by app.js updateEventActionButtons().
+          <!-- EVENT ACTION BUTTONS
+               - Scheduled events show Cancel Event.
+               - Cancelled events show Restore Event.
+               - Delete Event is for mistakes such as duplicates or
+                 events created accidentally, not normal rainouts.
           -->
-          <button id="cancelEventBtn" type="button" class="btn btn-danger hidden">
-            Cancel Event
-          </button>
+          <div id="eventActionButtons" class="event-action-buttons hidden">
+            <button id="cancelEventBtn" type="button" class="btn btn-danger hidden">
+              Cancel Event
+            </button>
 
-          <!-- RESTORE EVENT BUTTON
-               Shows only when a Cancelled event is selected.
-               Controlled by app.js updateEventActionButtons().
-          -->
-          <button id="restoreEventBtn" type="button" class="btn btn-secondary hidden">
-            Restore Event
-          </button>
+            <button id="restoreEventBtn" type="button" class="btn btn-secondary hidden">
+              Restore Event
+            </button>
+
+            <button id="deleteEventBtn" type="button" class="btn btn-delete hidden">
+              Delete Event
+            </button>
+          </div>
+        </div>
+
+        <!-- SELECTED EVENT DETAILS -->
+        <div id="eventDetailsSection" class="event-details-card hidden">
+          <h3>Selected Event Details</h3>
+
+          <div class="event-details-grid">
+            <div>
+              <span class="event-detail-label">Date</span>
+              <span id="eventDetailDate" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">Type</span>
+              <span id="eventDetailType" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">Teams Included</span>
+              <span id="eventDetailTeams" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">Status</span>
+              <span id="eventDetailStatus" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">Start Time</span>
+              <span id="eventDetailStartTime" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">End Time</span>
+              <span id="eventDetailEndTime" class="event-detail-value">-</span>
+            </div>
+            <div class="event-detail-wide">
+              <span class="event-detail-label">Location</span>
+              <span id="eventDetailLocation" class="event-detail-value">-</span>
+            </div>
+            <div class="event-detail-wide">
+              <span class="event-detail-label">Notes</span>
+              <span id="eventDetailNotes" class="event-detail-value">-</span>
+            </div>
+          </div>
         </div>
 
         <!-- TEAM EVENT WORKFLOW BUTTON
