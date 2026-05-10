@@ -91,7 +91,7 @@ if (eventSelect) {
   eventSelect.addEventListener("change", async () => {
     saveSelectedEvent();
     updateEventActionButtons();
-    await loadAttendanceForEvent();
+    await loadPlayers();
   });
 }
 
@@ -116,6 +116,7 @@ if (practiceTab) {
     currentTab = "Practice";
     setActiveTab();
     await loadEvents();
+    await loadPlayers();
     clearPlayerAttendanceSelections();
   });
 }
@@ -125,6 +126,7 @@ if (gamesTab) {
     currentTab = "Game";
     setActiveTab();
     await loadEvents();
+    await loadPlayers();
     clearPlayerAttendanceSelections();
   });
 }
@@ -134,6 +136,7 @@ if (teamEventsTab) {
     currentTab = "Team Event";
     setActiveTab();
     await loadEvents();
+    await loadPlayers();
     clearPlayerAttendanceSelections();
   });
 }
@@ -627,12 +630,29 @@ function updateEventActionButtons() {
 async function loadPlayers() {
   try {
     const selectedGroupId = groupSelect ? groupSelect.value : "";
+    const selectedEventId = eventSelect ? eventSelect.value : "";
 
-    let playersUrl = `${API_BASE}/players`;
+    const playerParams = new URLSearchParams();
 
-    if (selectedGroupId) {
-      playersUrl += `?groupId=${encodeURIComponent(selectedGroupId)}`;
+    /*
+      If an event is selected, load only the players who belong
+      to that event. This prevents All Groups from showing players
+      from groups that do not have the selected event.
+    */
+    if (selectedEventId) {
+      playerParams.set("eventId", selectedEventId);
+
+      if (!selectedGroupId) {
+        playerParams.set("allMatching", "1");
+      }
+    } else if (selectedGroupId) {
+      playerParams.set("groupId", selectedGroupId);
     }
+
+    const playersUrl =
+      playerParams.toString()
+        ? `${API_BASE}/players?${playerParams.toString()}`
+        : `${API_BASE}/players`;
 
     const res = await fetch(playersUrl, {
       credentials: "include"
@@ -839,7 +859,13 @@ function clearAttendanceDraft(eventId) {
    REMEMBER SELECTED EVENT
    ========================= */
 function saveSelectedEvent() {
-  if (!eventSelect || !eventSelect.value) return;
+  if (!eventSelect) return;
+
+  if (!eventSelect.value) {
+    clearSelectedEvent();
+    return;
+  }
+
   localStorage.setItem("lastSelectedEventId", eventSelect.value);
 }
 
