@@ -161,6 +161,39 @@
           <p id="teamEventMessage" class="message"></p>
         </div>
 
+        <!-- MANAGE EVENT ROSTER SECTION
+             Only shown for selected Games and Team Events.
+             Practices stay group-based and do not use custom rosters.
+        -->
+        <div id="eventRosterSection" class="form-row hidden">
+          <h3>Manage Event Roster</h3>
+
+          <p id="eventRosterHelp" class="subtext roster-help"></p>
+
+          <div class="roster-tools">
+            <div id="eventRosterSummary" class="roster-summary">
+              Selected Players: 0
+            </div>
+
+            <div class="roster-action-buttons">
+              <button id="selectAllRosterBtn" type="button" class="btn btn-secondary">
+                Select All
+              </button>
+              <button id="clearRosterBtn" type="button" class="btn btn-secondary">
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          <div id="eventRosterList" class="event-roster-list"></div>
+
+          <button id="saveRosterBtn" type="button" class="btn btn-primary">
+            Save Roster
+          </button>
+
+          <p id="eventRosterMessage" class="message"></p>
+        </div>
+
         <!-- PLAYER ATTENDANCE LIST -->
         <div class="form-row">
           <h3>Players</h3>

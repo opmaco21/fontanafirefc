@@ -490,3 +490,91 @@ hr {
 #teamEventSection > label:first-of-type {
   margin-top: 0;
 }
+
+
+/* =========================================================
+   EVENT ROSTER MANAGEMENT
+   Lets staff choose the exact players expected for Games
+   and Team Events before attendance is marked.
+   ========================================================= */
+
+.roster-help {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.roster-tools {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.roster-summary {
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.roster-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.roster-action-buttons .btn-secondary {
+  margin-top: 0;
+}
+
+.event-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.roster-player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.roster-player-row input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.roster-player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.roster-player-name {
+  font-weight: bold;
+}
+
+.roster-player-group {
+  font-size: 14px;
+  color: #666;
+}
+
+.roster-empty-message {
+  padding: 12px;
+  border: 1px dashed #cfd4dc;
+  border-radius: 12px;
+  color: #666;
+  background: #fafafa;
+}
+
+@media (max-width: 520px) {
+  .roster-action-buttons {
+    flex-direction: column;
+  }
+}

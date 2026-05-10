@@ -50,6 +50,15 @@ const newTeamEventEndTime = document.getElementById("newTeamEventEndTime");
 const newTeamEventLocation = document.getElementById("newTeamEventLocation");
 const newTeamEventNotes = document.getElementById("newTeamEventNotes");
 
+const eventRosterSection = document.getElementById("eventRosterSection");
+const eventRosterHelp = document.getElementById("eventRosterHelp");
+const eventRosterSummary = document.getElementById("eventRosterSummary");
+const eventRosterList = document.getElementById("eventRosterList");
+const saveRosterBtn = document.getElementById("saveRosterBtn");
+const selectAllRosterBtn = document.getElementById("selectAllRosterBtn");
+const clearRosterBtn = document.getElementById("clearRosterBtn");
+const eventRosterMessage = document.getElementById("eventRosterMessage");
+
 const attendanceSummary = document.getElementById("attendanceSummary");
 const hideMarkedToggle = document.getElementById("hideMarkedToggle");
 const showCompletedBtn = document.getElementById("showCompletedBtn");
@@ -91,6 +100,7 @@ if (eventSelect) {
   eventSelect.addEventListener("change", async () => {
     saveSelectedEvent();
     updateEventActionButtons();
+    await updateEventRosterSection();
     await loadPlayers();
   });
 }
@@ -103,9 +113,33 @@ if (addTeamEventBtn) {
   addTeamEventBtn.addEventListener("click", addTeamEvent);
 }
 
+if (saveRosterBtn) {
+  saveRosterBtn.addEventListener("click", saveEventRoster);
+}
+
+if (selectAllRosterBtn) {
+  selectAllRosterBtn.addEventListener("click", () => {
+    setAllRosterCheckboxes(true);
+  });
+}
+
+if (clearRosterBtn) {
+  clearRosterBtn.addEventListener("click", () => {
+    setAllRosterCheckboxes(false);
+  });
+}
+
+if (eventRosterList) {
+  eventRosterList.addEventListener("change", event => {
+    if (!event.target.classList.contains("roster-player-checkbox")) return;
+    updateRosterSummary();
+  });
+}
+
 if (groupSelect) {
   groupSelect.addEventListener("change", async () => {
     await loadEvents();
+    await updateEventRosterSection();
     await loadPlayers();
     clearPlayerAttendanceSelections();
   });
@@ -116,6 +150,7 @@ if (practiceTab) {
     currentTab = "Practice";
     setActiveTab();
     await loadEvents();
+    await updateEventRosterSection();
     await loadPlayers();
     clearPlayerAttendanceSelections();
   });
@@ -126,6 +161,7 @@ if (gamesTab) {
     currentTab = "Game";
     setActiveTab();
     await loadEvents();
+    await updateEventRosterSection();
     await loadPlayers();
     clearPlayerAttendanceSelections();
   });
@@ -136,6 +172,7 @@ if (teamEventsTab) {
     currentTab = "Team Event";
     setActiveTab();
     await loadEvents();
+    await updateEventRosterSection();
     await loadPlayers();
     clearPlayerAttendanceSelections();
   });
@@ -331,6 +368,7 @@ async function showApp() {
 
   await loadGroups();
   await loadEvents();
+  await updateEventRosterSection();
   await loadPlayers();
 }
 
@@ -475,6 +513,250 @@ function clearTeamEventGroupSelections() {
   groupCheckboxes.forEach(checkbox => {
     checkbox.checked = false;
   });
+}
+
+/* =========================
+   EVENT ROSTER HELPERS
+   ========================= */
+function getSelectedEventOption() {
+  if (!eventSelect || !eventSelect.value) return null;
+  return eventSelect.options[eventSelect.selectedIndex] || null;
+}
+
+function getSelectedEventType() {
+  const selectedOption = getSelectedEventOption();
+  return selectedOption ? selectedOption.dataset.eventType || "" : "";
+}
+
+function shouldShowRosterSection() {
+  const eventType = getSelectedEventType();
+  return Boolean(eventSelect && eventSelect.value && (eventType === "Game" || eventType === "Team Event"));
+}
+
+function clearEventRosterSection() {
+  if (eventRosterList) {
+    eventRosterList.innerHTML = "";
+  }
+
+  if (eventRosterMessage) {
+    eventRosterMessage.textContent = "";
+  }
+
+  if (eventRosterSummary) {
+    eventRosterSummary.textContent = "Selected Players: 0";
+  }
+}
+
+function updateRosterSummary() {
+  if (!eventRosterSummary) return;
+
+  const selectedCount = document.querySelectorAll(
+    ".roster-player-checkbox:checked"
+  ).length;
+
+  eventRosterSummary.textContent = `Selected Players: ${selectedCount}`;
+}
+
+function setAllRosterCheckboxes(isChecked) {
+  const checkboxes = document.querySelectorAll(".roster-player-checkbox");
+
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = isChecked;
+  });
+
+  updateRosterSummary();
+}
+
+function renderRosterPlayers(players) {
+  if (!eventRosterList) return;
+
+  eventRosterList.innerHTML = "";
+
+  if (!players.length) {
+    eventRosterList.innerHTML = `
+      <div class="roster-empty-message">
+        No active players are available for this roster.
+      </div>
+    `;
+    updateRosterSummary();
+    return;
+  }
+
+  players.forEach(player => {
+    const label = document.createElement("label");
+    label.className = "roster-player-row";
+
+    const groupLabel = player.GroupName || player.GroupCode || "No Group";
+
+    label.innerHTML = `
+      <input
+        type="checkbox"
+        class="roster-player-checkbox"
+        value="${player.PlayerID}"
+        ${player.IsExpected ? "checked" : ""}
+      />
+      <span class="roster-player-info">
+        <span class="roster-player-name">${player.FirstName} ${player.LastName}</span>
+        <span class="roster-player-group">Group: ${groupLabel}</span>
+      </span>
+    `;
+
+    eventRosterList.appendChild(label);
+  });
+
+  updateRosterSummary();
+}
+
+async function updateEventRosterSection() {
+  if (!eventRosterSection) return;
+
+  clearEventRosterSection();
+
+  if (!shouldShowRosterSection()) {
+    eventRosterSection.classList.add("hidden");
+    return;
+  }
+
+  const eventType = getSelectedEventType();
+  const selectedGroupId = groupSelect ? groupSelect.value : "";
+  const selectedEventId = eventSelect ? eventSelect.value : "";
+
+  eventRosterSection.classList.remove("hidden");
+
+  /*
+    A game belongs to a specific team event row.
+    When All Groups is selected, several same-day games can be
+    represented by one grouped dropdown item, which is too broad
+    for roster editing. Require one specific group before editing
+    a Game roster.
+  */
+  if (eventType === "Game" && !selectedGroupId) {
+    if (eventRosterHelp) {
+      eventRosterHelp.textContent =
+        "Select a specific group above before managing a Game roster.";
+    }
+
+    if (eventRosterList) {
+      eventRosterList.innerHTML = `
+        <div class="roster-empty-message">
+          Game rosters are managed one team at a time.
+        </div>
+      `;
+    }
+
+    if (saveRosterBtn) saveRosterBtn.classList.add("hidden");
+    if (selectAllRosterBtn) selectAllRosterBtn.classList.add("hidden");
+    if (clearRosterBtn) clearRosterBtn.classList.add("hidden");
+    return;
+  }
+
+  if (saveRosterBtn) saveRosterBtn.classList.remove("hidden");
+  if (selectAllRosterBtn) selectAllRosterBtn.classList.remove("hidden");
+  if (clearRosterBtn) clearRosterBtn.classList.remove("hidden");
+
+  if (eventRosterHelp) {
+    eventRosterHelp.textContent =
+      eventType === "Game"
+        ? "Choose the exact players expected for this Game. Players from any age group may be selected."
+        : selectedGroupId
+          ? "Choose the exact players expected for this Team Event group."
+          : "Choose the exact players expected for this multi-group Team Event.";
+  }
+
+  const allMatchingParam = !selectedGroupId && eventType === "Team Event"
+    ? "?allMatching=1"
+    : "";
+
+  try {
+    const res = await fetch(`${API_BASE}/events/${selectedEventId}/roster${allMatchingParam}`, {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(
+        eventRosterMessage,
+        data.message || "Could not load event roster.",
+        true
+      );
+      return;
+    }
+
+    renderRosterPlayers(data.players || []);
+
+  } catch (err) {
+    console.error("Load roster error:", err);
+    setMessage(eventRosterMessage, "Could not load event roster.", true);
+  }
+}
+
+async function saveEventRoster() {
+  if (!eventSelect || !eventSelect.value) {
+    setMessage(eventRosterMessage, "Select an event first.", true);
+    return;
+  }
+
+  const eventType = getSelectedEventType();
+  const selectedGroupId = groupSelect ? groupSelect.value : "";
+
+  if (eventType === "Game" && !selectedGroupId) {
+    setMessage(
+      eventRosterMessage,
+      "Select a specific group before saving a Game roster.",
+      true
+    );
+    return;
+  }
+
+  const selectedPlayerIds = Array.from(
+    document.querySelectorAll(".roster-player-checkbox:checked")
+  ).map(checkbox => Number(checkbox.value));
+
+  const allMatchingParam = !selectedGroupId && eventType === "Team Event"
+    ? "?allMatching=1"
+    : "";
+
+  try {
+    const res = await fetch(`${API_BASE}/events/${eventSelect.value}/roster${allMatchingParam}`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        playerIds: selectedPlayerIds
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(
+        eventRosterMessage,
+        data.message || "Could not save roster.",
+        true
+      );
+      return;
+    }
+
+    const skippedText = data.skippedCount
+      ? ` ${data.skippedCount} player(s) skipped.`
+      : "";
+
+    setMessage(
+      eventRosterMessage,
+      `✅ Roster saved. ${data.savedCount || 0} player(s) expected.${skippedText}`,
+      false
+    );
+
+    await updateEventRosterSection();
+    await loadPlayers();
+
+  } catch (err) {
+    console.error("Save roster error:", err);
+    setMessage(eventRosterMessage, "Could not save roster.", true);
+  }
 }
 
 /* =========================
