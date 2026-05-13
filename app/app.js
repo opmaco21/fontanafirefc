@@ -1158,15 +1158,32 @@ function clearSelectedEventDetails() {
 function formatEventTime(timeValue) {
   if (!timeValue) return "-";
 
-  const raw = String(timeValue);
-  const parts = raw.split(":");
+  const raw = String(timeValue).trim();
+
+  /*
+    SQL TIME values may arrive from the API as:
+    - "18:00:00"
+    - "18:00"
+    - "1970-01-01T18:00:00.000Z"
+
+    Display them all as regular 12-hour time.
+  */
+  let timePart = raw;
+
+  if (raw.includes("T")) {
+    timePart = raw.split("T")[1] || raw;
+  }
+
+  timePart = timePart.replace("Z", "");
+
+  const parts = timePart.split(":");
 
   if (parts.length < 2) return raw;
 
   const hour = Number(parts[0]);
-  const minute = parts[1];
+  const minute = String(parts[1]).padStart(2, "0").substring(0, 2);
 
-  if (!Number.isInteger(hour)) return raw;
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return raw;
 
   const suffix = hour >= 12 ? "PM" : "AM";
   const displayHour = hour % 12 || 12;
