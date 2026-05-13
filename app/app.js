@@ -2175,6 +2175,10 @@ async function addTeamEvent() {
 /* =========================
    PLAYER MANAGEMENT
    ========================= */
+let playerManagementMode = "add";
+let editingPlayerId = null;
+let latestManagedPlayers = [];
+
 function canManagePlayers() {
   return currentUser && currentUser.RoleName !== "MainCoach";
 }
@@ -2183,11 +2187,440 @@ function getPlayerStatusLabel(player) {
   return player.IsActive ? "Active" : "Inactive";
 }
 
+function formatDateForInput(value) {
+  if (!value) return "";
+
+  const raw = String(value);
+
+  if (raw.includes("T")) {
+    return raw.split("T")[0];
+  }
+
+  return raw.substring(0, 10);
+}
+
+function safeValue(value) {
+  return value === null || value === undefined ? "" : String(value);
+}
+
+function ensurePlayerManagementForm() {
+  if (!addPlayerSection) return;
+
+  if (!canManagePlayers()) {
+    addPlayerSection.innerHTML = "";
+    addPlayerSection.classList.add("hidden");
+    return;
+  }
+
+  addPlayerSection.classList.remove("hidden");
+
+  addPlayerSection.innerHTML = `
+    <div class="player-management-form-card">
+      <h3 id="playerFormTitle">Add New Player</h3>
+
+      <div class="player-form-grid">
+        <label>
+          Player #
+          <input id="pmPlayerNumber" type="number" min="0" placeholder="Player number" />
+        </label>
+
+        <label>
+          Birth Year
+          <select id="pmBirthYear">
+            <option value="">Select birth year</option>
+            <option value="2012">2012</option>
+            <option value="2013">2013</option>
+            <option value="2014">2014</option>
+            <option value="2015">2015</option>
+            <option value="2016">2016</option>
+            <option value="2017">2017</option>
+            <option value="2018">2018</option>
+            <option value="2019">2019</option>
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+          </select>
+        </label>
+
+        <label>
+          First Name
+          <input id="pmFirstName" type="text" placeholder="First name" />
+        </label>
+
+        <label>
+          Last Name
+          <input id="pmLastName" type="text" placeholder="Last name" />
+        </label>
+
+        <label>
+          Date of Birth
+          <input id="pmDateOfBirth" type="date" />
+        </label>
+
+        <label>
+          Start Date
+          <input id="pmStartDate" type="date" />
+        </label>
+
+        <label>
+          Parent 1 Name
+          <input id="pmParentName" type="text" placeholder="Parent 1 name" />
+        </label>
+
+        <label>
+          Parent 1 Phone
+          <input id="pmParentPhone" type="tel" placeholder="Parent 1 phone" />
+        </label>
+
+        <label>
+          Parent Email
+          <input id="pmParentEmail" type="email" placeholder="Parent email" />
+        </label>
+
+        <label>
+          Parent 2 Name
+          <input id="pmParent2Name" type="text" placeholder="Parent 2 name" />
+        </label>
+
+        <label>
+          Parent 2 Phone
+          <input id="pmParent2Phone" type="tel" placeholder="Parent 2 phone" />
+        </label>
+
+        <label>
+          Snack Preference
+          <select id="pmSnackPreference">
+            <option value="Bring Snack">Bring Snack</option>
+            <option value="Paid Out">Paid Out</option>
+          </select>
+        </label>
+
+        <label>
+          Paperwork Status
+          <select id="pmPaperworkStatus">
+            <option value="Not Received">Not Received</option>
+            <option value="Missing">Missing</option>
+            <option value="Complete">Complete</option>
+          </select>
+        </label>
+
+        <label>
+          Active Status
+          <select id="pmIsActive">
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+          </select>
+        </label>
+
+        <label>
+          End Date
+          <input id="pmEndDate" type="date" />
+        </label>
+      </div>
+
+      <div class="player-form-actions">
+        <button type="button" id="pmSavePlayerBtn" class="btn btn-primary">
+          Add Player
+        </button>
+
+        <button type="button" id="pmCancelEditBtn" class="btn btn-secondary hidden">
+          Cancel Edit
+        </button>
+      </div>
+
+      <p id="pmPlayerMessage" class="form-message"></p>
+    </div>
+  `;
+
+  const saveBtn = document.getElementById("pmSavePlayerBtn");
+  const cancelBtn = document.getElementById("pmCancelEditBtn");
+  const birthYearInput = document.getElementById("pmBirthYear");
+  const dobInput = document.getElementById("pmDateOfBirth");
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", savePlayerManagementForm);
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", resetPlayerManagementForm);
+  }
+
+  if (birthYearInput && dobInput) {
+    birthYearInput.addEventListener("change", () => {
+      if (!dobInput.value && birthYearInput.value) {
+        dobInput.value = `${birthYearInput.value}-01-01`;
+      }
+    });
+  }
+
+  resetPlayerManagementForm(false);
+}
+
+function setPlayerManagementMessage(text, isError = false) {
+  const message = document.getElementById("pmPlayerMessage");
+
+  if (message) {
+    message.textContent = text;
+    message.style.color = isError ? "#c62828" : "#2e7d32";
+  }
+
+  if (addPlayerMessage) {
+    addPlayerMessage.textContent = text;
+    addPlayerMessage.style.color = isError ? "#c62828" : "#2e7d32";
+  }
+}
+
+function getPlayerFormPayload() {
+  const playerNumberInput = document.getElementById("pmPlayerNumber");
+  const firstNameInput = document.getElementById("pmFirstName");
+  const lastNameInput = document.getElementById("pmLastName");
+  const birthYearInput = document.getElementById("pmBirthYear");
+  const dateOfBirthInput = document.getElementById("pmDateOfBirth");
+  const parentNameInput = document.getElementById("pmParentName");
+  const parentPhoneInput = document.getElementById("pmParentPhone");
+  const parentEmailInput = document.getElementById("pmParentEmail");
+  const parent2NameInput = document.getElementById("pmParent2Name");
+  const parent2PhoneInput = document.getElementById("pmParent2Phone");
+  const snackPreferenceInput = document.getElementById("pmSnackPreference");
+  const paperworkStatusInput = document.getElementById("pmPaperworkStatus");
+  const startDateInput = document.getElementById("pmStartDate");
+  const endDateInput = document.getElementById("pmEndDate");
+  const isActiveInput = document.getElementById("pmIsActive");
+
+  const birthYear = birthYearInput ? birthYearInput.value : "";
+
+  const dateOfBirth =
+    dateOfBirthInput && dateOfBirthInput.value
+      ? dateOfBirthInput.value
+      : birthYear
+        ? `${birthYear}-01-01`
+        : "";
+
+  return {
+    playerNumber:
+      playerNumberInput && playerNumberInput.value !== ""
+        ? Number(playerNumberInput.value)
+        : null,
+
+    firstName: firstNameInput ? firstNameInput.value.trim() : "",
+    lastName: lastNameInput ? lastNameInput.value.trim() : "",
+    birthYear: birthYear ? Number(birthYear) : null,
+    dateOfBirth,
+
+    parentName: parentNameInput ? parentNameInput.value.trim() : "",
+    parentPhone: parentPhoneInput ? parentPhoneInput.value.trim() : "",
+    parentEmail: parentEmailInput ? parentEmailInput.value.trim() : "",
+    parent2Name: parent2NameInput ? parent2NameInput.value.trim() : "",
+    parent2Phone: parent2PhoneInput ? parent2PhoneInput.value.trim() : "",
+
+    snackPreference: snackPreferenceInput ? snackPreferenceInput.value : "Bring Snack",
+    paperworkStatus: paperworkStatusInput ? paperworkStatusInput.value : "Not Received",
+
+    startDate: startDateInput ? startDateInput.value || null : null,
+    endDate: endDateInput ? endDateInput.value || null : null,
+
+    isActive: isActiveInput ? isActiveInput.value === "1" : true
+  };
+}
+
+function validatePlayerPayload(payload) {
+  if (!payload.firstName || !payload.lastName || !payload.birthYear) {
+    return "First name, last name, and birth year are required.";
+  }
+
+  if (payload.birthYear < 2012 || payload.birthYear > 2021) {
+    return "Birth year must be between 2012 and 2021.";
+  }
+
+  return "";
+}
+
+async function savePlayerManagementForm() {
+  if (!canManagePlayers()) {
+    setPlayerManagementMessage(
+      "Access denied. Only Admin and Team Mom can manage players.",
+      true
+    );
+    return;
+  }
+
+  const payload = getPlayerFormPayload();
+  const validationMessage = validatePlayerPayload(payload);
+
+  if (validationMessage) {
+    setPlayerManagementMessage(validationMessage, true);
+    return;
+  }
+
+  const isEditMode = playerManagementMode === "edit" && editingPlayerId;
+
+  const url = isEditMode
+    ? `${API_BASE}/players/${editingPlayerId}`
+    : `${API_BASE}/players`;
+
+  const method = isEditMode ? "PUT" : "POST";
+
+  try {
+    setPlayerManagementMessage(
+      isEditMode ? "Saving player changes..." : "Adding player...",
+      false
+    );
+
+    const res = await fetch(url, {
+      method,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      if (res.status === 401) {
+        setPlayerManagementMessage("Session expired. Please login again.", true);
+      } else if (res.status === 403) {
+        setPlayerManagementMessage("Access denied.", true);
+      } else {
+        setPlayerManagementMessage(data.message || "Could not save player.", true);
+      }
+
+      return;
+    }
+
+    setPlayerManagementMessage(
+      isEditMode ? "✅ Player updated successfully." : "✅ Player added successfully.",
+      false
+    );
+
+    resetPlayerManagementForm(false);
+    await loadPlayerManagementList();
+
+    if (currentTab !== "Player Management") {
+      await loadPlayers();
+    }
+
+  } catch (err) {
+    console.error("Save player error:", err);
+    setPlayerManagementMessage("Server error saving player.", true);
+  }
+}
+
+function resetPlayerManagementForm(clearMessage = true) {
+  playerManagementMode = "add";
+  editingPlayerId = null;
+
+  const title = document.getElementById("playerFormTitle");
+  const saveBtn = document.getElementById("pmSavePlayerBtn");
+  const cancelBtn = document.getElementById("pmCancelEditBtn");
+
+  if (title) title.textContent = "Add New Player";
+  if (saveBtn) saveBtn.textContent = "Add Player";
+  if (cancelBtn) cancelBtn.classList.add("hidden");
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const fieldDefaults = {
+    pmPlayerNumber: "",
+    pmBirthYear: "",
+    pmFirstName: "",
+    pmLastName: "",
+    pmDateOfBirth: "",
+    pmStartDate: today,
+    pmParentName: "",
+    pmParentPhone: "",
+    pmParentEmail: "",
+    pmParent2Name: "",
+    pmParent2Phone: "",
+    pmSnackPreference: "Bring Snack",
+    pmPaperworkStatus: "Not Received",
+    pmIsActive: "1",
+    pmEndDate: ""
+  };
+
+  Object.entries(fieldDefaults).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.value = value;
+    }
+  });
+
+  if (clearMessage) {
+    setPlayerManagementMessage("", false);
+  }
+}
+
+function editPlayer(playerId) {
+  const player = latestManagedPlayers.find(
+    item => Number(item.PlayerID) === Number(playerId)
+  );
+
+  if (!player) {
+    alert("Player not found in current list.");
+    return;
+  }
+
+  playerManagementMode = "edit";
+  editingPlayerId = player.PlayerID;
+
+  const title = document.getElementById("playerFormTitle");
+  const saveBtn = document.getElementById("pmSavePlayerBtn");
+  const cancelBtn = document.getElementById("pmCancelEditBtn");
+
+  if (title) title.textContent = `Edit Player: ${player.FirstName} ${player.LastName}`;
+  if (saveBtn) saveBtn.textContent = "Save Changes";
+  if (cancelBtn) cancelBtn.classList.remove("hidden");
+
+  const values = {
+    pmPlayerNumber: safeValue(player.PlayerNumber),
+    pmBirthYear: safeValue(player.BirthYear || player.GroupCode || ""),
+    pmFirstName: safeValue(player.FirstName),
+    pmLastName: safeValue(player.LastName),
+    pmDateOfBirth: formatDateForInput(player.DateOfBirth),
+    pmStartDate: formatDateForInput(player.StartDate),
+    pmParentName: safeValue(player.ParentName),
+    pmParentPhone: safeValue(player.ParentPhone),
+    pmParentEmail: safeValue(player.ParentEmail),
+    pmParent2Name: safeValue(player.Parent2Name),
+    pmParent2Phone: safeValue(player.Parent2Phone),
+    pmSnackPreference: player.SnackPreference === "Paid Out" ? "Paid Out" : "Bring Snack",
+    pmPaperworkStatus:
+      player.PaperworkStatus === "Complete" ||
+      player.PaperworkStatus === "Missing" ||
+      player.PaperworkStatus === "Not Received"
+        ? player.PaperworkStatus
+        : "Not Received",
+    pmIsActive: player.IsActive ? "1" : "0",
+    pmEndDate: formatDateForInput(player.EndDate)
+  };
+
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.value = value;
+    }
+  });
+
+  setPlayerManagementMessage(
+    "Editing player. Make changes, then click Save Changes.",
+    false
+  );
+
+  if (addPlayerSection) {
+    addPlayerSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 async function loadPlayerManagementList() {
   if (!playerManagementList) return;
 
+  ensurePlayerManagementForm();
+
   const searchText = playerSearchInput ? playerSearchInput.value.trim() : "";
-  const includeInactive = showInactivePlayersToggle && showInactivePlayersToggle.checked;
+  const includeInactive =
+    showInactivePlayersToggle && showInactivePlayersToggle.checked;
 
   const params = new URLSearchParams();
 
@@ -2221,10 +2654,12 @@ async function loadPlayerManagementList() {
       return;
     }
 
-    renderPlayerManagementList(data.players || []);
+    latestManagedPlayers = data.players || [];
+    renderPlayerManagementList(latestManagedPlayers);
 
   } catch (err) {
     console.error("Player management load error:", err);
+
     playerManagementList.innerHTML = `
       <div class="roster-empty-message">Could not load players.</div>
     `;
@@ -2238,7 +2673,8 @@ function renderPlayerManagementList(players) {
   const inactiveCount = players.filter(player => !player.IsActive).length;
 
   if (playerManagementSummary) {
-    playerManagementSummary.textContent = `Active: ${activeCount} | Inactive: ${inactiveCount}`;
+    playerManagementSummary.textContent =
+      `Active: ${activeCount} | Inactive: ${inactiveCount}`;
   }
 
   playerManagementList.innerHTML = "";
@@ -2252,23 +2688,51 @@ function renderPlayerManagementList(players) {
 
   players.forEach(player => {
     const card = document.createElement("div");
-    card.className = `player-management-row ${player.IsActive ? "" : "inactive-player"}`;
+
+    card.className =
+      `player-management-row ${player.IsActive ? "" : "inactive-player"}`;
 
     const groupLabel = player.GroupName || player.GroupCode || "No Group";
-    const playerNumber = player.PlayerNumber ? `#${player.PlayerNumber}` : "No #";
+
+    const playerNumber =
+      player.PlayerNumber === 0 || player.PlayerNumber
+        ? `#${player.PlayerNumber}`
+        : "No #";
+
     const statusLabel = getPlayerStatusLabel(player);
     const canToggle = canManagePlayers();
+
+    const parentInfo = [
+      player.ParentName ? `Parent 1: ${player.ParentName}` : "",
+      player.ParentPhone ? player.ParentPhone : "",
+      player.ParentEmail ? player.ParentEmail : ""
+    ].filter(Boolean).join(" | ");
+
+    const playerDetails = [
+      player.SnackPreference ? `Snack: ${player.SnackPreference}` : "Snack: Bring Snack",
+      player.PaperworkStatus ? `Paperwork: ${player.PaperworkStatus}` : "Paperwork: Not Received"
+    ].join(" | ");
 
     card.innerHTML = `
       <div class="player-management-info">
         <div class="player-management-name">${player.FirstName} ${player.LastName}</div>
         <div class="player-management-meta">${playerNumber} | Group: ${groupLabel} | Birth Year: ${player.BirthYear || "-"}</div>
+        <div class="player-management-meta">${parentInfo || "No parent info entered"}</div>
+        <div class="player-management-meta">${playerDetails}</div>
         <div class="player-management-status ${player.IsActive ? "active-status" : "inactive-status"}">${statusLabel}</div>
       </div>
 
       <div class="player-management-actions">
         ${canToggle
-          ? `<button type="button" class="btn btn-secondary player-status-toggle" data-player-id="${player.PlayerID}" data-is-active="${player.IsActive ? "1" : "0"}">${player.IsActive ? "Make Inactive" : "Make Active"}</button>`
+          ? `
+            <button type="button" class="btn btn-secondary player-edit-btn" data-player-id="${player.PlayerID}">
+              Edit
+            </button>
+
+            <button type="button" class="btn btn-secondary player-status-toggle" data-player-id="${player.PlayerID}" data-is-active="${player.IsActive ? "1" : "0"}">
+              ${player.IsActive ? "Make Inactive" : "Make Active"}
+            </button>
+          `
           : ""}
       </div>
     `;
@@ -2276,10 +2740,17 @@ function renderPlayerManagementList(players) {
     playerManagementList.appendChild(card);
   });
 
+  playerManagementList.querySelectorAll(".player-edit-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      editPlayer(Number(button.dataset.playerId));
+    });
+  });
+
   playerManagementList.querySelectorAll(".player-status-toggle").forEach(button => {
     button.addEventListener("click", async () => {
       const playerId = Number(button.dataset.playerId);
       const isCurrentlyActive = button.dataset.isActive === "1";
+
       await updatePlayerActiveStatus(playerId, !isCurrentlyActive);
     });
   });
@@ -2326,89 +2797,11 @@ async function updatePlayerActiveStatus(playerId, makeActive) {
 /* =========================
    ADD PLAYER
 
-   Purpose:
-   - Adds a player using first name, last name, and birth year only.
-   - Backend automatically finds the correct age group.
-   - Full DOB will be synced later from Excel.
+   This wrapper keeps the existing Add Player button compatible.
+   The new Player Management form uses savePlayerManagementForm().
    ========================= */
 async function addPlayer() {
-  if (addPlayerMessage) {
-    addPlayerMessage.textContent = "";
-  }
-
-  if (currentUser && currentUser.RoleName === "MainCoach") {
-    setMessage(
-      addPlayerMessage,
-      "Access denied. Only Admin and Team Mom can add players.",
-      true
-    );
-    return;
-  }
-
-  const firstNameInput = document.getElementById("newFirstName");
-  const lastNameInput = document.getElementById("newLastName");
-  const birthYearInput = document.getElementById("newBirthYear");
-
-  const firstName = firstNameInput ? firstNameInput.value.trim() : "";
-  const lastName = lastNameInput ? lastNameInput.value.trim() : "";
-  const birthYear = birthYearInput ? birthYearInput.value : "";
-
-  if (!firstName || !lastName || !birthYear) {
-    setMessage(
-      addPlayerMessage,
-      "Enter first name, last name, and birth year.",
-      true
-    );
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/players`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        firstName,
-        lastName,
-        birthYear: Number(birthYear)
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      if (res.status === 401) {
-        setMessage(addPlayerMessage, "Session expired. Please login again.", true);
-      } else if (res.status === 403) {
-        setMessage(addPlayerMessage, "Access denied.", true);
-      } else {
-        setMessage(addPlayerMessage, data.message || "Could not add player.", true);
-      }
-      return;
-    }
-
-    if (firstNameInput) firstNameInput.value = "";
-    if (lastNameInput) lastNameInput.value = "";
-    if (birthYearInput) birthYearInput.value = "";
-
-    setMessage(
-      addPlayerMessage,
-      `✅ Player added to ${data.player.GroupName} age group.`,
-      false
-    );
-
-    if (currentTab === "Player Management") {
-      await loadPlayerManagementList();
-    } else {
-      await loadPlayers();
-    }
-
-  } catch (err) {
-    console.error("Add player error:", err);
-    setMessage(addPlayerMessage, "Server error adding player.", true);
-  }
+  await savePlayerManagementForm();
 }
 
 /* =========================
