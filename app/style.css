@@ -871,3 +871,84 @@ hr {
 .player-management-card-scroll-item .player-management-actions { display:flex; flex-direction:column; gap:8px; }
 .player-management-card-scroll-item .player-management-actions .btn-secondary { margin-top:0; }
 @media (max-width:520px){ .player-card-scroll-row{grid-template-columns:1fr;} .player-card-scroll-nav .btn{width:100%;} }
+
+/* =========================================================
+   PLAYER MANAGEMENT BATCH 3B/C FORM SECTIONS
+   Emergency / address information stays inside Edit Player.
+   Photo Release status appears on player cards.
+   ========================================================= */
+
+.player-management-form-card {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.player-form-section {
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.player-form-section h4 {
+  margin: 0 0 10px;
+  color: #222;
+}
+
+.player-private-section {
+  border-color: #f2dcc8;
+  background: #fffaf5;
+}
+
+.player-form-note {
+  margin: -2px 0 12px;
+  font-size: 13px;
+  color: #666;
+}
+
+.player-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.player-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 0;
+}
+
+.player-form-wide {
+  grid-column: 1 / -1;
+}
+
+.player-form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.player-form-actions .btn-secondary {
+  margin-top: 0;
+}
+
+.form-message {
+  margin-bottom: 0;
+}
+
+@media (max-width: 520px) {
+  .player-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .player-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

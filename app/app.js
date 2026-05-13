@@ -2205,6 +2205,10 @@ function safeValue(value) {
   return value === null || value === undefined ? "" : String(value);
 }
 
+function getPhotoReleaseLabel(player) {
+  return player.PhotoReleaseStatus || "Not Received";
+}
+
 function ensurePlayerManagementForm() {
   if (!addPlayerSection) return;
 
@@ -2220,103 +2224,190 @@ function ensurePlayerManagementForm() {
     <div class="player-management-form-card">
       <h3 id="playerFormTitle">Add New Player</h3>
 
-      <div class="player-form-grid">
-        <label>
-          Player #
-          <input id="pmPlayerNumber" type="number" min="0" placeholder="Player number" />
-        </label>
+      <div class="player-form-section">
+        <h4>Player Info</h4>
+        <div class="player-form-grid">
+          <label>
+            Player #
+            <input id="pmPlayerNumber" type="number" min="0" placeholder="Player number" />
+          </label>
 
-        <label>
-          Birth Year
-          <select id="pmBirthYear">
-            <option value="">Select birth year</option>
-            <option value="2012">2012</option>
-            <option value="2013">2013</option>
-            <option value="2014">2014</option>
-            <option value="2015">2015</option>
-            <option value="2016">2016</option>
-            <option value="2017">2017</option>
-            <option value="2018">2018</option>
-            <option value="2019">2019</option>
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-          </select>
-        </label>
+          <label>
+            Birth Year
+            <select id="pmBirthYear">
+              <option value="">Select birth year</option>
+              <option value="2012">2012</option>
+              <option value="2013">2013</option>
+              <option value="2014">2014</option>
+              <option value="2015">2015</option>
+              <option value="2016">2016</option>
+              <option value="2017">2017</option>
+              <option value="2018">2018</option>
+              <option value="2019">2019</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+            </select>
+          </label>
 
-        <label>
-          First Name
-          <input id="pmFirstName" type="text" placeholder="First name" />
-        </label>
+          <label>
+            First Name
+            <input id="pmFirstName" type="text" placeholder="First name" />
+          </label>
 
-        <label>
-          Last Name
-          <input id="pmLastName" type="text" placeholder="Last name" />
-        </label>
+          <label>
+            Last Name
+            <input id="pmLastName" type="text" placeholder="Last name" />
+          </label>
 
-        <label>
-          Date of Birth
-          <input id="pmDateOfBirth" type="date" />
-        </label>
+          <label>
+            Date of Birth
+            <input id="pmDateOfBirth" type="date" />
+          </label>
 
-        <label>
-          Start Date
-          <input id="pmStartDate" type="date" />
-        </label>
+          <label>
+            Start Date
+            <input id="pmStartDate" type="date" />
+          </label>
+        </div>
+      </div>
 
-        <label>
-          Parent 1 Name
-          <input id="pmParentName" type="text" placeholder="Parent 1 name" />
-        </label>
+      <div class="player-form-section">
+        <h4>Parent Info</h4>
+        <div class="player-form-grid">
+          <label>
+            Parent 1 Name
+            <input id="pmParentName" type="text" placeholder="Parent 1 name" />
+          </label>
 
-        <label>
-          Parent 1 Phone
-          <input id="pmParentPhone" type="tel" placeholder="Parent 1 phone" />
-        </label>
+          <label>
+            Parent 1 Phone
+            <input id="pmParentPhone" type="tel" placeholder="Parent 1 phone" />
+          </label>
 
-        <label>
-          Parent Email
-          <input id="pmParentEmail" type="email" placeholder="Parent email" />
-        </label>
+          <label>
+            Parent Email
+            <input id="pmParentEmail" type="email" placeholder="Parent email" />
+          </label>
 
-        <label>
-          Parent 2 Name
-          <input id="pmParent2Name" type="text" placeholder="Parent 2 name" />
-        </label>
+          <label>
+            Parent 2 Name
+            <input id="pmParent2Name" type="text" placeholder="Parent 2 name" />
+          </label>
 
-        <label>
-          Parent 2 Phone
-          <input id="pmParent2Phone" type="tel" placeholder="Parent 2 phone" />
-        </label>
+          <label>
+            Parent 2 Phone
+            <input id="pmParent2Phone" type="tel" placeholder="Parent 2 phone" />
+          </label>
+        </div>
+      </div>
 
-        <label>
-          Snack Preference
-          <select id="pmSnackPreference">
-            <option value="Bring Snack">Bring Snack</option>
-            <option value="Paid Out">Paid Out</option>
-          </select>
-        </label>
+      <div class="player-form-section player-private-section">
+        <h4>Emergency / Address Info</h4>
+        <p class="player-form-note">This information stays inside Edit Player and is not shown on player cards.</p>
 
-        <label>
-          Paperwork Status
-          <select id="pmPaperworkStatus">
-            <option value="Not Received">Not Received</option>
-            <option value="Missing">Missing</option>
-            <option value="Complete">Complete</option>
-          </select>
-        </label>
+        <div class="player-form-grid">
+          <label>
+            Street Address
+            <input id="pmStreetAddress" type="text" placeholder="Street address" />
+          </label>
 
-        <label>
-          Active Status
-          <select id="pmIsActive">
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
-        </label>
+          <label>
+            City
+            <input id="pmCity" type="text" placeholder="City" />
+          </label>
 
-        <label>
-          End Date
-          <input id="pmEndDate" type="date" />
-        </label>
+          <label>
+            State
+            <input id="pmState" type="text" placeholder="State" />
+          </label>
+
+          <label>
+            ZIP Code
+            <input id="pmZipCode" type="text" placeholder="ZIP code" />
+          </label>
+
+          <label>
+            Emergency Contact Name
+            <input id="pmEmergencyContactName" type="text" placeholder="Emergency contact name" />
+          </label>
+
+          <label>
+            Emergency Contact Relationship
+            <input id="pmEmergencyContactRelationship" type="text" placeholder="Relationship" />
+          </label>
+
+          <label>
+            Emergency Contact Phone
+            <input id="pmEmergencyContactPhone" type="tel" placeholder="Emergency phone" />
+          </label>
+
+          <label>
+            Emergency Contact Alt Phone
+            <input id="pmEmergencyContactAltPhone" type="tel" placeholder="Alternate phone" />
+          </label>
+
+          <label class="player-form-wide">
+            Emergency Notes
+            <textarea id="pmEmergencyNotes" placeholder="Emergency notes, medical notes, or important instructions"></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="player-form-section">
+        <h4>Snack / Paperwork / Photo Release</h4>
+        <div class="player-form-grid">
+          <label>
+            Snack Preference
+            <select id="pmSnackPreference">
+              <option value="Bring Snack">Bring Snack</option>
+              <option value="Paid Out">Paid Out</option>
+            </select>
+          </label>
+
+          <label>
+            Paperwork Status
+            <select id="pmPaperworkStatus">
+              <option value="Not Received">Not Received</option>
+              <option value="Missing">Missing</option>
+              <option value="Complete">Complete</option>
+            </select>
+          </label>
+
+          <label>
+            Photo Release Status
+            <select id="pmPhotoReleaseStatus">
+              <option value="Not Received">Not Received</option>
+              <option value="Opt In">Opt In</option>
+              <option value="Opt Out">Opt Out</option>
+            </select>
+          </label>
+
+          <label>
+            Photo Release Form Received
+            <select id="pmPhotoReleaseFormReceived">
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="player-form-section">
+        <h4>Status</h4>
+        <div class="player-form-grid">
+          <label>
+            Active Status
+            <select id="pmIsActive">
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </label>
+
+          <label>
+            End Date
+            <input id="pmEndDate" type="date" />
+          </label>
+        </div>
       </div>
 
       <div class="player-form-actions">
@@ -2382,8 +2473,19 @@ function getPlayerFormPayload() {
   const parentEmailInput = document.getElementById("pmParentEmail");
   const parent2NameInput = document.getElementById("pmParent2Name");
   const parent2PhoneInput = document.getElementById("pmParent2Phone");
+  const streetAddressInput = document.getElementById("pmStreetAddress");
+  const cityInput = document.getElementById("pmCity");
+  const stateInput = document.getElementById("pmState");
+  const zipCodeInput = document.getElementById("pmZipCode");
+  const emergencyContactNameInput = document.getElementById("pmEmergencyContactName");
+  const emergencyContactRelationshipInput = document.getElementById("pmEmergencyContactRelationship");
+  const emergencyContactPhoneInput = document.getElementById("pmEmergencyContactPhone");
+  const emergencyContactAltPhoneInput = document.getElementById("pmEmergencyContactAltPhone");
+  const emergencyNotesInput = document.getElementById("pmEmergencyNotes");
   const snackPreferenceInput = document.getElementById("pmSnackPreference");
   const paperworkStatusInput = document.getElementById("pmPaperworkStatus");
+  const photoReleaseStatusInput = document.getElementById("pmPhotoReleaseStatus");
+  const photoReleaseFormReceivedInput = document.getElementById("pmPhotoReleaseFormReceived");
   const startDateInput = document.getElementById("pmStartDate");
   const endDateInput = document.getElementById("pmEndDate");
   const isActiveInput = document.getElementById("pmIsActive");
@@ -2414,8 +2516,20 @@ function getPlayerFormPayload() {
     parent2Name: parent2NameInput ? parent2NameInput.value.trim() : "",
     parent2Phone: parent2PhoneInput ? parent2PhoneInput.value.trim() : "",
 
+    streetAddress: streetAddressInput ? streetAddressInput.value.trim() : "",
+    city: cityInput ? cityInput.value.trim() : "",
+    state: stateInput ? stateInput.value.trim() : "",
+    zipCode: zipCodeInput ? zipCodeInput.value.trim() : "",
+    emergencyContactName: emergencyContactNameInput ? emergencyContactNameInput.value.trim() : "",
+    emergencyContactRelationship: emergencyContactRelationshipInput ? emergencyContactRelationshipInput.value.trim() : "",
+    emergencyContactPhone: emergencyContactPhoneInput ? emergencyContactPhoneInput.value.trim() : "",
+    emergencyContactAltPhone: emergencyContactAltPhoneInput ? emergencyContactAltPhoneInput.value.trim() : "",
+    emergencyNotes: emergencyNotesInput ? emergencyNotesInput.value.trim() : "",
+
     snackPreference: snackPreferenceInput ? snackPreferenceInput.value : "Bring Snack",
     paperworkStatus: paperworkStatusInput ? paperworkStatusInput.value : "Not Received",
+    photoReleaseStatus: photoReleaseStatusInput ? photoReleaseStatusInput.value : "Not Received",
+    photoReleaseFormReceived: photoReleaseFormReceivedInput ? photoReleaseFormReceivedInput.value === "1" : false,
 
     startDate: startDateInput ? startDateInput.value || null : null,
     endDate: endDateInput ? endDateInput.value || null : null,
@@ -2534,8 +2648,19 @@ function resetPlayerManagementForm(clearMessage = true) {
     pmParentEmail: "",
     pmParent2Name: "",
     pmParent2Phone: "",
+    pmStreetAddress: "",
+    pmCity: "",
+    pmState: "",
+    pmZipCode: "",
+    pmEmergencyContactName: "",
+    pmEmergencyContactRelationship: "",
+    pmEmergencyContactPhone: "",
+    pmEmergencyContactAltPhone: "",
+    pmEmergencyNotes: "",
     pmSnackPreference: "Bring Snack",
     pmPaperworkStatus: "Not Received",
+    pmPhotoReleaseStatus: "Not Received",
+    pmPhotoReleaseFormReceived: "0",
     pmIsActive: "1",
     pmEndDate: ""
   };
@@ -2586,6 +2711,15 @@ function editPlayer(playerId) {
     pmParentEmail: safeValue(player.ParentEmail),
     pmParent2Name: safeValue(player.Parent2Name),
     pmParent2Phone: safeValue(player.Parent2Phone),
+    pmStreetAddress: safeValue(player.StreetAddress),
+    pmCity: safeValue(player.City),
+    pmState: safeValue(player.State),
+    pmZipCode: safeValue(player.ZipCode),
+    pmEmergencyContactName: safeValue(player.EmergencyContactName),
+    pmEmergencyContactRelationship: safeValue(player.EmergencyContactRelationship),
+    pmEmergencyContactPhone: safeValue(player.EmergencyContactPhone),
+    pmEmergencyContactAltPhone: safeValue(player.EmergencyContactAltPhone),
+    pmEmergencyNotes: safeValue(player.EmergencyNotes),
     pmSnackPreference: player.SnackPreference === "Paid Out" ? "Paid Out" : "Bring Snack",
     pmPaperworkStatus:
       player.PaperworkStatus === "Complete" ||
@@ -2593,6 +2727,13 @@ function editPlayer(playerId) {
       player.PaperworkStatus === "Not Received"
         ? player.PaperworkStatus
         : "Not Received",
+    pmPhotoReleaseStatus:
+      player.PhotoReleaseStatus === "Opt In" ||
+      player.PhotoReleaseStatus === "Opt Out" ||
+      player.PhotoReleaseStatus === "Not Received"
+        ? player.PhotoReleaseStatus
+        : "Not Received",
+    pmPhotoReleaseFormReceived: player.PhotoReleaseFormReceived ? "1" : "0",
     pmIsActive: player.IsActive ? "1" : "0",
     pmEndDate: formatDateForInput(player.EndDate)
   };
@@ -2743,6 +2884,7 @@ function renderPlayerManagementList(players) {
 
     const statusLabel = getPlayerStatusLabel(player);
     const canToggle = canManagePlayers();
+    const photoReleaseLabel = getPhotoReleaseLabel(player);
 
     const parentInfo = [
       player.ParentName ? `Parent 1: ${player.ParentName}` : "",
@@ -2752,7 +2894,8 @@ function renderPlayerManagementList(players) {
 
     const playerDetails = [
       player.SnackPreference ? `Snack: ${player.SnackPreference}` : "Snack: Bring Snack",
-      player.PaperworkStatus ? `Paperwork: ${player.PaperworkStatus}` : "Paperwork: Not Received"
+      player.PaperworkStatus ? `Paperwork: ${player.PaperworkStatus}` : "Paperwork: Not Received",
+      `Photo Release: ${photoReleaseLabel}`
     ].join(" | ");
 
     card.innerHTML = `
@@ -2864,6 +3007,7 @@ async function updatePlayerActiveStatus(playerId, makeActive) {
 async function addPlayer() {
   await savePlayerManagementForm();
 }
+
 
 /* =========================
    LOAD VERSION DISPLAY
