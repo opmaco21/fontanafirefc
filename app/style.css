@@ -1209,3 +1209,47 @@ hr {
   }
 }
 
+
+
+/* =========================================================
+   BATCH 3G PLAYER FILTER CLEANUP
+   Keeps quick missing-item buttons visible and moves secondary
+   dropdown filters behind a More filters disclosure to avoid
+   duplicate-looking controls.
+   ========================================================= */
+
+.player-management-main-filter-grid {
+  grid-template-columns: minmax(180px, 1fr) minmax(150px, 220px);
+}
+
+.player-management-secondary-filter-grid {
+  margin-top: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.player-management-advanced-filters {
+  margin-top: 10px;
+  border-top: 1px solid #e1e5ea;
+  padding-top: 10px;
+}
+
+.player-management-advanced-filters summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #333;
+  list-style-position: inside;
+}
+
+.player-management-advanced-filters summary::marker {
+  color: #f57c00;
+}
+
+.player-management-quick-counts {
+  overflow-wrap: normal;
+}
+
+@media (max-width: 560px) {
+  .player-management-main-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2481,7 +2481,7 @@ function ensurePlayerManagementFilters() {
 
     filterPanel.innerHTML = `
       <div id="playerManagementQuickCounts" class="player-management-quick-counts">
-        Paperwork Missing: 0 | Photo Release Missing: 0 | Emergency Info Missing: 0
+        Missing: Paperwork 0 | Photo Release 0 | Emergency Info 0
       </div>
 
       <div class="player-management-quick-filter-buttons">
@@ -2498,7 +2498,7 @@ function ensurePlayerManagementFilters() {
         </button>
       </div>
 
-      <div class="player-management-filter-grid">
+      <div class="player-management-filter-grid player-management-main-filter-grid">
         <label>
           Birth Year
           <select id="pmFilterBirthYear">
@@ -2516,30 +2516,36 @@ function ensurePlayerManagementFilters() {
           </select>
         </label>
 
-        <label>
-          Photo Release
-          <select id="pmFilterPhotoRelease">
-            <option value="">All Photo Releases</option>
-            <option value="Opt In">Opt In</option>
-            <option value="Opt Out">Opt Out</option>
-            <option value="Not Received">Not Received</option>
-          </select>
-        </label>
-
-        <label>
-          Paperwork
-          <select id="pmFilterPaperwork">
-            <option value="">All Paperwork</option>
-            <option value="Complete">Complete</option>
-            <option value="Missing">Missing</option>
-            <option value="Not Received">Not Received</option>
-          </select>
-        </label>
-
         <button type="button" id="pmClearFiltersBtn" class="btn btn-secondary">
           Clear Filters
         </button>
       </div>
+
+      <details class="player-management-advanced-filters">
+        <summary>More filters</summary>
+
+        <div class="player-management-filter-grid player-management-secondary-filter-grid">
+          <label>
+            Photo Release
+            <select id="pmFilterPhotoRelease">
+              <option value="">All Photo Releases</option>
+              <option value="Opt In">Opt In</option>
+              <option value="Opt Out">Opt Out</option>
+              <option value="Not Received">Not Received</option>
+            </select>
+          </label>
+
+          <label>
+            Paperwork
+            <select id="pmFilterPaperwork">
+              <option value="">All Paperwork</option>
+              <option value="Complete">Complete</option>
+              <option value="Missing">Missing</option>
+              <option value="Not Received">Not Received</option>
+            </select>
+          </label>
+        </div>
+      </details>
     `;
 
     playerManagementSection.insertBefore(filterPanel, playerManagementSummary);
@@ -2621,7 +2627,7 @@ function updatePlayerManagementQuickCounts() {
   const counts = getPlayerManagementCounts(latestManagedPlayers);
 
   countBox.textContent =
-    `Paperwork Missing: ${counts.paperworkMissing} | Photo Release Missing: ${counts.photoReleaseMissing} | Emergency Info Missing: ${counts.emergencyInfoMissing}`;
+    `Missing: Paperwork ${counts.paperworkMissing} | Photo Release ${counts.photoReleaseMissing} | Emergency Info ${counts.emergencyInfoMissing}`;
 }
 
 function updatePlayerManagementQuickFilterButtons() {
