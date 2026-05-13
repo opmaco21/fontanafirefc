@@ -835,3 +835,62 @@ hr {
     width: 100%;
   }
 }
+/* =========================================================
+   PLAYER MANAGEMENT SMALLER BUTTONS / BETTER CARD READABILITY
+   Batch 3D polish
+   ========================================================= */
+
+.player-management-card-scroll-item {
+  grid-template-columns: 1fr;
+}
+
+.player-management-card-scroll-item .player-management-info {
+  width: 100%;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e1e5ea;
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary {
+  flex: 1;
+  width: auto;
+  margin-top: 0;
+  padding: 9px 10px;
+  font-size: 13px;
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
+.player-card-scroll-nav .btn-secondary {
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+.player-card-page-label {
+  font-size: 14px;
+}
+
+.player-management-filters .btn-secondary,
+#playerClearFiltersBtn {
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+@media (max-width: 520px) {
+  .player-management-card-scroll-item .player-management-actions {
+    flex-direction: row;
+  }
+
+  .player-management-card-scroll-item .player-management-actions .btn-secondary {
+    font-size: 13px;
+    padding: 9px 8px;
+  }
+}
