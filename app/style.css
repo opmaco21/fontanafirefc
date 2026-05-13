@@ -777,243 +777,399 @@ hr {
   }
 }
 
+
 /* =========================================================
-   PLAYER MANAGEMENT BATCH 3D FILTERS + CLEAN CARD TEXT
-   Adds birth year, photo release, and paperwork filters.
-   Keeps the 2 x 5 card layout and bottom action buttons.
+   PLAYER MANAGEMENT 10-CARD HORIZONTAL SCROLL
+   Keeps the existing player cards, but shows 10 players per
+   page with left/right scrolling and Previous / Next buttons.
    ========================================================= */
 
-.player-management-filter-panel {
+.player-card-scroll-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.player-card-scroll-nav .btn-secondary {
+  margin-top: 0;
+}
+
+.player-card-page-label {
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+}
+
+.player-card-scroll-row {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 8px 4px 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.player-management-card-scroll-item {
+  flex: 0 0 280px;
+  scroll-snap-align: start;
+  align-items: start;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary {
+  width: 100%;
+}
+
+.player-card-scroll-row::-webkit-scrollbar {
+  height: 8px;
+}
+
+.player-card-scroll-row::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 999px;
+}
+
+.player-card-scroll-row::-webkit-scrollbar-track {
+  background: #f2f2f2;
+  border-radius: 999px;
+}
+
+@media (max-width: 700px) {
+  .player-card-scroll-nav {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .player-card-scroll-nav .btn-secondary {
+    width: auto;
+  }
+
+  .player-management-card-scroll-item {
+    flex-basis: 85%;
+  }
+}
+
+
+
+/* =========================================================
+   PLAYER MANAGEMENT 10-CARD 2x5 GRID
+   Batch 3A revised
+   ========================================================= */
+.player-card-scroll-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; flex-wrap:wrap; }
+.player-card-scroll-nav .btn-secondary { margin-top:0; }
+.player-card-page-label { font-weight:700; color:#333; }
+.player-card-scroll-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:8px 4px 16px; }
+.player-management-card-scroll-item { width:100%; min-width:0; align-items:stretch; }
+.player-management-card-scroll-item .player-management-actions { display:flex; flex-direction:column; gap:8px; }
+.player-management-card-scroll-item .player-management-actions .btn-secondary { margin-top:0; }
+@media (max-width:520px){ .player-card-scroll-row{grid-template-columns:1fr;} .player-card-scroll-nav .btn{width:100%;} }
+
+/* =========================================================
+   PLAYER MANAGEMENT BATCH 3B/C FORM SECTIONS
+   Emergency / address information stays inside Edit Player.
+   Photo Release status appears on player cards.
+   ========================================================= */
+
+.player-management-form-card {
   background: #ffffff;
   border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.player-form-section {
+  border: 1px solid #e1e5ea;
   border-radius: 12px;
   padding: 12px;
-  margin: 0 0 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
 }
 
-.player-management-filter-grid {
+.player-form-section h4 {
+  margin: 0 0 10px;
+  color: #222;
+}
+
+.player-private-section {
+  border-color: #f2dcc8;
+  background: #fffaf5;
+}
+
+.player-form-note {
+  margin: -2px 0 12px;
+  font-size: 13px;
+  color: #666;
+}
+
+.player-form-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  align-items: end;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.player-management-filter-grid label {
+.player-form-grid label {
   display: flex;
   flex-direction: column;
   gap: 7px;
   margin-bottom: 0;
 }
 
-.player-management-filter-grid .btn-secondary {
-  margin-top: 0;
-  height: 48px;
+.player-form-wide {
+  grid-column: 1 / -1;
 }
 
-.player-management-topline {
-  margin-bottom: 8px;
-}
-
-.player-management-card-line {
-  font-size: 14px;
-  color: #555;
-  line-height: 1.35;
-  margin-top: 4px;
-  overflow-wrap: anywhere;
-}
-
-.player-management-card-line strong {
-  color: #333;
-}
-
-@media (max-width: 700px) {
-  .player-management-filter-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .player-management-filter-grid .btn-secondary {
-    width: 100%;
-  }
-}
-/* =========================================================
-   PLAYER MANAGEMENT SMALLER BUTTONS / BETTER CARD READABILITY
-   Batch 3D polish
-   ========================================================= */
-
-.player-management-card-scroll-item {
-  grid-template-columns: 1fr;
-}
-
-.player-management-card-scroll-item .player-management-info {
-  width: 100%;
-}
-
-.player-management-card-scroll-item .player-management-actions {
+.player-form-actions {
   display: flex;
-  flex-direction: row;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid #e1e5ea;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.player-management-card-scroll-item .player-management-actions .btn-secondary {
-  flex: 1;
-  width: auto;
+.player-form-actions .btn-secondary {
   margin-top: 0;
-  padding: 9px 10px;
-  font-size: 13px;
-  border-radius: 10px;
-  line-height: 1.2;
 }
 
-.player-card-scroll-nav .btn-secondary {
-  padding: 9px 12px;
-  font-size: 13px;
-  border-radius: 10px;
-}
-
-.player-card-page-label {
-  font-size: 14px;
-}
-
-.player-management-filters .btn-secondary,
-#playerClearFiltersBtn {
-  padding: 9px 12px;
-  font-size: 13px;
-  border-radius: 10px;
+.form-message {
+  margin-bottom: 0;
 }
 
 @media (max-width: 520px) {
-  .player-management-card-scroll-item .player-management-actions {
-    flex-direction: row;
+  .player-form-grid {
+    grid-template-columns: 1fr;
   }
 
-  .player-management-card-scroll-item .player-management-actions .btn-secondary {
-    font-size: 13px;
-    padding: 9px 8px;
+  .player-form-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
+
 /* =========================================================
-   PLAYER MANAGEMENT BATCH 3E QOL
-   Missing-item quick filters, readable 2-column filters,
-   collapsed form, and save/loading polish.
+   PLAYER MANAGEMENT CARD BUTTONS AT BOTTOM
+      ========================================================= */
+
+.player-management-card-scroll-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.player-management-card-scroll-item .player-management-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e1e5ea;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary {
+  width: 100%;
+  margin-top: 0;
+}
+
+/* =========================================================
+   BATCH 3F RESPONSIVE AUTO-FIT LAYOUT
+   Lets the browser adjust columns based on available width.
    ========================================================= */
 
-.player-management-filter-panel {
-  padding: 12px;
+.container {
+  width: min(100% - 24px, 760px);
+  max-width: 760px;
 }
 
-.player-management-quick-counts {
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  background: #fffaf5;
-  border: 1px solid #f2dcc8;
-  font-size: 14px;
-  font-weight: 700;
-  color: #333;
-  line-height: 1.35;
-}
-
-.player-management-quick-filter-buttons {
+.tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
 }
 
-.player-management-quick-filter-btn {
-  margin-top: 0;
-  padding: 9px 10px;
-  font-size: 13px;
-  border-radius: 10px;
-  line-height: 1.15;
+.tab {
+  min-width: 0;
   white-space: normal;
+  line-height: 1.2;
 }
 
-.player-management-quick-filter-btn.active-quick-filter {
-  background: #f57c00;
-  color: #fff;
+.player-card-scroll-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  padding: 8px 0 16px;
+}
+
+.player-management-card-scroll-item {
+  min-width: 0;
+  width: 100%;
+}
+
+.player-card-scroll-nav,
+.player-management-filter-grid,
+.player-management-quick-filter-buttons,
+.roster-action-buttons,
+.roster-footer-actions,
+.event-action-buttons,
+.player-form-actions,
+.team-event-player-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.player-card-page-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  text-align: center;
+  line-height: 1.25;
 }
 
 .player-management-filter-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  align-items: end;
-}
-
-.player-management-filter-grid label {
-  min-width: 0;
-}
-
-.player-management-filter-grid select {
-  width: 100%;
-  min-width: 0;
-  white-space: normal;
-  text-overflow: ellipsis;
-}
-
-#pmClearFiltersBtn,
-#playerClearFiltersBtn {
-  width: 100%;
-  min-height: 48px;
-  white-space: normal;
-  line-height: 1.15;
-  padding: 10px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .player-management-filter-grid #pmClearFiltersBtn,
 .player-management-filter-grid #playerClearFiltersBtn {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
 
-.player-management-collapsed-form {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  margin-bottom: 14px;
-  background: #fffaf5;
-  border: 1px solid #f2dcc8;
-  border-radius: 12px;
-  flex-wrap: wrap;
+.player-management-quick-counts {
+  overflow-wrap: anywhere;
 }
 
-.player-management-collapsed-form .btn-primary {
+.player-management-quick-filter-buttons .btn,
+.player-card-scroll-nav .btn,
+.player-management-filter-grid .btn,
+.team-event-player-actions .btn {
+  width: 100%;
   margin-top: 0;
 }
 
-.player-management-collapsed-note {
-  font-size: 14px;
-  color: #666;
-  line-height: 1.35;
+.player-management-card-scroll-item .player-management-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+  gap: 8px;
 }
 
-#pmSavePlayerBtn:disabled {
-  opacity: 0.75;
-  cursor: wait;
-}
+@media (max-width: 460px) {
+  .container {
+    width: min(100% - 14px, 760px);
+    padding: 0;
+  }
 
-@media (max-width: 700px) {
-  .player-management-quick-filter-buttons {
+  .card {
+    padding: 16px;
+  }
+
+  .tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tab {
+    padding: 12px 8px;
+    font-size: 15px;
+  }
+
+  .player-card-scroll-row,
+  .player-management-filter-grid,
+  .player-management-quick-filter-buttons,
+  .player-card-scroll-nav,
+  .team-event-player-actions {
     grid-template-columns: 1fr;
   }
+
+  .player-management-card-scroll-item .player-management-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* =========================================================
+   BATCH 3F TEAM EVENT PLAYER-BASED CREATION
+   Replaces year/group selection with exact player selection.
+   ========================================================= */
+
+.team-event-player-selector-panel {
+  border: 1px solid #f2dcc8;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 14px 0;
+  background: #fffaf5;
+}
+
+.team-event-player-selector-panel h3 {
+  margin-top: 0;
+}
+
+.team-event-player-help {
+  margin-bottom: 12px;
+}
+
+.team-event-player-actions {
+  margin: 10px 0;
+}
+
+.team-event-player-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.team-event-player-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  background: #ffffff;
+  margin-bottom: 0;
+}
+
+.team-event-player-option input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.team-event-player-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-event-player-name {
+  font-weight: bold;
+  color: #222;
+}
+
+.team-event-player-meta {
+  font-size: 13px;
+  color: #666;
+  margin-top: 2px;
 }
 
 @media (max-width: 520px) {
-  .player-management-filter-grid {
+  .team-event-player-list {
     grid-template-columns: 1fr;
-  }
-
-  .player-management-filter-grid #pmClearFiltersBtn,
-  .player-management-filter-grid #playerClearFiltersBtn {
-    grid-column: auto;
-  }
-
-  .player-management-collapsed-form {
-    flex-direction: column;
-    align-items: stretch;
+    max-height: 420px;
   }
 }
