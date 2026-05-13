@@ -1528,13 +1528,16 @@ async function loadPlayers() {
     const selectedEventId = eventSelect ? eventSelect.value : "";
 
     const playerParams = new URLSearchParams();
+    const selectedEventType = getSelectedEventType();
 
     /*
-      If an event is selected, load only the players who belong
-      to that event. This prevents All Groups from showing players
-      from groups that do not have the selected event.
+      Practice attendance should load players by group, not by EventPlayers.
+      Games and Team Events should load only players assigned to that event roster.
+
+      This prevents Practice from showing zero players when the Practice event
+      does not use the EventPlayers roster table.
     */
-    if (selectedEventId) {
+    if (selectedEventId && (selectedEventType === "Game" || selectedEventType === "Team Event")) {
       playerParams.set("eventId", selectedEventId);
 
       if (!selectedGroupId) {
