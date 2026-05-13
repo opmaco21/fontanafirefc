@@ -856,3 +856,18 @@ hr {
     flex-basis: 85%;
   }
 }
+
+
+
+/* =========================================================
+   PLAYER MANAGEMENT 10-CARD 2x5 GRID
+   Batch 3A revised
+   ========================================================= */
+.player-card-scroll-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; flex-wrap:wrap; }
+.player-card-scroll-nav .btn-secondary { margin-top:0; }
+.player-card-page-label { font-weight:700; color:#333; }
+.player-card-scroll-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:8px 4px 16px; }
+.player-management-card-scroll-item { width:100%; min-width:0; align-items:stretch; }
+.player-management-card-scroll-item .player-management-actions { display:flex; flex-direction:column; gap:8px; }
+.player-management-card-scroll-item .player-management-actions .btn-secondary { margin-top:0; }
+@media (max-width:520px){ .player-card-scroll-row{grid-template-columns:1fr;} .player-card-scroll-nav .btn{width:100%;} }

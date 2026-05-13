@@ -2715,7 +2715,7 @@ function renderPlayerManagementList(players) {
     </button>
 
     <span class="player-card-page-label">
-      Players ${startIndex + 1}-${endIndex} of ${totalPlayers}
+      Showing ${startIndex + 1}-${endIndex} of ${totalPlayers}
     </span>
 
     <button type="button" class="btn btn-secondary" id="playerCardsNextBtn" ${playerManagementPageIndex >= totalPages - 1 ? "disabled" : ""}>
