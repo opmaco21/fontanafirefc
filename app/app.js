@@ -99,8 +99,6 @@ let currentTab = "Practice";
 let isTeamEventFormOpen = false;
 let isAttendanceModeActive = true;
 let playerSearchTimer = null;
-let teamEventPlayerSearchTimer = null;
-let latestTeamEventPlayers = [];
 
 /* =========================
    EVENT LISTENERS
@@ -136,7 +134,6 @@ if (eventSelect) {
     updateEventActionButtons();
     await loadSelectedEventDetails();
     updateTeamEventSection();
-    await loadTeamEventPlayerSelector();
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
@@ -159,6 +156,10 @@ if (showTeamEventFormBtn) {
     if (eventSelect) {
       eventSelect.value = "";
     }
+
+    if (attendanceMessage) attendanceMessage.textContent = "";
+    if (teamEventMessage) teamEventMessage.textContent = "";
+    if (eventRosterMessage) eventRosterMessage.textContent = "";
 
     saveSelectedEvent();
     updateEventActionButtons();
@@ -224,9 +225,6 @@ if (groupSelect) {
     resetWorkflowForSelectedEvent();
     await loadSelectedEventDetails();
     updateTeamEventSection();
-    if (isTeamEventFormOpen) {
-      await loadTeamEventPlayerSelector();
-    }
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
@@ -242,9 +240,6 @@ if (practiceTab) {
     resetWorkflowForSelectedEvent();
     await loadSelectedEventDetails();
     updateTeamEventSection();
-    if (isTeamEventFormOpen) {
-      await loadTeamEventPlayerSelector();
-    }
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
@@ -260,9 +255,6 @@ if (gamesTab) {
     resetWorkflowForSelectedEvent();
     await loadSelectedEventDetails();
     updateTeamEventSection();
-    if (isTeamEventFormOpen) {
-      await loadTeamEventPlayerSelector();
-    }
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
@@ -278,9 +270,6 @@ if (teamEventsTab) {
     resetWorkflowForSelectedEvent();
     await loadSelectedEventDetails();
     updateTeamEventSection();
-    if (isTeamEventFormOpen) {
-      await loadTeamEventPlayerSelector();
-    }
     updateAttendanceSectionVisibility();
     await updateEventRosterSection();
     await loadPlayers();
@@ -691,6 +680,12 @@ function updateAttendanceSectionVisibility() {
   if (!attendanceSection) return;
 
   if (currentTab === "Player Management") {
+    attendanceSection.classList.add("hidden");
+    if (editRosterBtn) editRosterBtn.classList.add("hidden");
+    return;
+  }
+
+  if (currentTab === "Team Event" && isTeamEventFormOpen && (!eventSelect || !eventSelect.value)) {
     attendanceSection.classList.add("hidden");
     if (editRosterBtn) editRosterBtn.classList.add("hidden");
     return;
@@ -1284,6 +1279,223 @@ function updateEventActionButtons() {
 }
 
 /* =========================
+   ATTENDANCE LIST QOL HELPERS
+   Compact rows, quick status buttons, search, and filters.
+   ========================= */
+function ensureAttendanceFilterControls() {
+  if (!attendanceSection || !attendanceSummary) return;
+
+  let filterPanel = document.getElementById("attendanceFilterPanel");
+
+  if (!filterPanel) {
+    filterPanel = document.createElement("div");
+    filterPanel.id = "attendanceFilterPanel";
+    filterPanel.className = "attendance-filter-panel";
+
+    filterPanel.innerHTML = `
+      <div class="attendance-filter-row attendance-search-row">
+        <label class="attendance-filter-label">
+          Search Players
+          <input id="attendanceSearchInput" type="text" placeholder="Search by name, number, or birth year" />
+        </label>
+      </div>
+
+      <div class="attendance-filter-row">
+        <div class="attendance-filter-label">View</div>
+        <div class="attendance-status-filter-buttons">
+          <button type="button" class="attendance-filter-btn active-filter" data-status-filter="">All</button>
+          <button type="button" class="attendance-filter-btn" data-status-filter="Remaining">Remaining</button>
+          <button type="button" class="attendance-filter-btn" data-status-filter="Present">Present</button>
+          <button type="button" class="attendance-filter-btn" data-status-filter="Absent">Absent</button>
+          <button type="button" class="attendance-filter-btn" data-status-filter="Excused">Excused</button>
+          <button type="button" class="attendance-filter-btn" data-status-filter="Cancelled">Cancelled</button>
+        </div>
+      </div>
+
+      <div class="attendance-filter-row">
+        <div class="attendance-filter-label">Birth Year</div>
+        <div class="attendance-birth-year-filter-buttons">
+          <button type="button" class="attendance-filter-btn active-filter" data-birth-year-filter="">All</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2012">2012</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2013">2013</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2014">2014</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2015">2015</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2016">2016</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2017">2017</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2018">2018</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2019">2019</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2020">2020</button>
+          <button type="button" class="attendance-filter-btn" data-birth-year-filter="2021">2021</button>
+        </div>
+      </div>
+    `;
+
+    const tools = attendanceSummary.closest(".attendance-tools");
+
+    if (tools) {
+      tools.insertBefore(filterPanel, attendanceSummary.nextSibling);
+    } else {
+      attendanceSection.insertBefore(filterPanel, attendanceSection.firstChild);
+    }
+  }
+
+  const searchInput = document.getElementById("attendanceSearchInput");
+
+  if (searchInput && !searchInput.dataset.listenerAttached) {
+    searchInput.dataset.listenerAttached = "1";
+    searchInput.addEventListener("input", () => {
+      clearTimeout(attendanceSearchTimer);
+      attendanceSearchTimer = setTimeout(() => {
+        attendanceSearchText = searchInput.value.trim().toLowerCase();
+        updateAttendanceDisplay();
+      }, 150);
+    });
+  }
+
+  document.querySelectorAll(".attendance-filter-btn[data-status-filter]").forEach(button => {
+    if (button.dataset.listenerAttached) return;
+
+    button.dataset.listenerAttached = "1";
+    button.addEventListener("click", () => {
+      attendanceStatusFilter = button.dataset.statusFilter || "";
+      updateAttendanceFilterButtonStates();
+      updateAttendanceDisplay();
+    });
+  });
+
+  document.querySelectorAll(".attendance-filter-btn[data-birth-year-filter]").forEach(button => {
+    if (button.dataset.listenerAttached) return;
+
+    button.dataset.listenerAttached = "1";
+    button.addEventListener("click", () => {
+      attendanceBirthYearFilter = button.dataset.birthYearFilter || "";
+      updateAttendanceFilterButtonStates();
+      updateAttendanceDisplay();
+    });
+  });
+
+  updateAttendanceFilterButtonStates();
+}
+
+function updateAttendanceFilterButtonStates() {
+  document.querySelectorAll(".attendance-filter-btn[data-status-filter]").forEach(button => {
+    button.classList.toggle(
+      "active-filter",
+      (button.dataset.statusFilter || "") === attendanceStatusFilter
+    );
+  });
+
+  document.querySelectorAll(".attendance-filter-btn[data-birth-year-filter]").forEach(button => {
+    button.classList.toggle(
+      "active-filter",
+      (button.dataset.birthYearFilter || "") === attendanceBirthYearFilter
+    );
+  });
+}
+
+function getAttendanceRowStatus(row) {
+  return row ? row.dataset.status || "" : "";
+}
+
+function setAttendanceRowStatus(row, status, options = {}) {
+  if (!row) return;
+
+  row.dataset.status = status || "";
+
+  row.querySelectorAll(".attendance-status-btn").forEach(button => {
+    button.classList.toggle("active-status-btn", button.dataset.status === row.dataset.status);
+  });
+
+  if (options.saveDraft !== false) {
+    saveAttendanceDraft();
+  }
+
+  updateAttendanceDisplay();
+}
+
+function rowMatchesAttendanceFilters(row) {
+  if (!row) return false;
+
+  const status = getAttendanceRowStatus(row);
+  const rowSearchText = row.dataset.searchText || "";
+  const rowBirthYear = row.dataset.birthYear || "";
+
+  const searchMatches = !attendanceSearchText || rowSearchText.includes(attendanceSearchText);
+
+  const birthYearMatches = !attendanceBirthYearFilter || rowBirthYear === attendanceBirthYearFilter;
+
+  const statusMatches =
+    !attendanceStatusFilter ||
+    (attendanceStatusFilter === "Remaining" && !status) ||
+    status === attendanceStatusFilter;
+
+  return searchMatches && birthYearMatches && statusMatches;
+}
+
+function createAttendancePlayerRow(player) {
+  const row = document.createElement("div");
+  const groupLabel = player.GroupName || player.GroupCode || "";
+  const birthYear = player.BirthYear || player.GroupCode || groupLabel || "";
+  const playerNumber =
+    player.PlayerNumber === 0 || player.PlayerNumber
+      ? `#${player.PlayerNumber}`
+      : "No #";
+  const playerName = `${player.FirstName} ${player.LastName}`.trim();
+
+  row.className = "player-row attendance-player-card";
+  row.dataset.playerId = player.PlayerID;
+  row.dataset.status = "";
+  row.dataset.birthYear = String(birthYear || "");
+  row.dataset.searchText = [
+    playerName,
+    playerNumber,
+    birthYear,
+    groupLabel,
+    player.FullName || ""
+  ].join(" ").toLowerCase();
+
+  row.innerHTML = `
+    <div class="attendance-player-info">
+      <div class="attendance-player-name">${playerName}</div>
+      <div class="attendance-player-meta">${playerNumber} ${birthYear ? `| Birth Year: ${birthYear}` : ""}</div>
+    </div>
+
+    <div class="attendance-status-buttons" role="group" aria-label="Attendance status for ${playerName}">
+      <button type="button" class="attendance-status-btn present-btn" data-status="Present">Present</button>
+      <button type="button" class="attendance-status-btn absent-btn" data-status="Absent">Absent</button>
+      <button type="button" class="attendance-status-btn excused-btn" data-status="Excused">Excused</button>
+      <button type="button" class="attendance-status-btn cancelled-btn" data-status="Cancelled">Cancelled</button>
+      <button type="button" class="attendance-status-btn clear-btn" data-status="Clear">Clear / Reset</button>
+    </div>
+  `;
+
+  row.querySelectorAll(".attendance-status-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const nextStatus = button.dataset.status || "";
+      const currentStatus = getAttendanceRowStatus(row);
+
+      setAttendanceRowStatus(row, currentStatus === nextStatus ? "" : nextStatus);
+
+      if (attendanceMessage) {
+        if (nextStatus === "Clear") {
+          setMessage(attendanceMessage, "Reset selected. Submit attendance to remove this saved status.", false);
+        } else {
+          setMessage(attendanceMessage, nextStatus ? "Draft saved automatically." : "Status cleared from draft.", false);
+        }
+      }
+    });
+  });
+
+  return row;
+}
+
+function getAllAttendanceRows() {
+  return Array.from(
+    document.querySelectorAll("#playerList .player-row, #completedPlayerList .player-row")
+  );
+}
+
+/* =========================
    LOAD PLAYERS
    ========================= */
 async function loadPlayers() {
@@ -1291,6 +1503,8 @@ async function loadPlayers() {
     await loadPlayerManagementList();
     return;
   }
+
+  ensureAttendanceFilterControls();
 
   try {
     const selectedGroupId = groupSelect ? groupSelect.value : "";
@@ -1339,47 +1553,14 @@ async function loadPlayers() {
       completedPlayerList.classList.add("hidden");
     }
 
-    players.forEach(player => {
-      const row = document.createElement("div");
-      row.className = "player-row";
-      row.dataset.status = "";
-
-      row.innerHTML = `
-        <span>${player.FirstName} ${player.LastName}</span>
-
-        <select data-player-id="${player.PlayerID}">
-          <option value="">Select</option>
-          <option value="Present">Present</option>
-          <option value="Absent">Absent</option>
-          <option value="Excused">Excused</option>
-          <option value="Cancelled">Cancelled</option>
-          <option value="Clear">Remove / Reset</option>
-        </select>
+    if (!players.length) {
+      playerList.innerHTML = `
+        <div class="roster-empty-message">No players found for this attendance list.</div>
       `;
+    }
 
-      const select = row.querySelector("select");
-
-      if (select) {
-        select.addEventListener("change", () => {
-          row.dataset.status = select.value;
-          saveAttendanceDraft();
-          updateAttendanceDisplay();
-
-          if (attendanceMessage) {
-            if (select.value === "Clear") {
-              setMessage(
-                attendanceMessage,
-                "Reset selected. Submit attendance to remove this saved status.",
-                false
-              );
-            } else {
-              setMessage(attendanceMessage, "Draft saved automatically.", false);
-            }
-          }
-        });
-      }
-
-      playerList.appendChild(row);
+    players.forEach(player => {
+      playerList.appendChild(createAttendancePlayerRow(player));
     });
 
     updateAttendanceDisplay();
@@ -1415,25 +1596,17 @@ async function loadPlayers() {
    CLEAR ATTENDANCE SELECTIONS
    ========================= */
 function clearPlayerAttendanceSelections() {
-  const selects = document.querySelectorAll(
-    "#playerList select, #completedPlayerList select"
-  );
+  const rows = getAllAttendanceRows();
 
-  selects.forEach(select => {
-    select.value = "";
-
-    const row = select.closest(".player-row");
-
-    if (row) {
-      row.dataset.status = "";
-      row.classList.remove(
-        "status-present",
-        "status-absent",
-        "status-excused",
-        "status-cancelled",
-        "status-clear"
-      );
-    }
+  rows.forEach(row => {
+    setAttendanceRowStatus(row, "", { saveDraft: false });
+    row.classList.remove(
+      "status-present",
+      "status-absent",
+      "status-excused",
+      "status-cancelled",
+      "status-clear"
+    );
   });
 
   if (completedPlayerList) {
@@ -1463,15 +1636,11 @@ function saveAttendanceDraft() {
 
   saveSelectedEvent();
 
-  const selects = document.querySelectorAll(
-    "#playerList select, #completedPlayerList select"
-  );
-
   const draft = {};
 
-  selects.forEach(select => {
-    const playerId = select.dataset.playerId;
-    const status = select.value;
+  getAllAttendanceRows().forEach(row => {
+    const playerId = row.dataset.playerId;
+    const status = getAttendanceRowStatus(row);
 
     if (playerId) {
       draft[playerId] = status;
@@ -1489,21 +1658,11 @@ function loadAttendanceDraft(eventId) {
   try {
     const draft = JSON.parse(savedDraft);
 
-    const selects = document.querySelectorAll(
-      "#playerList select, #completedPlayerList select"
-    );
-
-    selects.forEach(select => {
-      const playerId = select.dataset.playerId;
+    getAllAttendanceRows().forEach(row => {
+      const playerId = row.dataset.playerId;
 
       if (Object.prototype.hasOwnProperty.call(draft, playerId)) {
-        select.value = draft[playerId];
-
-        const row = select.closest(".player-row");
-
-        if (row) {
-          row.dataset.status = select.value;
-        }
+        setAttendanceRowStatus(row, draft[playerId], { saveDraft: false });
       }
     });
 
@@ -1591,22 +1750,11 @@ async function loadAttendanceForEvent() {
       attendanceMap[record.PlayerID] = record.AttendanceStatus;
     });
 
-    const playerSelects = document.querySelectorAll(
-      "#playerList select, #completedPlayerList select"
-    );
+    getAllAttendanceRows().forEach(row => {
+      const playerId = row.dataset.playerId;
+      const savedStatus = attendanceMap[playerId] || "";
 
-    playerSelects.forEach(select => {
-      const playerId = select.dataset.playerId;
-
-      if (attendanceMap[playerId]) {
-        select.value = attendanceMap[playerId];
-      }
-
-      const row = select.closest(".player-row");
-
-      if (row) {
-        row.dataset.status = select.value;
-      }
+      setAttendanceRowStatus(row, savedStatus, { saveDraft: false });
     });
 
     updateAttendanceDisplay();
@@ -1636,9 +1784,7 @@ function updateAttendanceDisplay() {
   const playerList = document.getElementById("playerList");
   if (!playerList) return;
 
-  const allRows = Array.from(
-    document.querySelectorAll("#playerList .player-row, #completedPlayerList .player-row")
-  );
+  const allRows = getAllAttendanceRows();
 
   let present = 0;
   let absent = 0;
@@ -1646,12 +1792,11 @@ function updateAttendanceDisplay() {
   let cancelled = 0;
   let remaining = 0;
   let completed = 0;
+  let visibleCount = 0;
 
   allRows.forEach(row => {
-    const select = row.querySelector("select");
-    const status = select ? select.value : "";
+    const status = getAttendanceRowStatus(row);
 
-    row.dataset.status = status;
     row.classList.remove(
       "status-present",
       "status-absent",
@@ -1659,6 +1804,10 @@ function updateAttendanceDisplay() {
       "status-cancelled",
       "status-clear"
     );
+
+    row.querySelectorAll(".attendance-status-btn").forEach(button => {
+      button.classList.toggle("active-status-btn", button.dataset.status === status);
+    });
 
     if (status === "Present") {
       present++;
@@ -1692,8 +1841,14 @@ function updateAttendanceDisplay() {
   const hideMarked = hideMarkedToggle ? hideMarkedToggle.checked : true;
 
   allRows.forEach(row => {
-    const select = row.querySelector("select");
-    const status = select ? select.value : "";
+    const status = getAttendanceRowStatus(row);
+    const matchesFilters = rowMatchesAttendanceFilters(row);
+
+    row.classList.toggle("hidden", !matchesFilters);
+
+    if (matchesFilters) {
+      visibleCount++;
+    }
 
     if (status && hideMarked && completedPlayerList) {
       completedPlayerList.appendChild(row);
@@ -1707,9 +1862,13 @@ function updateAttendanceDisplay() {
       ? completedPlayerList.classList.contains("hidden")
       : true;
 
+    const filterText = attendanceSearchText || attendanceStatusFilter || attendanceBirthYearFilter
+      ? ` | Showing ${visibleCount}`
+      : "";
+
     showCompletedBtn.textContent = completedHidden
-      ? `Show Completed Attendance (${completed})`
-      : `Hide Completed Attendance (${completed})`;
+      ? `Show Completed Attendance (${completed})${filterText}`
+      : `Hide Completed Attendance (${completed})${filterText}`;
   }
 }
 
@@ -1739,15 +1898,13 @@ async function saveAttendance() {
     return;
   }
 
-  const rows = document.querySelectorAll(
-    "#playerList select, #completedPlayerList select"
-  );
+  const rows = getAllAttendanceRows();
 
   const attendance = [];
 
   rows.forEach(row => {
     const playerId = row.dataset.playerId;
-    const status = row.value;
+    const status = getAttendanceRowStatus(row);
 
     if (status) {
       attendance.push({
@@ -1760,7 +1917,7 @@ async function saveAttendance() {
   if (attendance.length === 0) {
     setMessage(
       attendanceMessage,
-      "Select Present, Absent, Excused, Cancelled, or Remove / Reset for at least one player.",
+      "Select Present, Absent, Excused, Cancelled, or Clear / Reset for at least one player.",
       true
     );
     return;
@@ -2056,228 +2213,6 @@ Use Delete only for mistakes or duplicates. Normal cancelled events should stay 
   }
 }
 
-
-/* =========================
-   TEAM EVENT PLAYER SELECTOR
-
-   Purpose:
-   - Team Events can be created by selecting exact players.
-   - Backend will create the needed event rows by each player's group.
-   ========================= */
-function getSelectedTeamEventPlayerIds() {
-  return Array.from(
-    document.querySelectorAll(".team-event-player-checkbox:checked")
-  )
-    .map(checkbox => Number(checkbox.value))
-    .filter(value => Number.isInteger(value) && value > 0);
-}
-
-function updateTeamEventPlayerSummary() {
-  const summary = document.getElementById("teamEventPlayerSummary");
-  if (!summary) return;
-
-  const selectedCount = getSelectedTeamEventPlayerIds().length;
-  summary.textContent = `Selected Players: ${selectedCount}`;
-}
-
-function setAllTeamEventPlayerCheckboxes(isChecked) {
-  document.querySelectorAll(".team-event-player-checkbox").forEach(checkbox => {
-    checkbox.checked = isChecked;
-  });
-
-  updateTeamEventPlayerSummary();
-}
-
-function getFilteredTeamEventPlayers() {
-  const searchInput = document.getElementById("teamEventPlayerSearch");
-  const searchText = searchInput ? searchInput.value.trim().toLowerCase() : "";
-
-  if (!searchText) {
-    return latestTeamEventPlayers;
-  }
-
-  return latestTeamEventPlayers.filter(player => {
-    const searchable = [
-      player.FirstName,
-      player.LastName,
-      player.FullName,
-      player.PlayerNumber === 0 || player.PlayerNumber ? `#${player.PlayerNumber}` : "",
-      player.GroupName,
-      player.GroupCode,
-      player.BirthYear
-    ].filter(Boolean).join(" ").toLowerCase();
-
-    return searchable.includes(searchText);
-  });
-}
-
-function renderTeamEventPlayerOptions() {
-  const list = document.getElementById("teamEventPlayerList");
-  if (!list) return;
-
-  const selectedIds = new Set(getSelectedTeamEventPlayerIds());
-  const players = getFilteredTeamEventPlayers();
-
-  list.innerHTML = "";
-
-  if (!players.length) {
-    list.innerHTML = `
-      <div class="roster-empty-message">
-        No active players found.
-      </div>
-    `;
-    updateTeamEventPlayerSummary();
-    return;
-  }
-
-  players.forEach(player => {
-    const label = document.createElement("label");
-    label.className = "team-event-player-option";
-
-    const groupLabel = player.GroupName || player.GroupCode || player.BirthYear || "No Group";
-    const playerNumber = player.PlayerNumber === 0 || player.PlayerNumber
-      ? `#${player.PlayerNumber}`
-      : "No #";
-
-    label.innerHTML = `
-      <input
-        type="checkbox"
-        class="team-event-player-checkbox"
-        value="${player.PlayerID}"
-        ${selectedIds.has(Number(player.PlayerID)) ? "checked" : ""}
-      />
-      <span class="team-event-player-info">
-        <span class="team-event-player-name">${player.FirstName} ${player.LastName}</span>
-        <span class="team-event-player-meta">${playerNumber} | Group: ${groupLabel}</span>
-      </span>
-    `;
-
-    list.appendChild(label);
-  });
-
-  list.querySelectorAll(".team-event-player-checkbox").forEach(checkbox => {
-    checkbox.addEventListener("change", updateTeamEventPlayerSummary);
-  });
-
-  updateTeamEventPlayerSummary();
-}
-
-function ensureTeamEventPlayerSelectorPanel() {
-  if (!teamEventSection) return null;
-
-  let panel = document.getElementById("teamEventPlayerSelectorPanel");
-
-  if (!panel) {
-    panel = document.createElement("div");
-    panel.id = "teamEventPlayerSelectorPanel";
-    panel.className = "team-event-player-selector-panel";
-
-    panel.innerHTML = `
-      <h3>Select Players</h3>
-      <p class="subtext team-event-player-help">
-        Select the exact players for this Team Event. The app will create the correct roster automatically, even when players are from different birth years.
-      </p>
-
-      <input
-        id="teamEventPlayerSearch"
-        type="text"
-        placeholder="Search players by name, number, or group"
-      />
-
-      <div class="team-event-player-actions">
-        <button type="button" id="teamEventSelectAllPlayersBtn" class="btn btn-secondary">
-          Select All Shown
-        </button>
-        <button type="button" id="teamEventClearPlayersBtn" class="btn btn-secondary">
-          Clear Players
-        </button>
-      </div>
-
-      <div id="teamEventPlayerSummary" class="roster-summary">
-        Selected Players: 0
-      </div>
-
-      <div id="teamEventPlayerList" class="team-event-player-list"></div>
-    `;
-
-    const insertAfter = newTeamEventNotes || teamEventGroupCheckboxes || teamEventAllGroups;
-
-    if (insertAfter && insertAfter.parentNode) {
-      insertAfter.parentNode.insertBefore(panel, insertAfter.nextSibling);
-    } else {
-      teamEventSection.appendChild(panel);
-    }
-  }
-
-  const searchInput = document.getElementById("teamEventPlayerSearch");
-  const selectAllBtn = document.getElementById("teamEventSelectAllPlayersBtn");
-  const clearBtn = document.getElementById("teamEventClearPlayersBtn");
-
-  if (searchInput && !searchInput.dataset.listenerAttached) {
-    searchInput.dataset.listenerAttached = "1";
-    searchInput.addEventListener("input", () => {
-      clearTimeout(teamEventPlayerSearchTimer);
-      teamEventPlayerSearchTimer = setTimeout(renderTeamEventPlayerOptions, 150);
-    });
-  }
-
-  if (selectAllBtn && !selectAllBtn.dataset.listenerAttached) {
-    selectAllBtn.dataset.listenerAttached = "1";
-    selectAllBtn.addEventListener("click", () => setAllTeamEventPlayerCheckboxes(true));
-  }
-
-  if (clearBtn && !clearBtn.dataset.listenerAttached) {
-    clearBtn.dataset.listenerAttached = "1";
-    clearBtn.addEventListener("click", () => setAllTeamEventPlayerCheckboxes(false));
-  }
-
-  return panel;
-}
-
-function hideTeamEventGroupSelectorForPlayerMode() {
-  const groupBox = teamEventAllGroups
-    ? teamEventAllGroups.closest(".team-event-group-box")
-    : null;
-
-  if (groupBox) {
-    groupBox.classList.add("hidden");
-  } else if (teamEventGroupCheckboxes) {
-    teamEventGroupCheckboxes.classList.add("hidden");
-  }
-}
-
-async function loadTeamEventPlayerSelector() {
-  const panel = ensureTeamEventPlayerSelectorPanel();
-
-  if (!panel) return;
-
-  hideTeamEventGroupSelectorForPlayerMode();
-
-  const list = document.getElementById("teamEventPlayerList");
-
-  if (list) {
-    list.innerHTML = `<div class="roster-empty-message">Loading active players...</div>`;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/players`, {
-      credentials: "include"
-    });
-
-    const data = await res.json();
-    latestTeamEventPlayers = Array.isArray(data) ? data : data.players || [];
-
-    renderTeamEventPlayerOptions();
-
-  } catch (err) {
-    console.error("Could not load players for Team Event:", err);
-
-    if (list) {
-      list.innerHTML = `<div class="roster-empty-message">Could not load players.</div>`;
-    }
-  }
-}
-
 /* =========================
    ADD TEAM EVENT
 
@@ -2302,7 +2237,7 @@ async function addTeamEvent() {
     return;
   }
 
-  const selectedPlayerIds = getSelectedTeamEventPlayerIds();
+  const selectedGroupIds = getSelectedTeamEventGroupIds();
 
   const eventName = newTeamEventName ? newTeamEventName.value.trim() : "";
   const eventDate = newTeamEventDate ? newTeamEventDate.value : "";
@@ -2311,10 +2246,10 @@ async function addTeamEvent() {
   const locationName = newTeamEventLocation ? newTeamEventLocation.value.trim() : "";
   const notes = newTeamEventNotes ? newTeamEventNotes.value.trim() : "";
 
-  if (selectedPlayerIds.length === 0 || !eventName || !eventDate) {
+  if (selectedGroupIds.length === 0 || !eventName || !eventDate) {
     setMessage(
       teamEventMessage,
-      "Select at least one player and enter an event name and date.",
+      "Select at least one group and enter an event name and date.",
       true
     );
     return;
@@ -2328,7 +2263,7 @@ async function addTeamEvent() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        playerIds: selectedPlayerIds,
+        groupIds: selectedGroupIds,
         eventDate,
         eventType: "Team Event",
         eventName,
@@ -2359,18 +2294,21 @@ async function addTeamEvent() {
     if (newTeamEventLocation) newTeamEventLocation.value = "";
     if (newTeamEventNotes) newTeamEventNotes.value = "";
 
-    setAllTeamEventPlayerCheckboxes(false);
+    clearTeamEventGroupSelections();
 
     /*
-      Team Events can include players from multiple groups.
-      Keep All Groups selected so the grouped Team Event appears
-      as one dropdown option after creation.
+      If one group was selected, move to that group.
+      If multiple groups were selected, move to All Groups
+      so the grouped Team Event appears as one dropdown option.
     */
     if (groupSelect) {
-      groupSelect.value = "";
+      groupSelect.value =
+        selectedGroupIds.length === 1
+          ? String(selectedGroupIds[0])
+          : "";
     }
 
-    const createdCount = data.createdEvents || 1;
+    const createdCount = data.createdEvents || selectedGroupIds.length;
 
     setMessage(
       teamEventMessage,
@@ -2418,6 +2356,9 @@ const PLAYER_MANAGEMENT_PAGE_SIZE = 10;
 let playerManagementBirthYearFilter = "";
 let playerManagementPhotoReleaseFilter = "";
 let playerManagementPaperworkFilter = "";
+let playerManagementQuickFilter = "";
+let isPlayerManagementFormExpanded = false;
+let isPlayerManagementSaving = false;
 
 function canManagePlayers() {
   return currentUser && currentUser.RoleName !== "MainCoach";
@@ -2447,6 +2388,67 @@ function getPhotoReleaseLabel(player) {
   return player.PhotoReleaseStatus || "Not Received";
 }
 
+function isPaperworkMissing(player) {
+  const status = player.PaperworkStatus || "Not Received";
+  return status !== "Complete";
+}
+
+function isPhotoReleaseMissing(player) {
+  const status = getPhotoReleaseLabel(player);
+  return status === "Not Received" || !player.PhotoReleaseFormReceived;
+}
+
+function hasEmergencyInfo(player) {
+  return Boolean(
+    player.StreetAddress ||
+    player.City ||
+    player.State ||
+    player.ZipCode ||
+    player.EmergencyContactName ||
+    player.EmergencyContactPhone ||
+    player.EmergencyContactAltPhone
+  );
+}
+
+function isEmergencyInfoMissing(player) {
+  return !hasEmergencyInfo(player);
+}
+
+function formatPlayerUpdatedAt(value) {
+  if (!value) return "Not updated";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value).split("T")[0] || "Not updated";
+  }
+
+  return date.toLocaleDateString();
+}
+
+function getPlayerManagementCounts(players) {
+  return {
+    paperworkMissing: players.filter(isPaperworkMissing).length,
+    photoReleaseMissing: players.filter(isPhotoReleaseMissing).length,
+    emergencyInfoMissing: players.filter(isEmergencyInfoMissing).length
+  };
+}
+
+function setPlayerManagementSavingState(isSaving) {
+  isPlayerManagementSaving = isSaving;
+
+  const saveBtn = document.getElementById("pmSavePlayerBtn");
+
+  if (saveBtn) {
+    saveBtn.disabled = isSaving;
+    saveBtn.textContent = isSaving
+      ? "Saving..."
+      : playerManagementMode === "edit"
+        ? "Save Changes"
+        : "Add Player";
+  }
+}
+
 function ensurePlayerManagementFilters() {
   if (!playerManagementSection || !playerManagementSummary) return;
 
@@ -2458,6 +2460,24 @@ function ensurePlayerManagementFilters() {
     filterPanel.className = "player-management-filter-panel";
 
     filterPanel.innerHTML = `
+      <div id="playerManagementQuickCounts" class="player-management-quick-counts">
+        Paperwork Missing: 0 | Photo Release Missing: 0 | Emergency Info Missing: 0
+      </div>
+
+      <div class="player-management-quick-filter-buttons">
+        <button type="button" id="pmQuickMissingPaperworkBtn" class="btn btn-secondary player-management-quick-filter-btn" data-filter="missingPaperwork">
+          Missing Paperwork
+        </button>
+
+        <button type="button" id="pmQuickMissingPhotoReleaseBtn" class="btn btn-secondary player-management-quick-filter-btn" data-filter="missingPhotoRelease">
+          Missing Photo Release
+        </button>
+
+        <button type="button" id="pmQuickMissingEmergencyBtn" class="btn btn-secondary player-management-quick-filter-btn" data-filter="missingEmergencyInfo">
+          Missing Emergency Info
+        </button>
+      </div>
+
       <div class="player-management-filter-grid">
         <label>
           Birth Year
@@ -2509,6 +2529,7 @@ function ensurePlayerManagementFilters() {
   const photoReleaseFilter = document.getElementById("pmFilterPhotoRelease");
   const paperworkFilter = document.getElementById("pmFilterPaperwork");
   const clearFiltersBtn = document.getElementById("pmClearFiltersBtn");
+  const quickFilterButtons = document.querySelectorAll(".player-management-quick-filter-btn");
 
   if (birthYearFilter && !birthYearFilter.dataset.listenerAttached) {
     birthYearFilter.dataset.listenerAttached = "1";
@@ -2537,21 +2558,59 @@ function ensurePlayerManagementFilters() {
     });
   }
 
+  quickFilterButtons.forEach(button => {
+    if (button.dataset.listenerAttached) return;
+
+    button.dataset.listenerAttached = "1";
+    button.addEventListener("click", () => {
+      const selectedFilter = button.dataset.filter || "";
+      playerManagementQuickFilter = playerManagementQuickFilter === selectedFilter ? "" : selectedFilter;
+      playerManagementPageIndex = 0;
+      updatePlayerManagementQuickFilterButtons();
+      renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
+    });
+  });
+
   if (clearFiltersBtn && !clearFiltersBtn.dataset.listenerAttached) {
     clearFiltersBtn.dataset.listenerAttached = "1";
     clearFiltersBtn.addEventListener("click", () => {
       playerManagementBirthYearFilter = "";
       playerManagementPhotoReleaseFilter = "";
       playerManagementPaperworkFilter = "";
+      playerManagementQuickFilter = "";
 
       if (birthYearFilter) birthYearFilter.value = "";
       if (photoReleaseFilter) photoReleaseFilter.value = "";
       if (paperworkFilter) paperworkFilter.value = "";
 
       playerManagementPageIndex = 0;
+      updatePlayerManagementQuickFilterButtons();
       renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
     });
   }
+
+  updatePlayerManagementQuickCounts();
+  updatePlayerManagementQuickFilterButtons();
+}
+
+function updatePlayerManagementQuickCounts() {
+  const countBox = document.getElementById("playerManagementQuickCounts");
+
+  if (!countBox) return;
+
+  const counts = getPlayerManagementCounts(latestManagedPlayers);
+
+  countBox.textContent =
+    `Paperwork Missing: ${counts.paperworkMissing} | Photo Release Missing: ${counts.photoReleaseMissing} | Emergency Info Missing: ${counts.emergencyInfoMissing}`;
+}
+
+function updatePlayerManagementQuickFilterButtons() {
+  document.querySelectorAll(".player-management-quick-filter-btn").forEach(button => {
+    button.classList.toggle(
+      "active-quick-filter",
+      button.dataset.filter === playerManagementQuickFilter
+    );
+  });
 }
 
 function getFilteredManagedPlayers(players) {
@@ -2566,12 +2625,26 @@ function getFilteredManagedPlayers(players) {
     const paperworkMatches = !playerManagementPaperworkFilter ||
       paperworkStatus === playerManagementPaperworkFilter;
 
-    return birthYearMatches && photoReleaseMatches && paperworkMatches;
+    const quickFilterMatches =
+      !playerManagementQuickFilter ||
+      (playerManagementQuickFilter === "missingPaperwork" && isPaperworkMissing(player)) ||
+      (playerManagementQuickFilter === "missingPhotoRelease" && isPhotoReleaseMissing(player)) ||
+      (playerManagementQuickFilter === "missingEmergencyInfo" && isEmergencyInfoMissing(player));
+
+    return birthYearMatches && photoReleaseMatches && paperworkMatches && quickFilterMatches;
   });
 }
 
 function getPlayerManagementFilterDescription() {
   const parts = [];
+
+  if (playerManagementQuickFilter === "missingPaperwork") {
+    parts.push("Missing Paperwork");
+  } else if (playerManagementQuickFilter === "missingPhotoRelease") {
+    parts.push("Missing Photo Release");
+  } else if (playerManagementQuickFilter === "missingEmergencyInfo") {
+    parts.push("Missing Emergency Info");
+  }
 
   if (playerManagementBirthYearFilter) {
     parts.push(`Birth Year: ${playerManagementBirthYearFilter}`);
@@ -2598,6 +2671,28 @@ function ensurePlayerManagementForm() {
   }
 
   addPlayerSection.classList.remove("hidden");
+
+  if (!isPlayerManagementFormExpanded && playerManagementMode !== "edit") {
+    addPlayerSection.innerHTML = `
+      <div class="player-management-collapsed-form">
+        <button type="button" id="pmShowAddPlayerFormBtn" class="btn btn-primary">
+          Add New Player
+        </button>
+        <span class="player-management-collapsed-note">Open the form only when adding or editing a player.</span>
+      </div>
+    `;
+
+    const showFormBtn = document.getElementById("pmShowAddPlayerFormBtn");
+
+    if (showFormBtn) {
+      showFormBtn.addEventListener("click", () => {
+        isPlayerManagementFormExpanded = true;
+        ensurePlayerManagementForm();
+      });
+    }
+
+    return;
+  }
 
   addPlayerSection.innerHTML = `
     <div class="player-management-form-card">
@@ -2960,6 +3055,8 @@ async function savePlayerManagementForm() {
       false
     );
 
+    setPlayerManagementSavingState(true);
+
     const res = await fetch(url, {
       method,
       credentials: "include",
@@ -2998,12 +3095,15 @@ async function savePlayerManagementForm() {
   } catch (err) {
     console.error("Save player error:", err);
     setPlayerManagementMessage("Server error saving player.", true);
+  } finally {
+    setPlayerManagementSavingState(false);
   }
 }
 
 function resetPlayerManagementForm(clearMessage = true) {
   playerManagementMode = "add";
   editingPlayerId = null;
+  isPlayerManagementFormExpanded = false;
 
   const title = document.getElementById("playerFormTitle");
   const saveBtn = document.getElementById("pmSavePlayerBtn");
@@ -3054,6 +3154,7 @@ function resetPlayerManagementForm(clearMessage = true) {
 
   if (clearMessage) {
     setPlayerManagementMessage("", false);
+    ensurePlayerManagementForm();
   }
 }
 
@@ -3069,6 +3170,8 @@ function editPlayer(playerId) {
 
   playerManagementMode = "edit";
   editingPlayerId = player.PlayerID;
+  isPlayerManagementFormExpanded = true;
+  ensurePlayerManagementForm();
 
   const title = document.getElementById("playerFormTitle");
   const saveBtn = document.getElementById("pmSavePlayerBtn");
@@ -3179,6 +3282,7 @@ async function loadPlayerManagementList() {
 
     latestManagedPlayers = data.players || [];
     playerManagementPageIndex = 0;
+    updatePlayerManagementQuickCounts();
     renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
 
   } catch (err) {
@@ -3287,6 +3391,7 @@ function renderPlayerManagementList(players) {
         <div class="player-management-card-line"><strong>Snack:</strong> ${snackLabel}</div>
         <div class="player-management-card-line"><strong>Paperwork:</strong> ${paperworkLabel}</div>
         <div class="player-management-card-line"><strong>Photo Release:</strong> ${photoReleaseLabel}</div>
+        <div class="player-management-card-line"><strong>Last Updated:</strong> ${formatPlayerUpdatedAt(player.UpdatedAt)}</div>
         <div class="player-management-status ${player.IsActive ? "active-status" : "inactive-status"}">${statusLabel}</div>
       </div>
 
