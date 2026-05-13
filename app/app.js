@@ -2181,6 +2181,10 @@ let latestManagedPlayers = [];
 let playerManagementPageIndex = 0;
 const PLAYER_MANAGEMENT_PAGE_SIZE = 10;
 
+let playerManagementBirthYearFilter = "";
+let playerManagementPhotoReleaseFilter = "";
+let playerManagementPaperworkFilter = "";
+
 function canManagePlayers() {
   return currentUser && currentUser.RoleName !== "MainCoach";
 }
@@ -2207,6 +2211,147 @@ function safeValue(value) {
 
 function getPhotoReleaseLabel(player) {
   return player.PhotoReleaseStatus || "Not Received";
+}
+
+function ensurePlayerManagementFilters() {
+  if (!playerManagementSection || !playerManagementSummary) return;
+
+  let filterPanel = document.getElementById("playerManagementFilterPanel");
+
+  if (!filterPanel) {
+    filterPanel = document.createElement("div");
+    filterPanel.id = "playerManagementFilterPanel";
+    filterPanel.className = "player-management-filter-panel";
+
+    filterPanel.innerHTML = `
+      <div class="player-management-filter-grid">
+        <label>
+          Birth Year
+          <select id="pmFilterBirthYear">
+            <option value="">All Birth Years</option>
+            <option value="2012">2012</option>
+            <option value="2013">2013</option>
+            <option value="2014">2014</option>
+            <option value="2015">2015</option>
+            <option value="2016">2016</option>
+            <option value="2017">2017</option>
+            <option value="2018">2018</option>
+            <option value="2019">2019</option>
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+          </select>
+        </label>
+
+        <label>
+          Photo Release
+          <select id="pmFilterPhotoRelease">
+            <option value="">All Photo Releases</option>
+            <option value="Opt In">Opt In</option>
+            <option value="Opt Out">Opt Out</option>
+            <option value="Not Received">Not Received</option>
+          </select>
+        </label>
+
+        <label>
+          Paperwork
+          <select id="pmFilterPaperwork">
+            <option value="">All Paperwork</option>
+            <option value="Complete">Complete</option>
+            <option value="Missing">Missing</option>
+            <option value="Not Received">Not Received</option>
+          </select>
+        </label>
+
+        <button type="button" id="pmClearFiltersBtn" class="btn btn-secondary">
+          Clear Filters
+        </button>
+      </div>
+    `;
+
+    playerManagementSection.insertBefore(filterPanel, playerManagementSummary);
+  }
+
+  const birthYearFilter = document.getElementById("pmFilterBirthYear");
+  const photoReleaseFilter = document.getElementById("pmFilterPhotoRelease");
+  const paperworkFilter = document.getElementById("pmFilterPaperwork");
+  const clearFiltersBtn = document.getElementById("pmClearFiltersBtn");
+
+  if (birthYearFilter && !birthYearFilter.dataset.listenerAttached) {
+    birthYearFilter.dataset.listenerAttached = "1";
+    birthYearFilter.addEventListener("change", () => {
+      playerManagementBirthYearFilter = birthYearFilter.value;
+      playerManagementPageIndex = 0;
+      renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
+    });
+  }
+
+  if (photoReleaseFilter && !photoReleaseFilter.dataset.listenerAttached) {
+    photoReleaseFilter.dataset.listenerAttached = "1";
+    photoReleaseFilter.addEventListener("change", () => {
+      playerManagementPhotoReleaseFilter = photoReleaseFilter.value;
+      playerManagementPageIndex = 0;
+      renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
+    });
+  }
+
+  if (paperworkFilter && !paperworkFilter.dataset.listenerAttached) {
+    paperworkFilter.dataset.listenerAttached = "1";
+    paperworkFilter.addEventListener("change", () => {
+      playerManagementPaperworkFilter = paperworkFilter.value;
+      playerManagementPageIndex = 0;
+      renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
+    });
+  }
+
+  if (clearFiltersBtn && !clearFiltersBtn.dataset.listenerAttached) {
+    clearFiltersBtn.dataset.listenerAttached = "1";
+    clearFiltersBtn.addEventListener("click", () => {
+      playerManagementBirthYearFilter = "";
+      playerManagementPhotoReleaseFilter = "";
+      playerManagementPaperworkFilter = "";
+
+      if (birthYearFilter) birthYearFilter.value = "";
+      if (photoReleaseFilter) photoReleaseFilter.value = "";
+      if (paperworkFilter) paperworkFilter.value = "";
+
+      playerManagementPageIndex = 0;
+      renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
+    });
+  }
+}
+
+function getFilteredManagedPlayers(players) {
+  return players.filter(player => {
+    const birthYearMatches = !playerManagementBirthYearFilter ||
+      String(player.BirthYear || player.GroupCode || "") === playerManagementBirthYearFilter;
+
+    const photoReleaseMatches = !playerManagementPhotoReleaseFilter ||
+      getPhotoReleaseLabel(player) === playerManagementPhotoReleaseFilter;
+
+    const paperworkStatus = player.PaperworkStatus || "Not Received";
+    const paperworkMatches = !playerManagementPaperworkFilter ||
+      paperworkStatus === playerManagementPaperworkFilter;
+
+    return birthYearMatches && photoReleaseMatches && paperworkMatches;
+  });
+}
+
+function getPlayerManagementFilterDescription() {
+  const parts = [];
+
+  if (playerManagementBirthYearFilter) {
+    parts.push(`Birth Year: ${playerManagementBirthYearFilter}`);
+  }
+
+  if (playerManagementPhotoReleaseFilter) {
+    parts.push(`Photo Release: ${playerManagementPhotoReleaseFilter}`);
+  }
+
+  if (playerManagementPaperworkFilter) {
+    parts.push(`Paperwork: ${playerManagementPaperworkFilter}`);
+  }
+
+  return parts.length ? ` | Filters: ${parts.join(", ")}` : "";
 }
 
 function ensurePlayerManagementForm() {
@@ -2760,6 +2905,7 @@ async function loadPlayerManagementList() {
   if (!playerManagementList) return;
 
   ensurePlayerManagementForm();
+  ensurePlayerManagementFilters();
 
   const searchText = playerSearchInput ? playerSearchInput.value.trim() : "";
   const includeInactive =
@@ -2799,7 +2945,7 @@ async function loadPlayerManagementList() {
 
     latestManagedPlayers = data.players || [];
     playerManagementPageIndex = 0;
-    renderPlayerManagementList(latestManagedPlayers);
+    renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
 
   } catch (err) {
     console.error("Player management load error:", err);
@@ -2834,8 +2980,12 @@ function renderPlayerManagementList(players) {
   const visiblePlayers = players.slice(startIndex, endIndex);
 
   if (playerManagementSummary) {
+    const filteredCount = players.length;
+    const totalRosterCount = latestManagedPlayers.length;
+    const filterDescription = getPlayerManagementFilterDescription();
+
     playerManagementSummary.textContent =
-      `Active: ${activeCount} | Inactive: ${inactiveCount} | Showing ${totalPlayers ? startIndex + 1 : 0}-${endIndex} of ${totalPlayers}`;
+      `Active: ${activeCount} | Inactive: ${inactiveCount} | Showing ${totalPlayers ? startIndex + 1 : 0}-${endIndex} of ${filteredCount} filtered / ${totalRosterCount} total${filterDescription}`;
   }
 
   playerManagementList.innerHTML = "";
@@ -2886,24 +3036,23 @@ function renderPlayerManagementList(players) {
     const canToggle = canManagePlayers();
     const photoReleaseLabel = getPhotoReleaseLabel(player);
 
-    const parentInfo = [
-      player.ParentName ? `Parent 1: ${player.ParentName}` : "",
-      player.ParentPhone ? player.ParentPhone : "",
-      player.ParentEmail ? player.ParentEmail : ""
+    const parentLine = [
+      player.ParentName || "No parent info entered",
+      player.ParentPhone || "",
+      player.ParentEmail || ""
     ].filter(Boolean).join(" | ");
 
-    const playerDetails = [
-      player.SnackPreference ? `Snack: ${player.SnackPreference}` : "Snack: Bring Snack",
-      player.PaperworkStatus ? `Paperwork: ${player.PaperworkStatus}` : "Paperwork: Not Received",
-      `Photo Release: ${photoReleaseLabel}`
-    ].join(" | ");
+    const snackLabel = player.SnackPreference || "Bring Snack";
+    const paperworkLabel = player.PaperworkStatus || "Not Received";
 
     card.innerHTML = `
       <div class="player-management-info">
         <div class="player-management-name">${player.FirstName} ${player.LastName}</div>
-        <div class="player-management-meta">${playerNumber} | Group: ${groupLabel} | Birth Year: ${player.BirthYear || "-"}</div>
-        <div class="player-management-meta">${parentInfo || "No parent info entered"}</div>
-        <div class="player-management-meta">${playerDetails}</div>
+        <div class="player-management-meta player-management-topline">${playerNumber} | Group: ${groupLabel} | Birth Year: ${player.BirthYear || "-"}</div>
+        <div class="player-management-card-line"><strong>Parent:</strong> ${parentLine}</div>
+        <div class="player-management-card-line"><strong>Snack:</strong> ${snackLabel}</div>
+        <div class="player-management-card-line"><strong>Paperwork:</strong> ${paperworkLabel}</div>
+        <div class="player-management-card-line"><strong>Photo Release:</strong> ${photoReleaseLabel}</div>
         <div class="player-management-status ${player.IsActive ? "active-status" : "inactive-status"}">${statusLabel}</div>
       </div>
 
@@ -2933,14 +3082,14 @@ function renderPlayerManagementList(players) {
   if (prevBtn) {
     prevBtn.addEventListener("click", () => {
       playerManagementPageIndex -= 1;
-      renderPlayerManagementList(latestManagedPlayers);
+      renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
     });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener("click", () => {
       playerManagementPageIndex += 1;
-      renderPlayerManagementList(latestManagedPlayers);
+      renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
     });
   }
 
