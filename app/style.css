@@ -692,3 +692,87 @@ hr {
     align-items: stretch;
   }
 }
+
+
+/* =========================================================
+   PLAYER MANAGEMENT
+   Keeps player admin work separate from event attendance.
+   ========================================================= */
+
+.player-management-tools {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.player-management-tools .btn-secondary {
+  margin-top: 10px;
+}
+
+.player-management-toggle {
+  margin-top: 10px;
+}
+
+.player-management-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-management-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.player-management-row.inactive-player {
+  background: #f3f4f6;
+  opacity: 0.82;
+}
+
+.player-management-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.player-management-meta {
+  font-size: 14px;
+  color: #666;
+  margin-top: 3px;
+}
+
+.player-management-status {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.active-status {
+  background: #e6f4ea;
+  color: #2e7d32;
+}
+
+.inactive-status {
+  background: #e0e0e0;
+  color: #555;
+}
+
+.player-management-actions .btn-secondary {
+  margin-top: 0;
+}
+
+@media (max-width: 520px) {
+  .player-management-row {
+    grid-template-columns: 1fr;
+  }
+}

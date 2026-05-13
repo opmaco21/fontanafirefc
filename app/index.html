@@ -82,6 +82,7 @@
           <button id="practiceTab" class="tab active">Practice</button>
           <button id="gamesTab" class="tab">Games</button>
           <button id="teamEventsTab" class="tab">Team Events</button>
+          <button id="playerManagementTab" class="tab">Players</button>
         </div>
 
         <!-- EVENT SELECTOR -->
@@ -301,33 +302,68 @@
 
         <hr />
 
-        <!-- ADD PLAYER SECTION -->
-        <div id="addPlayerSection" class="form-row">
-          <h3>Add Player</h3>
+        <!-- PLAYER MANAGEMENT SECTION
+             Player admin work lives here instead of always showing
+             under the attendance/event flow.
+        -->
+        <section id="playerManagementSection" class="hidden">
+          <h3>Player Management</h3>
+          <p class="subtext">Search players, review active/inactive status, and add new players.</p>
 
-          <input id="newFirstName" type="text" placeholder="First name" />
-          <input id="newLastName" type="text" placeholder="Last name" />
+          <div class="player-management-tools">
+            <label for="playerSearchInput">Search Players</label>
+            <input
+              id="playerSearchInput"
+              type="text"
+              placeholder="Search by name, group, or player number"
+            />
 
-          <select id="newBirthYear">
-            <option value="">Select birth year</option>
-            <option value="2012">2012</option>
-            <option value="2013">2013</option>
-            <option value="2014">2014</option>
-            <option value="2015">2015</option>
-            <option value="2016">2016</option>
-            <option value="2017">2017</option>
-            <option value="2018">2018</option>
-            <option value="2019">2019</option>
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-          </select>
+            <label class="hide-marked-toggle player-management-toggle">
+              <input type="checkbox" id="showInactivePlayersToggle" />
+              Show inactive players
+            </label>
 
-          <button id="addPlayerBtn" class="btn btn-primary">
-            Add Player
-          </button>
+            <button id="refreshPlayersBtn" type="button" class="btn btn-secondary">
+              Refresh Players
+            </button>
+          </div>
 
-          <p id="addPlayerMessage" class="message"></p>
-        </div>
+          <div id="playerManagementSummary" class="attendance-summary">
+            Active: 0 | Inactive: 0
+          </div>
+
+          <div id="playerManagementList" class="player-management-list"></div>
+
+          <hr />
+
+          <!-- ADD PLAYER SECTION -->
+          <div id="addPlayerSection" class="form-row">
+            <h3>Add Player</h3>
+
+            <input id="newFirstName" type="text" placeholder="First name" />
+            <input id="newLastName" type="text" placeholder="Last name" />
+
+            <select id="newBirthYear">
+              <option value="">Select birth year</option>
+              <option value="2012">2012</option>
+              <option value="2013">2013</option>
+              <option value="2014">2014</option>
+              <option value="2015">2015</option>
+              <option value="2016">2016</option>
+              <option value="2017">2017</option>
+              <option value="2018">2018</option>
+              <option value="2019">2019</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+            </select>
+
+            <button id="addPlayerBtn" class="btn btn-primary">
+              Add Player
+            </button>
+
+            <p id="addPlayerMessage" class="message"></p>
+          </div>
+        </section>
 
         <!-- APP VERSION -->
         <div class="app-version">

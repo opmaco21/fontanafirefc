@@ -26,6 +26,7 @@ const eventSelect = document.getElementById("eventSelect");
 const practiceTab = document.getElementById("practiceTab");
 const gamesTab = document.getElementById("gamesTab");
 const teamEventsTab = document.getElementById("teamEventsTab");
+const playerManagementTab = document.getElementById("playerManagementTab");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
 const eventActionButtons = document.getElementById("eventActionButtons");
@@ -47,6 +48,12 @@ const eventDetailNotes = document.getElementById("eventDetailNotes");
 const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
 const addPlayerSection = document.getElementById("addPlayerSection");
+const playerManagementSection = document.getElementById("playerManagementSection");
+const playerSearchInput = document.getElementById("playerSearchInput");
+const showInactivePlayersToggle = document.getElementById("showInactivePlayersToggle");
+const refreshPlayersBtn = document.getElementById("refreshPlayersBtn");
+const playerManagementSummary = document.getElementById("playerManagementSummary");
+const playerManagementList = document.getElementById("playerManagementList");
 
 const teamEventSection = document.getElementById("teamEventSection");
 const teamEventWorkflowBar = document.getElementById("teamEventWorkflowBar");
@@ -91,6 +98,7 @@ let currentUser = null;
 let currentTab = "Practice";
 let isTeamEventFormOpen = false;
 let isAttendanceModeActive = true;
+let playerSearchTimer = null;
 
 /* =========================
    EVENT LISTENERS
@@ -263,6 +271,40 @@ if (teamEventsTab) {
     await loadPlayers();
     clearPlayerAttendanceSelections();
   });
+}
+
+if (playerManagementTab) {
+  playerManagementTab.addEventListener("click", async () => {
+    currentTab = "Player Management";
+    setActiveTab();
+    clearSelectedEvent();
+
+    if (eventSelect) {
+      eventSelect.value = "";
+    }
+
+    resetWorkflowForSelectedEvent();
+    clearSelectedEventDetails();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+    await loadPlayerManagementList();
+  });
+}
+
+if (playerSearchInput) {
+  playerSearchInput.addEventListener("input", () => {
+    clearTimeout(playerSearchTimer);
+    playerSearchTimer = setTimeout(loadPlayerManagementList, 250);
+  });
+}
+
+if (showInactivePlayersToggle) {
+  showInactivePlayersToggle.addEventListener("change", loadPlayerManagementList);
+}
+
+if (refreshPlayersBtn) {
+  refreshPlayersBtn.addEventListener("click", loadPlayerManagementList);
 }
 
 if (teamEventAllGroups) {
@@ -528,11 +570,12 @@ async function loadGroups() {
    ACTIVE TAB STYLE
    ========================= */
 function setActiveTab() {
-  if (!practiceTab || !gamesTab || !teamEventsTab) return;
+  if (!practiceTab || !gamesTab || !teamEventsTab || !playerManagementTab) return;
 
   practiceTab.classList.remove("active");
   gamesTab.classList.remove("active");
   teamEventsTab.classList.remove("active");
+  playerManagementTab.classList.remove("active");
 
   if (currentTab === "Practice") {
     practiceTab.classList.add("active");
@@ -540,9 +583,43 @@ function setActiveTab() {
     gamesTab.classList.add("active");
   } else if (currentTab === "Team Event") {
     teamEventsTab.classList.add("active");
+  } else if (currentTab === "Player Management") {
+    playerManagementTab.classList.add("active");
   }
 
+  updateMainModeVisibility();
   updateTeamEventSection();
+}
+
+/* =========================
+   MAIN MODE VISIBILITY
+   ========================= */
+function updateMainModeVisibility() {
+  const isPlayerManagement = currentTab === "Player Management";
+
+  const eventFlowElements = [
+    groupSelect ? groupSelect.closest(".form-row") : null,
+    eventSelect ? eventSelect.closest(".form-row") : null,
+    eventDetailsSection,
+    teamEventWorkflowBar,
+    eventRosterSection,
+    teamEventSection,
+    attendanceSection
+  ];
+
+  eventFlowElements.forEach(element => {
+    if (!element) return;
+
+    if (isPlayerManagement) {
+      element.classList.add("hidden");
+    } else if (element !== eventDetailsSection && element !== teamEventWorkflowBar && element !== eventRosterSection && element !== teamEventSection) {
+      element.classList.remove("hidden");
+    }
+  });
+
+  if (playerManagementSection) {
+    playerManagementSection.classList.toggle("hidden", !isPlayerManagement);
+  }
 }
 
 /* =========================
@@ -550,6 +627,12 @@ function setActiveTab() {
    ========================= */
 function updateTeamEventSection() {
   if (!teamEventSection) return;
+
+  if (currentTab === "Player Management") {
+    teamEventSection.classList.add("hidden");
+    if (teamEventWorkflowBar) teamEventWorkflowBar.classList.add("hidden");
+    return;
+  }
 
   const canAddTeamEvents =
     currentUser &&
@@ -591,6 +674,12 @@ function resetWorkflowForSelectedEvent() {
 
 function updateAttendanceSectionVisibility() {
   if (!attendanceSection) return;
+
+  if (currentTab === "Player Management") {
+    attendanceSection.classList.add("hidden");
+    if (editRosterBtn) editRosterBtn.classList.add("hidden");
+    return;
+  }
 
   const eventType = getSelectedEventType();
   const hasSelectedRosterEvent =
@@ -761,6 +850,12 @@ function renderRosterPlayers(players) {
 
 async function updateEventRosterSection() {
   if (!eventRosterSection) return;
+
+  if (currentTab === "Player Management") {
+    clearEventRosterSection();
+    eventRosterSection.classList.add("hidden");
+    return;
+  }
 
   clearEventRosterSection();
 
@@ -1177,6 +1272,11 @@ function updateEventActionButtons() {
    LOAD PLAYERS
    ========================= */
 async function loadPlayers() {
+  if (currentTab === "Player Management") {
+    await loadPlayerManagementList();
+    return;
+  }
+
   try {
     const selectedGroupId = groupSelect ? groupSelect.value : "";
     const selectedEventId = eventSelect ? eventSelect.value : "";
@@ -2073,6 +2173,157 @@ async function addTeamEvent() {
 }
 
 /* =========================
+   PLAYER MANAGEMENT
+   ========================= */
+function canManagePlayers() {
+  return currentUser && currentUser.RoleName !== "MainCoach";
+}
+
+function getPlayerStatusLabel(player) {
+  return player.IsActive ? "Active" : "Inactive";
+}
+
+async function loadPlayerManagementList() {
+  if (!playerManagementList) return;
+
+  const searchText = playerSearchInput ? playerSearchInput.value.trim() : "";
+  const includeInactive = showInactivePlayersToggle && showInactivePlayersToggle.checked;
+
+  const params = new URLSearchParams();
+
+  if (searchText) {
+    params.set("search", searchText);
+  }
+
+  if (includeInactive) {
+    params.set("includeInactive", "1");
+  }
+
+  const url = params.toString()
+    ? `${API_BASE}/players/manage?${params.toString()}`
+    : `${API_BASE}/players/manage`;
+
+  try {
+    playerManagementList.innerHTML = `
+      <div class="roster-empty-message">Loading players...</div>
+    `;
+
+    const res = await fetch(url, {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      playerManagementList.innerHTML = `
+        <div class="roster-empty-message">Could not load players.</div>
+      `;
+      return;
+    }
+
+    renderPlayerManagementList(data.players || []);
+
+  } catch (err) {
+    console.error("Player management load error:", err);
+    playerManagementList.innerHTML = `
+      <div class="roster-empty-message">Could not load players.</div>
+    `;
+  }
+}
+
+function renderPlayerManagementList(players) {
+  if (!playerManagementList) return;
+
+  const activeCount = players.filter(player => player.IsActive).length;
+  const inactiveCount = players.filter(player => !player.IsActive).length;
+
+  if (playerManagementSummary) {
+    playerManagementSummary.textContent = `Active: ${activeCount} | Inactive: ${inactiveCount}`;
+  }
+
+  playerManagementList.innerHTML = "";
+
+  if (!players.length) {
+    playerManagementList.innerHTML = `
+      <div class="roster-empty-message">No players found.</div>
+    `;
+    return;
+  }
+
+  players.forEach(player => {
+    const card = document.createElement("div");
+    card.className = `player-management-row ${player.IsActive ? "" : "inactive-player"}`;
+
+    const groupLabel = player.GroupName || player.GroupCode || "No Group";
+    const playerNumber = player.PlayerNumber ? `#${player.PlayerNumber}` : "No #";
+    const statusLabel = getPlayerStatusLabel(player);
+    const canToggle = canManagePlayers();
+
+    card.innerHTML = `
+      <div class="player-management-info">
+        <div class="player-management-name">${player.FirstName} ${player.LastName}</div>
+        <div class="player-management-meta">${playerNumber} | Group: ${groupLabel} | Birth Year: ${player.BirthYear || "-"}</div>
+        <div class="player-management-status ${player.IsActive ? "active-status" : "inactive-status"}">${statusLabel}</div>
+      </div>
+
+      <div class="player-management-actions">
+        ${canToggle
+          ? `<button type="button" class="btn btn-secondary player-status-toggle" data-player-id="${player.PlayerID}" data-is-active="${player.IsActive ? "1" : "0"}">${player.IsActive ? "Make Inactive" : "Make Active"}</button>`
+          : ""}
+      </div>
+    `;
+
+    playerManagementList.appendChild(card);
+  });
+
+  playerManagementList.querySelectorAll(".player-status-toggle").forEach(button => {
+    button.addEventListener("click", async () => {
+      const playerId = Number(button.dataset.playerId);
+      const isCurrentlyActive = button.dataset.isActive === "1";
+      await updatePlayerActiveStatus(playerId, !isCurrentlyActive);
+    });
+  });
+}
+
+async function updatePlayerActiveStatus(playerId, makeActive) {
+  if (!playerId) return;
+
+  const confirmed = confirm(
+    makeActive
+      ? "Make this player active again?"
+      : "Make this player inactive? They will no longer appear in attendance lists."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/players/${playerId}/status`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        isActive: makeActive
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      alert(data.message || "Could not update player status.");
+      return;
+    }
+
+    await loadPlayerManagementList();
+
+  } catch (err) {
+    console.error("Update player status error:", err);
+    alert("Could not update player status.");
+  }
+}
+
+/* =========================
    ADD PLAYER
 
    Purpose:
@@ -2148,7 +2399,11 @@ async function addPlayer() {
       false
     );
 
-    await loadPlayers();
+    if (currentTab === "Player Management") {
+      await loadPlayerManagementList();
+    } else {
+      await loadPlayers();
+    }
 
   } catch (err) {
     console.error("Add player error:", err);
