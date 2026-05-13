@@ -952,3 +952,32 @@ hr {
     align-items: stretch;
   }
 }
+
+/* =========================================================
+   PLAYER MANAGEMENT CARD BUTTONS AT BOTTOM
+      ========================================================= */
+
+.player-management-card-scroll-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.player-management-card-scroll-item .player-management-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e1e5ea;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary {
+  width: 100%;
+  margin-top: 0;
+}
