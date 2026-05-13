@@ -99,6 +99,10 @@ let currentTab = "Practice";
 let isTeamEventFormOpen = false;
 let isAttendanceModeActive = true;
 let playerSearchTimer = null;
+let attendanceSearchTimer = null;
+let attendanceSearchText = "";
+let attendanceStatusFilter = "";
+let attendanceBirthYearFilter = "";
 
 /* =========================
    EVENT LISTENERS
