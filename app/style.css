@@ -894,3 +894,126 @@ hr {
     padding: 9px 8px;
   }
 }
+/* =========================================================
+   PLAYER MANAGEMENT BATCH 3E QOL
+   Missing-item quick filters, readable 2-column filters,
+   collapsed form, and save/loading polish.
+   ========================================================= */
+
+.player-management-filter-panel {
+  padding: 12px;
+}
+
+.player-management-quick-counts {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.35;
+}
+
+.player-management-quick-filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.player-management-quick-filter-btn {
+  margin-top: 0;
+  padding: 9px 10px;
+  font-size: 13px;
+  border-radius: 10px;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.player-management-quick-filter-btn.active-quick-filter {
+  background: #f57c00;
+  color: #fff;
+}
+
+.player-management-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.player-management-filter-grid label {
+  min-width: 0;
+}
+
+.player-management-filter-grid select {
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  text-overflow: ellipsis;
+}
+
+#pmClearFiltersBtn,
+#playerClearFiltersBtn {
+  width: 100%;
+  min-height: 48px;
+  white-space: normal;
+  line-height: 1.15;
+  padding: 10px 12px;
+}
+
+.player-management-filter-grid #pmClearFiltersBtn,
+.player-management-filter-grid #playerClearFiltersBtn {
+  grid-column: 1 / -1;
+}
+
+.player-management-collapsed-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.player-management-collapsed-form .btn-primary {
+  margin-top: 0;
+}
+
+.player-management-collapsed-note {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.35;
+}
+
+#pmSavePlayerBtn:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+@media (max-width: 700px) {
+  .player-management-quick-filter-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .player-management-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .player-management-filter-grid #pmClearFiltersBtn,
+  .player-management-filter-grid #playerClearFiltersBtn {
+    grid-column: auto;
+  }
+
+  .player-management-collapsed-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
