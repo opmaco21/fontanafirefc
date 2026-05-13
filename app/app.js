@@ -2178,6 +2178,8 @@ async function addTeamEvent() {
 let playerManagementMode = "add";
 let editingPlayerId = null;
 let latestManagedPlayers = [];
+let playerManagementPageIndex = 0;
+const PLAYER_MANAGEMENT_PAGE_SIZE = 10;
 
 function canManagePlayers() {
   return currentUser && currentUser.RoleName !== "MainCoach";
@@ -2655,6 +2657,7 @@ async function loadPlayerManagementList() {
     }
 
     latestManagedPlayers = data.players || [];
+    playerManagementPageIndex = 0;
     renderPlayerManagementList(latestManagedPlayers);
 
   } catch (err) {
@@ -2671,10 +2674,27 @@ function renderPlayerManagementList(players) {
 
   const activeCount = players.filter(player => player.IsActive).length;
   const inactiveCount = players.filter(player => !player.IsActive).length;
+  const totalPlayers = players.length;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalPlayers / PLAYER_MANAGEMENT_PAGE_SIZE)
+  );
+
+  if (playerManagementPageIndex < 0) {
+    playerManagementPageIndex = 0;
+  }
+
+  if (playerManagementPageIndex > totalPages - 1) {
+    playerManagementPageIndex = totalPages - 1;
+  }
+
+  const startIndex = playerManagementPageIndex * PLAYER_MANAGEMENT_PAGE_SIZE;
+  const endIndex = Math.min(startIndex + PLAYER_MANAGEMENT_PAGE_SIZE, totalPlayers);
+  const visiblePlayers = players.slice(startIndex, endIndex);
 
   if (playerManagementSummary) {
     playerManagementSummary.textContent =
-      `Active: ${activeCount} | Inactive: ${inactiveCount}`;
+      `Active: ${activeCount} | Inactive: ${inactiveCount} | Showing ${totalPlayers ? startIndex + 1 : 0}-${endIndex} of ${totalPlayers}`;
   }
 
   playerManagementList.innerHTML = "";
@@ -2686,11 +2706,33 @@ function renderPlayerManagementList(players) {
     return;
   }
 
-  players.forEach(player => {
+  const nav = document.createElement("div");
+  nav.className = "player-card-scroll-nav";
+
+  nav.innerHTML = `
+    <button type="button" class="btn btn-secondary" id="playerCardsPrevBtn" ${playerManagementPageIndex === 0 ? "disabled" : ""}>
+      ← Previous 10
+    </button>
+
+    <span class="player-card-page-label">
+      Players ${startIndex + 1}-${endIndex} of ${totalPlayers}
+    </span>
+
+    <button type="button" class="btn btn-secondary" id="playerCardsNextBtn" ${playerManagementPageIndex >= totalPages - 1 ? "disabled" : ""}>
+      Next 10 →
+    </button>
+  `;
+
+  playerManagementList.appendChild(nav);
+
+  const scrollRow = document.createElement("div");
+  scrollRow.className = "player-card-scroll-row";
+
+  visiblePlayers.forEach(player => {
     const card = document.createElement("div");
 
     card.className =
-      `player-management-row ${player.IsActive ? "" : "inactive-player"}`;
+      `player-management-row player-management-card-scroll-item ${player.IsActive ? "" : "inactive-player"}`;
 
     const groupLabel = player.GroupName || player.GroupCode || "No Group";
 
@@ -2737,8 +2779,27 @@ function renderPlayerManagementList(players) {
       </div>
     `;
 
-    playerManagementList.appendChild(card);
+    scrollRow.appendChild(card);
   });
+
+  playerManagementList.appendChild(scrollRow);
+
+  const prevBtn = document.getElementById("playerCardsPrevBtn");
+  const nextBtn = document.getElementById("playerCardsNextBtn");
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      playerManagementPageIndex -= 1;
+      renderPlayerManagementList(latestManagedPlayers);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      playerManagementPageIndex += 1;
+      renderPlayerManagementList(latestManagedPlayers);
+    });
+  }
 
   playerManagementList.querySelectorAll(".player-edit-btn").forEach(button => {
     button.addEventListener("click", () => {

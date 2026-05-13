@@ -776,3 +776,83 @@ hr {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================================================
+   PLAYER MANAGEMENT 10-CARD HORIZONTAL SCROLL
+   Keeps the existing player cards, but shows 10 players per
+   page with left/right scrolling and Previous / Next buttons.
+   ========================================================= */
+
+.player-card-scroll-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.player-card-scroll-nav .btn-secondary {
+  margin-top: 0;
+}
+
+.player-card-page-label {
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+}
+
+.player-card-scroll-row {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 8px 4px 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.player-management-card-scroll-item {
+  flex: 0 0 280px;
+  scroll-snap-align: start;
+  align-items: start;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary {
+  width: 100%;
+}
+
+.player-card-scroll-row::-webkit-scrollbar {
+  height: 8px;
+}
+
+.player-card-scroll-row::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 999px;
+}
+
+.player-card-scroll-row::-webkit-scrollbar-track {
+  background: #f2f2f2;
+  border-radius: 999px;
+}
+
+@media (max-width: 700px) {
+  .player-card-scroll-nav {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .player-card-scroll-nav .btn-secondary {
+    width: auto;
+  }
+
+  .player-management-card-scroll-item {
+    flex-basis: 85%;
+  }
+}
