@@ -1516,3 +1516,137 @@ hr {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   BATCH 3K - PLAYER CARD CONTACT LOOKUP + HELP CLEANUP
+   Keeps one Help button, makes player cards easier to scan,
+   and moves admin/status details into View Details.
+   ========================================================= */
+
+.app-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.app-footer-actions .btn-secondary {
+  margin-top: 0;
+}
+
+#helpBtn,
+#logoutBtn {
+  width: auto;
+}
+
+.player-card-title-block {
+  min-width: 0;
+}
+
+.player-card-badge-row,
+.player-details-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.player-card-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.player-number-badge {
+  background: #111827;
+  border-color: #111827;
+  color: #ffffff;
+}
+
+.player-card-contact-block {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e1e5ea;
+}
+
+.player-card-contact-block .player-management-card-line {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 6px;
+  align-items: start;
+  margin-top: 5px;
+}
+
+.player-card-contact-block .player-management-card-line span {
+  color: #555;
+  font-weight: 400;
+}
+
+.player-card-contact-block .player-management-card-line strong {
+  color: #111827;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.player-details-header p {
+  display: none;
+}
+
+.player-details-badge-row {
+  margin-top: 6px;
+}
+
+.player-details-section {
+  min-width: 0;
+}
+
+.player-detail-line {
+  grid-template-columns: minmax(125px, auto) minmax(0, 1fr);
+  align-items: start;
+}
+
+.player-detail-value {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+@media (max-width: 520px) {
+  .app-footer-actions {
+    flex-direction: row;
+  }
+
+  .app-footer-actions .btn-secondary {
+    flex: 1 1 140px;
+    width: auto;
+  }
+
+  .player-card-contact-block .player-management-card-line {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .player-management-card-scroll-item .player-management-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .player-detail-line {
+    grid-template-columns: 1fr;
+  }
+}

@@ -534,7 +534,6 @@ async function showApp() {
   await loadEvents();
   await updateEventRosterSection();
   await loadPlayers();
-  ensureHelpLink();
 }
 
 /* =========================
@@ -2841,7 +2840,11 @@ function showPlayerDetails(playerId) {
     <div class="player-details-header">
       <div>
         <h3>${fullName || "Player Details"}</h3>
-        <p>${playerNumber} | Group: ${groupLabel} | Gender: ${formatGenderShort(player.Gender)}</p>
+        <div class="player-details-badge-row">
+          <span class="player-card-badge player-number-badge">${playerNumber}</span>
+          <span class="player-card-badge">${groupLabel}</span>
+          <span class="player-card-badge">${formatGenderShort(player.Gender)}</span>
+        </div>
       </div>
       <button type="button" id="closePlayerDetailsBtn" class="btn btn-secondary player-details-close-btn">
         Close
@@ -3895,17 +3898,12 @@ function renderPlayerManagementList(players) {
 
     const statusLabel = getPlayerStatusLabel(player);
     const canToggle = canManagePlayers();
-    const photoReleaseLabel = getPhotoReleaseLabel(player);
-
-    const parentLine = [
-      player.ParentName || "No parent info entered",
-      player.ParentPhone || "",
-      player.ParentEmail || ""
-    ].filter(Boolean).join(" | ");
-
-    const snackLabel = player.SnackPreference || "Bring Snack";
-    const paperworkLabel = player.PaperworkStatus || "Not Received";
     const genderLabel = formatGenderShort(player.Gender);
+    const parent1Name = player.ParentName || "No parent name entered";
+    const parent1Phone = player.ParentPhone || "No phone entered";
+    const parentEmail = player.ParentEmail || "No email entered";
+    const parent2Name = player.Parent2Name || "";
+    const parent2Phone = player.Parent2Phone || "";
 
     card.dataset.playerId = player.PlayerID;
     card.tabIndex = 0;
@@ -3915,17 +3913,25 @@ function renderPlayerManagementList(players) {
     card.innerHTML = `
       <div class="player-management-info">
         <div class="player-card-header-row">
-          <div>
+          <div class="player-card-title-block">
             <div class="player-management-name">${player.FirstName} ${player.LastName}</div>
-            <div class="player-management-meta player-management-topline">${playerNumber} | ${player.BirthYear || "-"} | Gender: ${genderLabel}</div>
+            <div class="player-card-badge-row" aria-label="Player quick identifiers">
+              <span class="player-card-badge player-number-badge">${playerNumber}</span>
+              <span class="player-card-badge">${player.BirthYear || "-"}</span>
+              <span class="player-card-badge">${genderLabel}</span>
+            </div>
           </div>
           <div class="player-management-status ${player.IsActive ? "active-status" : "inactive-status"}">${statusLabel}</div>
         </div>
 
-        <div class="player-management-card-line"><span>Paperwork:</span> <strong>${paperworkLabel}</strong></div>
-        <div class="player-management-card-line"><span>Photo:</span> <strong>${photoReleaseLabel}</strong></div>
-        <div class="player-management-card-line"><span>Snack:</span> <strong>${snackLabel}</strong></div>
-        <div class="player-management-card-line"><span>Updated:</span> <strong>${formatPlayerUpdatedAt(player.UpdatedAt)}</strong></div>
+        <div class="player-card-contact-block">
+          <div class="player-management-card-line"><span>Parent 1:</span> <strong>${parent1Name}</strong></div>
+          <div class="player-management-card-line"><span>Phone:</span> <strong>${parent1Phone}</strong></div>
+          <div class="player-management-card-line"><span>Email:</span> <strong>${parentEmail}</strong></div>
+          ${parent2Name || parent2Phone
+            ? `<div class="player-management-card-line"><span>Parent 2:</span> <strong>${parent2Name || "-"}${parent2Phone ? ` | ${parent2Phone}` : ""}</strong></div>`
+            : ""}
+        </div>
       </div>
 
       <div class="player-management-actions">
@@ -4052,38 +4058,6 @@ async function addPlayer() {
 }
 
 
-
-/* =========================
-   HELP LINK
-   Adds an in-app Help / Instructions link without requiring index.html changes.
-   ========================= */
-function ensureHelpLink() {
-  if (!appScreen) return;
-
-  let helpBox = document.getElementById("appHelpBox");
-
-  if (!helpBox) {
-    helpBox = document.createElement("div");
-    helpBox.id = "appHelpBox";
-    helpBox.className = "app-help-box";
-    helpBox.innerHTML = `
-      <a class="btn btn-secondary app-help-link" href="help.html" target="_blank" rel="noopener">
-        Help / Instructions
-      </a>
-    `;
-
-    const versionBox = document.querySelector(".app-version");
-    const logoutButton = logoutBtn;
-
-    if (versionBox && versionBox.parentNode) {
-      versionBox.parentNode.insertBefore(helpBox, versionBox);
-    } else if (logoutButton && logoutButton.parentNode) {
-      logoutButton.parentNode.insertBefore(helpBox, logoutButton);
-    } else {
-      appScreen.appendChild(helpBox);
-    }
-  }
-}
 
 /* =========================
    LOAD VERSION DISPLAY
