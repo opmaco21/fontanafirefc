@@ -1356,3 +1356,163 @@ hr {
 .player-management-main-filter-grid {
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
+
+/* =========================================================
+   BATCH 3I/J - COMPACT PLAYER CARDS + DETAILS + HELP LINK
+   Keeps cards compact, makes answers bold, and adds read-only
+   player details so Edit is only used for actual changes.
+   ========================================================= */
+
+.app-help-box {
+  margin: 14px 0 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.app-help-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: auto;
+  margin-top: 0;
+}
+
+.player-management-card-scroll-item {
+  cursor: pointer;
+}
+
+.player-management-card-scroll-item:focus {
+  outline: none;
+  border-color: #f57c00;
+  box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.15);
+}
+
+.player-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.player-card-header-row .player-management-status {
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+
+.player-management-card-line span {
+  font-weight: 400;
+  color: #555;
+}
+
+.player-management-card-line strong {
+  font-weight: 800;
+  color: #111827;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary {
+  font-size: 12px;
+  padding: 9px 8px;
+}
+
+.player-details-panel {
+  background: #ffffff;
+  border: 1px solid #f2dcc8;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 12px 0 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.player-details-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  border-bottom: 1px solid #e1e5ea;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.player-details-header h3 {
+  margin: 0 0 4px;
+}
+
+.player-details-header p {
+  margin: 0;
+  color: #555;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.player-details-close-btn {
+  margin-top: 0;
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.player-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.player-details-section {
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fafafa;
+}
+
+.player-details-section h4 {
+  margin: 0 0 10px;
+  color: #222;
+}
+
+.player-detail-line {
+  display: grid;
+  grid-template-columns: minmax(95px, auto) 1fr;
+  gap: 6px;
+  margin-bottom: 7px;
+  line-height: 1.35;
+}
+
+.player-detail-label {
+  font-weight: 400;
+  color: #555;
+}
+
+.player-detail-value {
+  font-weight: 800;
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .app-help-link,
+  .player-details-close-btn {
+    width: 100%;
+  }
+
+  .player-details-header {
+    flex-direction: column;
+  }
+
+  .player-detail-line {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .player-card-header-row {
+    flex-direction: column;
+  }
+
+  .player-management-card-scroll-item .player-management-actions {
+    grid-template-columns: 1fr;
+  }
+}

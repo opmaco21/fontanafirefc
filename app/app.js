@@ -534,6 +534,7 @@ async function showApp() {
   await loadEvents();
   await updateEventRosterSection();
   await loadPlayers();
+  ensureHelpLink();
 }
 
 /* =========================
@@ -1535,7 +1536,7 @@ function createAttendancePlayerRow(player) {
   row.innerHTML = `
     <div class="attendance-player-info">
       <div class="attendance-player-name">${playerName}</div>
-      <div class="attendance-player-meta">${playerNumber} ${birthYear ? `| Birth Year: ${birthYear}` : ""} ${gender ? `| Gender: ${gender}` : ""}</div>
+      <div class="attendance-player-meta">${playerNumber} ${birthYear ? `| Birth Year: ${birthYear}` : ""} ${gender ? `| Gender: ${formatGenderShort(gender)}` : ""}</div>
     </div>
 
     <div class="attendance-status-buttons" role="group" aria-label="Attendance status for ${playerName}">
@@ -2395,7 +2396,7 @@ function renderTeamEventPlayerOptions() {
       />
       <span class="team-event-player-info">
         <span class="team-event-player-name">${player.FirstName} ${player.LastName}</span>
-        <span class="team-event-player-meta">${playerNumber} | Group: ${groupLabel}${player.Gender ? ` | Gender: ${player.Gender}` : ""}</span>
+        <span class="team-event-player-meta">${playerNumber} | Group: ${groupLabel}${player.Gender ? ` | Gender: ${formatGenderShort(player.Gender)}` : ""}</span>
       </span>
     `;
 
@@ -2752,6 +2753,153 @@ function formatPlayerUpdatedAt(value) {
   }
 
   return date.toLocaleDateString();
+}
+
+
+
+function formatGenderShort(value) {
+  const gender = safeValue(value).trim().toLowerCase();
+
+  if (gender === "male" || gender === "m") return "M";
+  if (gender === "female" || gender === "f") return "F";
+
+  return "-";
+}
+
+function formatDisplayDate(value) {
+  if (!value) return "-";
+
+  const raw = String(value);
+  const dateOnly = raw.includes("T") ? raw.split("T")[0] : raw.substring(0, 10);
+  const parts = dateOnly.split("-");
+
+  if (parts.length !== 3) return raw;
+
+  return `${parts[1]}/${parts[2]}/${parts[0]}`;
+}
+
+function formatYesNo(value) {
+  return value ? "Yes" : "No";
+}
+
+function detailLine(label, value) {
+  const displayValue = value === null || value === undefined || value === "" ? "-" : value;
+
+  return `
+    <div class="player-detail-line">
+      <span class="player-detail-label">${label}:</span>
+      <strong class="player-detail-value">${displayValue}</strong>
+    </div>
+  `;
+}
+
+function ensurePlayerDetailsPanel() {
+  if (!playerManagementSection || !playerManagementList) return null;
+
+  let panel = document.getElementById("playerDetailsPanel");
+
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = "playerDetailsPanel";
+    panel.className = "player-details-panel hidden";
+    playerManagementSection.insertBefore(panel, playerManagementList);
+  }
+
+  return panel;
+}
+
+function closePlayerDetails() {
+  const panel = document.getElementById("playerDetailsPanel");
+
+  if (panel) {
+    panel.classList.add("hidden");
+    panel.innerHTML = "";
+  }
+}
+
+function showPlayerDetails(playerId) {
+  const player = latestManagedPlayers.find(
+    item => Number(item.PlayerID) === Number(playerId)
+  );
+
+  if (!player) {
+    alert("Player not found in current list.");
+    return;
+  }
+
+  const panel = ensurePlayerDetailsPanel();
+  if (!panel) return;
+
+  const fullName = `${player.FirstName || ""} ${player.LastName || ""}`.trim();
+  const groupLabel = player.GroupName || player.GroupCode || "-";
+  const playerNumber = player.PlayerNumber === 0 || player.PlayerNumber ? `#${player.PlayerNumber}` : "-";
+  const fullAddress = [player.StreetAddress, player.City, player.State, player.ZipCode]
+    .filter(Boolean)
+    .join(", ");
+
+  panel.innerHTML = `
+    <div class="player-details-header">
+      <div>
+        <h3>${fullName || "Player Details"}</h3>
+        <p>${playerNumber} | Group: ${groupLabel} | Gender: ${formatGenderShort(player.Gender)}</p>
+      </div>
+      <button type="button" id="closePlayerDetailsBtn" class="btn btn-secondary player-details-close-btn">
+        Close
+      </button>
+    </div>
+
+    <div class="player-details-grid">
+      <section class="player-details-section">
+        <h4>Player Info</h4>
+        ${detailLine("Player #", playerNumber)}
+        ${detailLine("First Name", player.FirstName)}
+        ${detailLine("Last Name", player.LastName)}
+        ${detailLine("Birth Year", player.BirthYear || player.GroupCode)}
+        ${detailLine("Gender", formatGenderShort(player.Gender))}
+        ${detailLine("Date of Birth", formatDisplayDate(player.DateOfBirth))}
+        ${detailLine("Start Date", formatDisplayDate(player.StartDate))}
+        ${detailLine("End Date", formatDisplayDate(player.EndDate))}
+        ${detailLine("Status", getPlayerStatusLabel(player))}
+      </section>
+
+      <section class="player-details-section">
+        <h4>Parent Info</h4>
+        ${detailLine("Parent 1 Name", player.ParentName)}
+        ${detailLine("Parent 1 Phone", player.ParentPhone)}
+        ${detailLine("Parent Email", player.ParentEmail)}
+        ${detailLine("Parent 2 Name", player.Parent2Name)}
+        ${detailLine("Parent 2 Phone", player.Parent2Phone)}
+      </section>
+
+      <section class="player-details-section">
+        <h4>Emergency / Address</h4>
+        ${detailLine("Address", fullAddress)}
+        ${detailLine("Emergency Contact", player.EmergencyContactName)}
+        ${detailLine("Relationship", player.EmergencyContactRelationship)}
+        ${detailLine("Emergency Phone", player.EmergencyContactPhone)}
+        ${detailLine("Alt Phone", player.EmergencyContactAltPhone)}
+        ${detailLine("Emergency Notes", player.EmergencyNotes)}
+      </section>
+
+      <section class="player-details-section">
+        <h4>Snack / Paperwork / Photo</h4>
+        ${detailLine("Snack", player.SnackPreference || "Bring Snack")}
+        ${detailLine("Paperwork", player.PaperworkStatus || "Not Received")}
+        ${detailLine("Photo Release", getPhotoReleaseLabel(player))}
+        ${detailLine("Photo Form Received", formatYesNo(player.PhotoReleaseFormReceived))}
+        ${detailLine("Last Updated", formatPlayerUpdatedAt(player.UpdatedAt))}
+      </section>
+    </div>
+  `;
+
+  panel.classList.remove("hidden");
+
+  const closeBtn = document.getElementById("closePlayerDetailsBtn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closePlayerDetails);
+  }
+
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function getPlayerManagementCounts(players) {
@@ -3757,21 +3905,34 @@ function renderPlayerManagementList(players) {
 
     const snackLabel = player.SnackPreference || "Bring Snack";
     const paperworkLabel = player.PaperworkStatus || "Not Received";
+    const genderLabel = formatGenderShort(player.Gender);
+
+    card.dataset.playerId = player.PlayerID;
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `View details for ${player.FirstName} ${player.LastName}`);
 
     card.innerHTML = `
       <div class="player-management-info">
-        <div class="player-management-name">${player.FirstName} ${player.LastName}</div>
-        <div class="player-management-meta player-management-topline">${playerNumber} | Group: ${groupLabel} | Birth Year: ${player.BirthYear || "-"}</div>
-        <div class="player-management-card-line"><strong>Gender:</strong> ${player.Gender || "Not set"}</div>
-        <div class="player-management-card-line"><strong>Parent:</strong> ${parentLine}</div>
-        <div class="player-management-card-line"><strong>Snack:</strong> ${snackLabel}</div>
-        <div class="player-management-card-line"><strong>Paperwork:</strong> ${paperworkLabel}</div>
-        <div class="player-management-card-line"><strong>Photo Release:</strong> ${photoReleaseLabel}</div>
-        <div class="player-management-card-line"><strong>Last Updated:</strong> ${formatPlayerUpdatedAt(player.UpdatedAt)}</div>
-        <div class="player-management-status ${player.IsActive ? "active-status" : "inactive-status"}">${statusLabel}</div>
+        <div class="player-card-header-row">
+          <div>
+            <div class="player-management-name">${player.FirstName} ${player.LastName}</div>
+            <div class="player-management-meta player-management-topline">${playerNumber} | ${player.BirthYear || "-"} | Gender: ${genderLabel}</div>
+          </div>
+          <div class="player-management-status ${player.IsActive ? "active-status" : "inactive-status"}">${statusLabel}</div>
+        </div>
+
+        <div class="player-management-card-line"><span>Paperwork:</span> <strong>${paperworkLabel}</strong></div>
+        <div class="player-management-card-line"><span>Photo:</span> <strong>${photoReleaseLabel}</strong></div>
+        <div class="player-management-card-line"><span>Snack:</span> <strong>${snackLabel}</strong></div>
+        <div class="player-management-card-line"><span>Updated:</span> <strong>${formatPlayerUpdatedAt(player.UpdatedAt)}</strong></div>
       </div>
 
       <div class="player-management-actions">
+        <button type="button" class="btn btn-secondary player-view-details-btn" data-player-id="${player.PlayerID}">
+          View Details
+        </button>
+
         ${canToggle
           ? `
             <button type="button" class="btn btn-secondary player-edit-btn" data-player-id="${player.PlayerID}">
@@ -3785,6 +3946,18 @@ function renderPlayerManagementList(players) {
           : ""}
       </div>
     `;
+
+    card.addEventListener("click", event => {
+      if (event.target.closest("button")) return;
+      showPlayerDetails(player.PlayerID);
+    });
+
+    card.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showPlayerDetails(player.PlayerID);
+      }
+    });
 
     scrollRow.appendChild(card);
   });
@@ -3807,6 +3980,12 @@ function renderPlayerManagementList(players) {
       renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
     });
   }
+
+  playerManagementList.querySelectorAll(".player-view-details-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      showPlayerDetails(Number(button.dataset.playerId));
+    });
+  });
 
   playerManagementList.querySelectorAll(".player-edit-btn").forEach(button => {
     button.addEventListener("click", () => {
@@ -3872,6 +4051,39 @@ async function addPlayer() {
   await savePlayerManagementForm();
 }
 
+
+
+/* =========================
+   HELP LINK
+   Adds an in-app Help / Instructions link without requiring index.html changes.
+   ========================= */
+function ensureHelpLink() {
+  if (!appScreen) return;
+
+  let helpBox = document.getElementById("appHelpBox");
+
+  if (!helpBox) {
+    helpBox = document.createElement("div");
+    helpBox.id = "appHelpBox";
+    helpBox.className = "app-help-box";
+    helpBox.innerHTML = `
+      <a class="btn btn-secondary app-help-link" href="help.html" target="_blank" rel="noopener">
+        Help / Instructions
+      </a>
+    `;
+
+    const versionBox = document.querySelector(".app-version");
+    const logoutButton = logoutBtn;
+
+    if (versionBox && versionBox.parentNode) {
+      versionBox.parentNode.insertBefore(helpBox, versionBox);
+    } else if (logoutButton && logoutButton.parentNode) {
+      logoutButton.parentNode.insertBefore(helpBox, logoutButton);
+    } else {
+      appScreen.appendChild(helpBox);
+    }
+  }
+}
 
 /* =========================
    LOAD VERSION DISPLAY
