@@ -3,7 +3,7 @@
    Purpose:
    Controls the full mobile-friendly design for the login,
    attendance screen, player list, tabs, buttons, and the
-   new attendance summary / hide completed player tools.
+   attendance summary / hide completed player tools.
    ========================================================= */
 
 
@@ -314,6 +314,57 @@ textarea:focus {
 
 
 /* =========================================================
+   BATCH 3M - PRACTICE / GAME ATTENDANCE SCROLL POLISH
+   Makes the actual attendance lists scroll on mobile/desktop.
+   Uses existing containers: #playerList and #completedPlayerList.
+   ========================================================= */
+
+#playerList,
+#completedPlayerList {
+  max-height: 58vh;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #d9e0ea;
+  border-radius: 14px;
+  background: #ffffff;
+  margin-top: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Keep card spacing clean inside scroll areas */
+#playerList .attendance-player-card,
+#completedPlayerList .attendance-player-card,
+#playerList .player-row,
+#completedPlayerList .player-row {
+  margin-bottom: 10px;
+}
+
+/* Avoid extra bottom spacing on the last card */
+#playerList .attendance-player-card:last-child,
+#completedPlayerList .attendance-player-card:last-child,
+#playerList .player-row:last-child,
+#completedPlayerList .player-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Mobile tuning */
+@media (max-width: 700px) {
+  #playerList,
+  #completedPlayerList {
+    max-height: 55vh;
+    padding: 8px;
+  }
+
+  #playerList .attendance-player-card,
+  #completedPlayerList .attendance-player-card,
+  #playerList .player-row,
+  #completedPlayerList .player-row {
+    margin-bottom: 8px;
+  }
+}
+
+
+/* =========================================================
    PLAYER ATTENDANCE LIST
    Main list of players who still need attendance marked.
    Each row has the player name and attendance dropdown.
@@ -351,7 +402,6 @@ textarea:focus {
   margin-top: 12px;
   border-top: 2px solid #ddd;
   padding-top: 12px;
-
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -419,8 +469,6 @@ hr {
   background: #f5f5f5;
   border-radius: 10px;
 }
-
-
 
 
 /* =========================================================
@@ -518,6 +566,7 @@ hr {
     grid-template-columns: 1fr;
   }
 }
+
 
 /* =========================================================
    LOGIN LOADING CUE
@@ -777,6 +826,7 @@ hr {
   }
 }
 
+
 /* =========================================================
    PLAYER MANAGEMENT BATCH 3D FILTERS + CLEAN CARD TEXT
    Adds birth year, photo release, and paperwork filters.
@@ -835,6 +885,8 @@ hr {
     width: 100%;
   }
 }
+
+
 /* =========================================================
    PLAYER MANAGEMENT SMALLER BUTTONS / BETTER CARD READABILITY
    Batch 3D polish
@@ -894,6 +946,8 @@ hr {
     padding: 9px 8px;
   }
 }
+
+
 /* =========================================================
    PLAYER MANAGEMENT BATCH 3E QOL
    Missing-item quick filters, readable 2-column filters,
@@ -1212,7 +1266,6 @@ hr {
 }
 
 
-
 /* =========================================================
    BATCH 3G PLAYER FILTER CLEANUP
    Keeps quick missing-item buttons visible and moves secondary
@@ -1356,6 +1409,7 @@ hr {
 .player-management-main-filter-grid {
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
+
 
 /* =========================================================
    BATCH 3I/J - COMPACT PLAYER CARDS + DETAILS + HELP LINK
@@ -1516,6 +1570,7 @@ hr {
     grid-template-columns: 1fr;
   }
 }
+
 
 /* =========================================================
    BATCH 3K - PLAYER CARD CONTACT LOOKUP + HELP CLEANUP
