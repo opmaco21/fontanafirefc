@@ -929,33 +929,7 @@ async function updateEventRosterSection() {
 
   eventRosterSection.classList.remove("hidden");
 
-  /*
-    A game belongs to a specific team event row.
-    When All Groups is selected, several same-day games can be
-    represented by one grouped dropdown item, which is too broad
-    for roster editing. Require one specific group before editing
-    a Game roster.
-  */
-  if (eventType === "Game" && !selectedGroupId) {
-    if (eventRosterHelp) {
-      eventRosterHelp.textContent =
-        "Select a specific group above before managing a Game roster.";
-    }
-
-    if (eventRosterList) {
-      eventRosterList.innerHTML = `
-        <div class="roster-empty-message">
-          Game rosters are managed one team at a time.
-        </div>
-      `;
-    }
-
-    if (saveRosterBtn) saveRosterBtn.classList.add("hidden");
-    if (selectAllRosterBtn) selectAllRosterBtn.classList.add("hidden");
-    if (clearRosterBtn) clearRosterBtn.classList.add("hidden");
-    return;
-  }
-
+ 
   if (saveRosterBtn) saveRosterBtn.classList.remove("hidden");
   if (selectAllRosterBtn) selectAllRosterBtn.classList.remove("hidden");
   if (clearRosterBtn) clearRosterBtn.classList.remove("hidden");
@@ -1006,16 +980,7 @@ async function saveEventRoster() {
   const eventType = getSelectedEventType();
   const selectedGroupId = groupSelect ? groupSelect.value : "";
 
-  if (eventType === "Game" && !selectedGroupId) {
-    setMessage(
-      eventRosterMessage,
-      "Select a specific group before saving a Game roster.",
-      true
-    );
-    return;
-  }
-
-  const selectedPlayerIds = Array.from(
+   const selectedPlayerIds = Array.from(
     document.querySelectorAll(".roster-player-checkbox:checked")
   ).map(checkbox => Number(checkbox.value));
 
