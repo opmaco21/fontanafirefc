@@ -693,7 +693,6 @@ function updateTeamEventSection() {
 }
 
 function resetWorkflowForSelectedEvent() {
-  const eventType = getSelectedEventType();
   const hasSelectedEvent = Boolean(eventSelect && eventSelect.value);
 
   if (currentTab === "Team Event") {
@@ -702,7 +701,23 @@ function resetWorkflowForSelectedEvent() {
     isTeamEventFormOpen = false;
   }
 
-  isAttendanceModeActive = !(hasSelectedEvent && (eventType === "Game" || eventType === "Team Event"));
+  /*
+    Batch 4 fix:
+    Selected events should open in attendance mode by default.
+
+    Before:
+    - Games and Team Events opened in roster-edit mode automatically.
+    - Games in All Groups mode then showed:
+      "Select a specific group above before managing a Game roster."
+
+    After:
+    - Practice opens attendance.
+    - Games open attendance.
+    - Existing Team Events open attendance.
+    - Staff can still click Edit Roster when they need to manage rosters.
+    - New Team Event creation still opens the Team Event form when no event is selected.
+  */
+  isAttendanceModeActive = true;
 }
 
 function updateAttendanceSectionVisibility() {
