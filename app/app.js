@@ -1814,6 +1814,18 @@ function clearSelectedEvent() {
    ========================= */
 function getAllMatchingParam() {
   const selectedGroupId = groupSelect ? groupSelect.value : "";
+  const selectedEventType = getSelectedEventType();
+
+  /*
+    Batch 4B Game Management:
+    Games are individual real games now, so they should not use
+    allMatching=1. Practice and Team Events can still use grouped
+    All Groups behavior.
+  */
+  if (selectedEventType === "Game") {
+    return "";
+  }
+
   return selectedGroupId ? "" : "?allMatching=1";
 }
 
