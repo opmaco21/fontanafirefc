@@ -3113,83 +3113,56 @@ function ensurePlayerManagementFilters() {
     filterPanel.id = "playerManagementFilterPanel";
     filterPanel.className = "player-management-filter-panel";
 
-    filterPanel.innerHTML = `
-      <div id="playerManagementQuickCounts" class="player-management-quick-counts">
-        Missing: Paperwork 0 | Photo Release 0 | Emergency Info 0
+ filterPanel.innerHTML = `
+  <div class="attendance-filter-row attendance-search-row">
+    <label class="attendance-filter-label">
+      Search Players
+      <input id="attendanceSearchInput" type="text" placeholder="Search by name, number, birth year, or gender" />
+    </label>
+  </div>
+
+  <div class="attendance-filter-row">
+    <div class="attendance-filter-label">Gender</div>
+    <div class="attendance-gender-filter-buttons">
+      <button type="button" class="attendance-filter-btn active-filter" data-gender-filter="">All</button>
+      <button type="button" class="attendance-filter-btn" data-gender-filter="Male">Male</button>
+      <button type="button" class="attendance-filter-btn" data-gender-filter="Female">Female</button>
+    </div>
+  </div>
+
+  <details class="attendance-advanced-filters">
+    <summary>More filters</summary>
+
+    <div class="attendance-filter-row">
+      <div class="attendance-filter-label">View</div>
+      <div class="attendance-status-filter-buttons">
+        <button type="button" class="attendance-filter-btn active-filter" data-status-filter="">All</button>
+        <button type="button" class="attendance-filter-btn" data-status-filter="Remaining">Remaining</button>
+        <button type="button" class="attendance-filter-btn" data-status-filter="Present">Present</button>
+        <button type="button" class="attendance-filter-btn" data-status-filter="Absent">Absent</button>
+        <button type="button" class="attendance-filter-btn" data-status-filter="Excused">Excused</button>
+        <button type="button" class="attendance-filter-btn" data-status-filter="Cancelled">Cancelled</button>
       </div>
+    </div>
 
-      <div class="player-management-quick-filter-buttons">
-        <button type="button" id="pmQuickMissingPaperworkBtn" class="btn btn-secondary player-management-quick-filter-btn" data-filter="missingPaperwork">
-          Missing Paperwork
-        </button>
-
-        <button type="button" id="pmQuickMissingPhotoReleaseBtn" class="btn btn-secondary player-management-quick-filter-btn" data-filter="missingPhotoRelease">
-          Missing Photo Release
-        </button>
-
-        <button type="button" id="pmQuickMissingEmergencyBtn" class="btn btn-secondary player-management-quick-filter-btn" data-filter="missingEmergencyInfo">
-          Missing Emergency Info
-        </button>
+    <div class="attendance-filter-row">
+      <div class="attendance-filter-label">Birth Year</div>
+      <div class="attendance-birth-year-filter-buttons">
+        <button type="button" class="attendance-filter-btn active-filter" data-birth-year-filter="">All</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2012">2012</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2013">2013</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2014">2014</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2015">2015</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2016">2016</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2017">2017</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2018">2018</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2019">2019</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2020">2020</button>
+        <button type="button" class="attendance-filter-btn" data-birth-year-filter="2021">2021</button>
       </div>
-
-      <div class="player-management-filter-grid player-management-main-filter-grid">
-        <label>
-          Birth Year
-          <select id="pmFilterBirthYear">
-            <option value="">All Birth Years</option>
-            <option value="2012">2012</option>
-            <option value="2013">2013</option>
-            <option value="2014">2014</option>
-            <option value="2015">2015</option>
-            <option value="2016">2016</option>
-            <option value="2017">2017</option>
-            <option value="2018">2018</option>
-            <option value="2019">2019</option>
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-          </select>
-        </label>
-
-        <label>
-          Gender
-          <select id="pmFilterGender">
-            <option value="">All Genders</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-        </label>
-
-        <button type="button" id="pmClearFiltersBtn" class="btn btn-secondary">
-          Clear Filters
-        </button>
-      </div>
-
-      <details class="player-management-advanced-filters">
-        <summary>More filters</summary>
-
-        <div class="player-management-filter-grid player-management-secondary-filter-grid">
-          <label>
-            Photo Release
-            <select id="pmFilterPhotoRelease">
-              <option value="">All Photo Releases</option>
-              <option value="Opt In">Opt In</option>
-              <option value="Opt Out">Opt Out</option>
-              <option value="Not Received">Not Received</option>
-            </select>
-          </label>
-
-          <label>
-            Paperwork
-            <select id="pmFilterPaperwork">
-              <option value="">All Paperwork</option>
-              <option value="Complete">Complete</option>
-              <option value="Missing">Missing</option>
-              <option value="Not Received">Not Received</option>
-            </select>
-          </label>
-        </div>
-      </details>
-    `;
+    </div>
+  </details>
+`;
 
     playerManagementSection.insertBefore(filterPanel, playerManagementSummary);
   }
