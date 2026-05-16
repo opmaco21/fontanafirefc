@@ -141,7 +141,7 @@ let isGameFormOpen = false;
 let gamePlayerSearchTimer = null;
 let latestGamePlayers = [];
 let gameGenderFilter = "";
-
+let selectedGamePlayerIds = new Set();
 
 /* =========================
    EVENT LISTENERS
@@ -564,6 +564,8 @@ applyRolePermissions();
 ensureGameManagementElements();
 setActiveTab();
 resetWorkflowForSelectedEvent();
+updateTeamEventSection();
+updateGameSection();
 updateAttendanceSectionVisibility();
 
   await loadGroups();
@@ -656,8 +658,9 @@ function setActiveTab() {
     playerManagementTab.classList.add("active");
   }
 
-  updateMainModeVisibility();
-  updateTeamEventSection();
+updateMainModeVisibility();
+updateTeamEventSection();
+updateGameSection();
 }
 
 /* =========================
@@ -796,6 +799,90 @@ function ensureGameManagementElements() {
   gameClearPlayersBtn = document.getElementById("gameClearPlayersBtn");
   gamePlayerSummary = document.getElementById("gamePlayerSummary");
   gamePlayerList = document.getElementById("gamePlayerList");
+  if (showGameFormBtn && !showGameFormBtn.dataset.listenerAttached) {
+  showGameFormBtn.dataset.listenerAttached = "1";
+
+  showGameFormBtn.addEventListener("click", async () => {
+    isGameFormOpen = true;
+    isAttendanceModeActive = false;
+
+    if (eventSelect) {
+      eventSelect.value = "";
+    }
+
+    clearSelectedEvent();
+
+    if (gameMessage) gameMessage.textContent = "";
+    if (attendanceMessage) attendanceMessage.textContent = "";
+    if (eventRosterMessage) eventRosterMessage.textContent = "";
+
+    updateEventActionButtons();
+    clearSelectedEventDetails();
+    updateGameSection();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+
+    resetGameForm(false);
+    await loadGamePlayerSelector();
+
+    if (gameSection) {
+      gameSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+}
+
+if (addGameBtn && !addGameBtn.dataset.listenerAttached) {
+  addGameBtn.dataset.listenerAttached = "1";
+  addGameBtn.addEventListener("click", addGame);
+}
+
+if (newGameLocationType && !newGameLocationType.dataset.listenerAttached) {
+  newGameLocationType.dataset.listenerAttached = "1";
+
+  newGameLocationType.addEventListener("change", () => {
+    const customWrapper = document.getElementById("newGameCustomLocationWrapper");
+
+    if (customWrapper) {
+      customWrapper.classList.toggle(
+        "hidden",
+        newGameLocationType.value !== "Other"
+      );
+    }
+  });
+}
+
+if (gamePlayerSearch && !gamePlayerSearch.dataset.listenerAttached) {
+  gamePlayerSearch.dataset.listenerAttached = "1";
+
+  gamePlayerSearch.addEventListener("input", () => {
+    clearTimeout(gamePlayerSearchTimer);
+    gamePlayerSearchTimer = setTimeout(renderGamePlayerOptions, 150);
+  });
+}
+
+if (gameGenderFilterSelect && !gameGenderFilterSelect.dataset.listenerAttached) {
+  gameGenderFilterSelect.dataset.listenerAttached = "1";
+
+  gameGenderFilterSelect.addEventListener("change", () => {
+    gameGenderFilter = gameGenderFilterSelect.value || "";
+    renderGamePlayerOptions();
+  });
+}
+
+if (gameSelectAllPlayersBtn && !gameSelectAllPlayersBtn.dataset.listenerAttached) {
+  gameSelectAllPlayersBtn.dataset.listenerAttached = "1";
+  gameSelectAllPlayersBtn.addEventListener("click", () => {
+    setAllShownGamePlayerCheckboxes(true);
+  });
+}
+
+if (gameClearPlayersBtn && !gameClearPlayersBtn.dataset.listenerAttached) {
+  gameClearPlayersBtn.dataset.listenerAttached = "1";
+  gameClearPlayersBtn.addEventListener("click", () => {
+    selectedGamePlayerIds = new Set();
+    renderGamePlayerOptions();
+  });
+}
 }
 
 /* =========================
@@ -884,6 +971,33 @@ function resetWorkflowForSelectedEvent() {
     isTeamEventFormOpen = false;
   }
 
+  /* =========================
+   SHOW / HIDE GAME FORM
+   Batch 4B Frontend
+   ========================= */
+function updateGameSection() {
+  if (!gameSection || !gameWorkflowBar) return;
+
+  const canAddGames =
+    currentUser &&
+    currentUser.RoleName !== "MainCoach";
+
+  if (currentTab !== "Game" || !canAddGames) {
+    gameSection.classList.add("hidden");
+    gameWorkflowBar.classList.add("hidden");
+    isGameFormOpen = false;
+    return;
+  }
+
+  if (isGameFormOpen) {
+    gameSection.classList.remove("hidden");
+    gameWorkflowBar.classList.add("hidden");
+  } else {
+    gameSection.classList.add("hidden");
+    gameWorkflowBar.classList.remove("hidden");
+  }
+}
+  
   /*
     Batch 4 fix:
     Selected events should open in attendance mode by default.
@@ -2643,6 +2757,188 @@ async function loadTeamEventPlayerSelector() {
     if (list) {
       list.innerHTML = `<div class="roster-empty-message">Could not load players.</div>`;
     }
+  }
+}
+
+/* =========================
+   GAME PLAYER SELECTOR
+   Batch 4B Frontend
+
+   Purpose:
+   - Games use exact player selection, similar to Team Events.
+   - Checked players are expected for the game roster.
+   ========================= */
+function getSelectedGamePlayerIds() {
+  return Array.from(selectedGamePlayerIds)
+    .map(value => Number(value))
+    .filter(value => Number.isInteger(value) && value > 0);
+}
+
+function updateGamePlayerSummary() {
+  if (!gamePlayerSummary) return;
+
+  gamePlayerSummary.textContent =
+    `Selected Players: ${getSelectedGamePlayerIds().length}`;
+}
+
+function getFilteredGamePlayers() {
+  const searchText = gamePlayerSearch
+    ? gamePlayerSearch.value.trim().toLowerCase()
+    : "";
+
+  if (!searchText && !gameGenderFilter) {
+    return latestGamePlayers;
+  }
+
+  return latestGamePlayers.filter(player => {
+    const genderMatches =
+      !gameGenderFilter ||
+      (player.Gender || "") === gameGenderFilter;
+
+    const searchable = [
+      player.FirstName,
+      player.LastName,
+      player.FullName,
+      player.PlayerNumber === 0 || player.PlayerNumber ? `#${player.PlayerNumber}` : "",
+      player.GroupName,
+      player.GroupCode,
+      player.Gender,
+      player.BirthYear
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    return genderMatches && searchable.includes(searchText);
+  });
+}
+
+function renderGamePlayerOptions() {
+  if (!gamePlayerList) return;
+
+  const players = getFilteredGamePlayers();
+
+  gamePlayerList.innerHTML = "";
+
+  if (!players.length) {
+    gamePlayerList.innerHTML = `
+      <div class="roster-empty-message">
+        No active players found.
+      </div>
+    `;
+    updateGamePlayerSummary();
+    return;
+  }
+
+  players.forEach(player => {
+    const label = document.createElement("label");
+    label.className = "team-event-player-option";
+
+    const playerId = Number(player.PlayerID);
+    const groupLabel = player.GroupName || player.GroupCode || player.BirthYear || "No Group";
+    const playerNumber = player.PlayerNumber === 0 || player.PlayerNumber
+      ? `#${player.PlayerNumber}`
+      : "No #";
+
+    label.innerHTML = `
+      <input
+        type="checkbox"
+        class="game-player-checkbox"
+        value="${player.PlayerID}"
+        ${selectedGamePlayerIds.has(playerId) ? "checked" : ""}
+      />
+      <span class="team-event-player-info">
+        <span class="team-event-player-name">${player.FirstName} ${player.LastName}</span>
+        <span class="team-event-player-meta">${playerNumber} | Group: ${groupLabel}${player.Gender ? ` | Gender: ${formatGenderShort(player.Gender)}` : ""}</span>
+      </span>
+    `;
+
+    gamePlayerList.appendChild(label);
+  });
+
+  gamePlayerList.querySelectorAll(".game-player-checkbox").forEach(checkbox => {
+    checkbox.addEventListener("change", () => {
+      const playerId = Number(checkbox.value);
+
+      if (checkbox.checked) {
+        selectedGamePlayerIds.add(playerId);
+      } else {
+        selectedGamePlayerIds.delete(playerId);
+      }
+
+      updateGamePlayerSummary();
+    });
+  });
+
+  updateGamePlayerSummary();
+}
+
+function setAllShownGamePlayerCheckboxes(isChecked) {
+  const visiblePlayers = getFilteredGamePlayers();
+
+  visiblePlayers.forEach(player => {
+    const playerId = Number(player.PlayerID);
+
+    if (isChecked) {
+      selectedGamePlayerIds.add(playerId);
+    } else {
+      selectedGamePlayerIds.delete(playerId);
+    }
+  });
+
+  renderGamePlayerOptions();
+}
+
+async function loadGamePlayerSelector() {
+  if (!gamePlayerList) return;
+
+  gamePlayerList.innerHTML = `
+    <div class="roster-empty-message">Loading active players...</div>
+  `;
+
+  try {
+    const res = await fetch(`${API_BASE}/players`, {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    latestGamePlayers = Array.isArray(data)
+      ? data
+      : data.players || [];
+
+    renderGamePlayerOptions();
+
+  } catch (err) {
+    console.error("Could not load players for Game:", err);
+
+    gamePlayerList.innerHTML = `
+      <div class="roster-empty-message">Could not load players.</div>
+    `;
+  }
+}
+
+function resetGameForm(clearMessage = true) {
+  selectedGamePlayerIds = new Set();
+  latestGamePlayers = [];
+  gameGenderFilter = "";
+
+  if (newGameName) newGameName.value = "";
+  if (newGameDate) newGameDate.value = "";
+  if (newGameStartTime) newGameStartTime.value = "";
+  if (newGameLocationType) newGameLocationType.value = "Ralph M. Lewis Sports Complex";
+  if (newGameCustomLocation) newGameCustomLocation.value = "";
+
+  const customWrapper = document.getElementById("newGameCustomLocationWrapper");
+  if (customWrapper) {
+    customWrapper.classList.add("hidden");
+  }
+
+  if (gamePlayerSearch) gamePlayerSearch.value = "";
+  if (gameGenderFilterSelect) gameGenderFilterSelect.value = "";
+  if (gamePlayerList) gamePlayerList.innerHTML = "";
+
+  updateGamePlayerSummary();
+
+  if (clearMessage && gameMessage) {
+    gameMessage.textContent = "";
   }
 }
 
