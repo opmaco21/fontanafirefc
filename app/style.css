@@ -1705,3 +1705,68 @@ hr {
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   COMPACT PLAYER SELECTOR CARDS
+   Used by Team Event / Game player selector
+   ========================================================= */
+
+.team-event-player-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 460px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.team-event-player-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  min-height: 62px;
+  border: 1px solid #d8dee8;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.team-event-player-option input[type="checkbox"] {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.team-event-player-info {
+  min-width: 0;
+}
+
+.team-event-player-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-event-player-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #4f5b6b;
+}
+
+/* Medium screens: 2 across */
+@media (max-width: 850px) {
+  .team-event-player-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Small phones: 1 across */
+@media (max-width: 520px) {
+  .team-event-player-list {
+    grid-template-columns: 1fr;
+  }
+}
