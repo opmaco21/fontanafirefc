@@ -61,6 +61,31 @@ const showTeamEventFormBtn = document.getElementById("showTeamEventFormBtn");
 const addTeamEventBtn = document.getElementById("addTeamEventBtn");
 const teamEventMessage = document.getElementById("teamEventMessage");
 
+/* =========================
+   GAME MANAGEMENT REFERENCES
+   Batch 4B Frontend
+   ========================= */
+let gameSection = null;
+let gameWorkflowBar = null;
+let showGameFormBtn = null;
+let addGameBtn = null;
+let gameMessage = null;
+
+let newGameName = null;
+let newGameDate = null;
+let newGameStartTime = null;
+let newGameLocationType = null;
+let newGameCustomLocation = null;
+
+let gamePlayerSelectorPanel = null;
+let gamePlayerSearch = null;
+let gameGenderFilterSelect = null;
+let gameSelectAllPlayersBtn = null;
+let gameClearPlayersBtn = null;
+let gamePlayerSummary = null;
+let gamePlayerList = null;
+
+
 const teamEventAllGroups = document.getElementById("teamEventAllGroups");
 const teamEventGroupCheckboxes = document.getElementById("teamEventGroupCheckboxes");
 
@@ -107,6 +132,16 @@ let attendanceGenderFilter = "";
 let teamEventPlayerSearchTimer = null;
 let latestTeamEventPlayers = [];
 let teamEventGenderFilter = "";
+
+/* =========================
+   GAME MANAGEMENT STATE
+   Batch 4B Frontend
+   ========================= */
+let isGameFormOpen = false;
+let gamePlayerSearchTimer = null;
+let latestGamePlayers = [];
+let gameGenderFilter = "";
+
 
 /* =========================
    EVENT LISTENERS
@@ -525,10 +560,11 @@ async function showApp() {
     appScreen.classList.remove("hidden");
   }
 
-  applyRolePermissions();
-  setActiveTab();
-  resetWorkflowForSelectedEvent();
-  updateAttendanceSectionVisibility();
+applyRolePermissions();
+ensureGameManagementElements();
+setActiveTab();
+resetWorkflowForSelectedEvent();
+updateAttendanceSectionVisibility();
 
   await loadGroups();
   await loadEvents();
@@ -625,6 +661,144 @@ function setActiveTab() {
 }
 
 /* =========================
+   GAME FORM ELEMENT SETUP
+   Batch 4B Frontend
+
+   Purpose:
+   - The current HTML does not have a hard-coded Game form yet.
+   - We create it from app.js so we do not need to edit index.html first.
+   ========================= */
+function ensureGameManagementElements() {
+  if (gameSection) return;
+
+  const appShell = document.querySelector(".app-shell") || document.body;
+
+  gameWorkflowBar = document.createElement("div");
+  gameWorkflowBar.id = "gameWorkflowBar";
+  gameWorkflowBar.className = "team-event-workflow-bar hidden";
+
+  gameWorkflowBar.innerHTML = `
+    <button type="button" id="showGameFormBtn" class="btn btn-secondary">
+      + Add New Game
+    </button>
+  `;
+
+  gameSection = document.createElement("section");
+  gameSection.id = "gameSection";
+  gameSection.className = "team-event-section hidden";
+
+  gameSection.innerHTML = `
+    <h2>Add New Game</h2>
+
+    <p class="subtext">
+      Create one real game, select the expected players, then take attendance on game day.
+    </p>
+
+    <div class="form-grid">
+      <label>
+        Game Name / Opponent
+        <input id="newGameName" type="text" placeholder="Example: 2015-2016 Boys vs Strikers" />
+      </label>
+
+      <label>
+        Game Date
+        <input id="newGameDate" type="date" />
+      </label>
+
+      <label>
+        Game Start Time
+        <input id="newGameStartTime" type="time" />
+      </label>
+
+      <label>
+        Location
+        <select id="newGameLocationType">
+          <option value="Ralph M. Lewis Sports Complex">Ralph M. Lewis Sports Complex</option>
+          <option value="Central Park">Central Park</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+
+      <label id="newGameCustomLocationWrapper" class="hidden">
+        Other Location
+        <input id="newGameCustomLocation" type="text" placeholder="Enter game location" />
+      </label>
+    </div>
+
+    <div id="gamePlayerSelectorPanel" class="team-event-player-selector-panel">
+      <h3>Select Players</h3>
+
+      <p class="subtext team-event-player-help">
+        Checked players are expected for this game. Attendance is marked later after the game starts.
+      </p>
+
+      <input
+        id="gamePlayerSearch"
+        type="text"
+        placeholder="Search players by name, number, group, or gender"
+      />
+
+      <label class="team-event-gender-filter-label">
+        Gender Filter
+        <select id="gameGenderFilter">
+          <option value="">All Genders</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </label>
+
+      <div class="team-event-player-actions">
+        <button type="button" id="gameSelectAllPlayersBtn" class="btn btn-secondary">
+          Select All Shown
+        </button>
+
+        <button type="button" id="gameClearPlayersBtn" class="btn btn-secondary">
+          Clear Players
+        </button>
+      </div>
+
+      <div id="gamePlayerSummary" class="roster-summary">
+        Selected Players: 0
+      </div>
+
+      <div id="gamePlayerList" class="team-event-player-list"></div>
+    </div>
+
+    <button type="button" id="addGameBtn" class="btn btn-primary">
+      Save Game
+    </button>
+
+    <p id="gameMessage" class="form-message"></p>
+  `;
+
+  if (eventDetailsSection && eventDetailsSection.parentNode) {
+    eventDetailsSection.parentNode.insertBefore(gameWorkflowBar, eventDetailsSection);
+    eventDetailsSection.parentNode.insertBefore(gameSection, eventDetailsSection);
+  } else {
+    appShell.appendChild(gameWorkflowBar);
+    appShell.appendChild(gameSection);
+  }
+
+  showGameFormBtn = document.getElementById("showGameFormBtn");
+  addGameBtn = document.getElementById("addGameBtn");
+  gameMessage = document.getElementById("gameMessage");
+
+  newGameName = document.getElementById("newGameName");
+  newGameDate = document.getElementById("newGameDate");
+  newGameStartTime = document.getElementById("newGameStartTime");
+  newGameLocationType = document.getElementById("newGameLocationType");
+  newGameCustomLocation = document.getElementById("newGameCustomLocation");
+
+  gamePlayerSelectorPanel = document.getElementById("gamePlayerSelectorPanel");
+  gamePlayerSearch = document.getElementById("gamePlayerSearch");
+  gameGenderFilterSelect = document.getElementById("gameGenderFilter");
+  gameSelectAllPlayersBtn = document.getElementById("gameSelectAllPlayersBtn");
+  gameClearPlayersBtn = document.getElementById("gameClearPlayersBtn");
+  gamePlayerSummary = document.getElementById("gamePlayerSummary");
+  gamePlayerList = document.getElementById("gamePlayerList");
+}
+
+/* =========================
    MAIN MODE VISIBILITY
    ========================= */
 function updateMainModeVisibility() {
@@ -634,6 +808,8 @@ function updateMainModeVisibility() {
     groupSelect ? groupSelect.closest(".form-row") : null,
     eventSelect ? eventSelect.closest(".form-row") : null,
     eventDetailsSection,
+    gameWorkflowBar,
+    gameSection,
     teamEventWorkflowBar,
     eventRosterSection,
     teamEventSection,
@@ -645,7 +821,14 @@ function updateMainModeVisibility() {
 
     if (isPlayerManagement) {
       element.classList.add("hidden");
-    } else if (element !== eventDetailsSection && element !== teamEventWorkflowBar && element !== eventRosterSection && element !== teamEventSection) {
+    } else if (
+      element !== eventDetailsSection &&
+      element !== gameWorkflowBar &&
+      element !== gameSection &&
+      element !== teamEventWorkflowBar &&
+      element !== eventRosterSection &&
+      element !== teamEventSection
+    ) {
       element.classList.remove("hidden");
     }
   });
