@@ -1641,6 +1641,29 @@ function ensureAttendanceFilterControls() {
   updateAttendanceFilterButtonStates();
 }
 
+function updateAttendanceFilterButtonStates() {
+  document.querySelectorAll(".attendance-filter-btn[data-status-filter]").forEach(button => {
+    button.classList.toggle(
+      "active-filter",
+      (button.dataset.statusFilter || "") === attendanceStatusFilter
+    );
+  });
+
+  document.querySelectorAll(".attendance-filter-btn[data-birth-year-filter]").forEach(button => {
+    button.classList.toggle(
+      "active-filter",
+      (button.dataset.birthYearFilter || "") === attendanceBirthYearFilter
+    );
+  });
+
+  document.querySelectorAll(".attendance-filter-btn[data-gender-filter]").forEach(button => {
+    button.classList.toggle(
+      "active-filter",
+      (button.dataset.genderFilter || "") === attendanceGenderFilter
+    );
+  });
+}
+
 /* =========================
    LOAD PLAYERS
    ========================= */
