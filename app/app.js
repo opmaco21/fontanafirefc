@@ -1163,7 +1163,7 @@ async function saveEventRoster() {
   const eventType = getSelectedEventType();
   const selectedGroupId = groupSelect ? groupSelect.value : "";
 
-   const selectedPlayerIds = Array.from(
+  const selectedPlayerIds = Array.from(
     document.querySelectorAll(".roster-player-checkbox:checked")
   ).map(checkbox => Number(checkbox.value));
 
@@ -1172,6 +1172,8 @@ async function saveEventRoster() {
     : "";
 
   try {
+    setMessage(eventRosterMessage, "Saving roster...", false);
+
     const res = await fetch(`${API_BASE}/events/${eventSelect.value}/roster${allMatchingParam}`, {
       method: "POST",
       credentials: "include",
@@ -1183,27 +1185,48 @@ async function saveEventRoster() {
       })
     });
 
-    const data = await res.json();
+    let data = {};
+
+    try {
+      data = await res.json();
+    } catch (jsonErr) {
+      console.error("Save roster JSON parse error:", jsonErr);
+
+      setMessage(
+        eventRosterMessage,
+        `Could not read server response. HTTP ${res.status}`,
+        true
+      );
+
+      return;
+    }
 
     if (!res.ok || !data.success) {
-  console.error("Save roster failed:", data);
+      console.error("Save roster failed:", {
+        status: res.status,
+        data
+      });
 
-  setMessage(
-    eventRosterMessage,
-    data.error || data.message || `Could not save roster. HTTP ${res.status}`,
-    true
-  );
+      setMessage(
+        eventRosterMessage,
+        data.error || data.message || `Could not save roster. HTTP ${res.status}`,
+        true
+      );
 
-  return;
-}
+      return;
+    }
 
+    const savedCount = data.savedCount || 0;
+    const deletedCount = data.deletedCount || 0;
     const skippedText = data.skippedCount
       ? ` ${data.skippedCount} player(s) skipped.`
       : "";
 
     setMessage(
       eventRosterMessage,
-      `✅ Roster saved. ${data.savedCount || 0} player(s) expected.${skippedText}`,
+      savedCount === 0
+        ? `✅ Roster cleared. ${deletedCount} player(s) removed.`
+        : `✅ Roster saved. ${savedCount} player(s) expected.${skippedText}`,
       false
     );
 
@@ -1211,8 +1234,13 @@ async function saveEventRoster() {
     await loadPlayers();
 
   } catch (err) {
-    console.error("Save roster error:", err);
-    setMessage(eventRosterMessage, "Could not save roster.", true);
+    console.error("Save roster request error:", err);
+
+    setMessage(
+      eventRosterMessage,
+      `Could not save roster: ${err.message}`,
+      true
+    );
   }
 }
 
