@@ -1186,13 +1186,16 @@ async function saveEventRoster() {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      setMessage(
-        eventRosterMessage,
-        data.message || "Could not save roster.",
-        true
-      );
-      return;
-    }
+  console.error("Save roster failed:", data);
+
+  setMessage(
+    eventRosterMessage,
+    data.error || data.message || `Could not save roster. HTTP ${res.status}`,
+    true
+  );
+
+  return;
+}
 
     const skippedText = data.skippedCount
       ? ` ${data.skippedCount} player(s) skipped.`
