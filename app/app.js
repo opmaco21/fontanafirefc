@@ -962,19 +962,10 @@ function updateTeamEventSection() {
   }
 }
 
-function resetWorkflowForSelectedEvent() {
-  const hasSelectedEvent = Boolean(eventSelect && eventSelect.value);
-
-  if (currentTab === "Team Event") {
-    isTeamEventFormOpen = !hasSelectedEvent;
-  } else {
-    isTeamEventFormOpen = false;
-  }
-
-  /* =========================
-   SHOW / HIDE GAME FORM
-   Batch 4B Frontend
-   ========================= */
+/* =========================
+ SHOW / HIDE GAME FORM
+ Batch 4B Frontend
+ ========================= */
 function updateGameSection() {
   if (!gameSection || !gameWorkflowBar) return;
 
@@ -997,7 +988,18 @@ function updateGameSection() {
     gameWorkflowBar.classList.remove("hidden");
   }
 }
-  
+
+
+
+function resetWorkflowForSelectedEvent() {
+  const hasSelectedEvent = Boolean(eventSelect && eventSelect.value);
+
+  if (currentTab === "Team Event") {
+    isTeamEventFormOpen = !hasSelectedEvent;
+  } else {
+    isTeamEventFormOpen = false;
+  }
+
   /*
     Batch 4 fix:
     Selected events should open in attendance mode by default.
@@ -2952,6 +2954,134 @@ function resetGameForm(clearMessage = true) {
        Other team activity
    - Supports one group or multiple selected groups.
    ========================= */
+/* =========================
+   ADD GAME
+   Batch 4B Frontend
+   ========================= */
+async function addGame() {
+  if (gameMessage) {
+    gameMessage.textContent = "";
+  }
+
+  if (currentUser && currentUser.RoleName === "MainCoach") {
+    setMessage(
+      gameMessage,
+      "Access denied. Only Admin and Team Mom can add games.",
+      true
+    );
+    return;
+  }
+
+  const eventName = newGameName ? newGameName.value.trim() : "";
+  const eventDate = newGameDate ? newGameDate.value : "";
+  const startTime = newGameStartTime ? newGameStartTime.value : "";
+  const selectedPlayerIds = getSelectedGamePlayerIds();
+
+  const locationType = newGameLocationType
+    ? newGameLocationType.value
+    : "Ralph M. Lewis Sports Complex";
+
+  const customLocation = newGameCustomLocation
+    ? newGameCustomLocation.value.trim()
+    : "";
+
+  const locationName = locationType === "Other" ? customLocation : locationType;
+
+  if (!eventName || !eventDate || !startTime) {
+    setMessage(
+      gameMessage,
+      "Enter game name/opponent, date, and start time.",
+      true
+    );
+    return;
+  }
+
+  if (!locationName) {
+    setMessage(gameMessage, "Enter a game location.", true);
+    return;
+  }
+
+  if (selectedPlayerIds.length === 0) {
+    setMessage(
+      gameMessage,
+      "Select at least one expected player for this game.",
+      true
+    );
+    return;
+  }
+
+  try {
+    setMessage(gameMessage, "Saving game...", false);
+
+    const res = await fetch(`${API_BASE}/events`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        playerIds: selectedPlayerIds,
+        eventDate,
+        eventType: "Game",
+        eventName,
+        startTime,
+        endTime: null,
+        locationName,
+        notes: null
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(
+        gameMessage,
+        data.error || data.message || "Could not add game.",
+        true
+      );
+      return;
+    }
+
+    setMessage(
+      gameMessage,
+      `✅ Game added. ${data.rosterSavedCount || selectedPlayerIds.length} player(s) expected.`,
+      false
+    );
+
+    if (groupSelect) {
+      groupSelect.value = "";
+    }
+
+    await loadEvents();
+
+    if (eventSelect && data.event && data.event.EventID) {
+      const createdEventOption = eventSelect.querySelector(
+        `option[value="${data.event.EventID}"]`
+      );
+
+      if (createdEventOption) {
+        eventSelect.value = String(data.event.EventID);
+        saveSelectedEvent();
+      }
+    }
+
+    isGameFormOpen = false;
+    isAttendanceModeActive = true;
+
+    updateGameSection();
+    resetWorkflowForSelectedEvent();
+    updateEventActionButtons();
+    await loadSelectedEventDetails();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+    await loadPlayers();
+
+  } catch (err) {
+    console.error("Add game error:", err);
+    setMessage(gameMessage, "Server error adding game.", true);
+  }
+}
+
 async function addTeamEvent() {
   if (teamEventMessage) {
     teamEventMessage.textContent = "";
