@@ -1878,3 +1878,118 @@ hr {
 .attendance-advanced-filters .attendance-filter-row {
   margin-top: 12px;
 }
+
+/* =========================================================
+   QOL - COMPACT ATTENDANCE PLAYER CARDS
+   Purpose:
+   - Make attendance cards smaller.
+   - Show 2 player cards per row on mobile/tablet.
+   - Keep status buttons compact.
+   - Keep Clear / Reset full width inside each card.
+   ========================================================= */
+
+/* Main attendance lists: 2 cards per row */
+#playerList,
+#completedPlayerList {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  padding: 8px !important;
+}
+
+/* Smaller card shell */
+#playerList .player-row.attendance-player-card,
+#completedPlayerList .player-row.attendance-player-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+  padding: 8px !important;
+  margin-bottom: 0 !important;
+  border-radius: 12px !important;
+  min-width: 0 !important;
+}
+
+/* Compact player name and info */
+.attendance-player-name {
+  font-size: 14px !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attendance-player-meta {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  margin-top: 2px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Smaller status button grid */
+.attendance-status-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+}
+
+/* Smaller buttons */
+.attendance-status-btn {
+  min-height: 30px !important;
+  padding: 6px 5px !important;
+  font-size: 11px !important;
+  line-height: 1.05 !important;
+  border-radius: 8px !important;
+}
+
+/* Keep Clear / Reset across the full card */
+.attendance-status-btn.clear-btn {
+  grid-column: 1 / -1 !important;
+}
+
+/* On very small screens, still keep 2 cards per row */
+@media (max-width: 700px) {
+  #playerList,
+  #completedPlayerList {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .attendance-status-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Extra-tight phones */
+@media (max-width: 420px) {
+  #playerList,
+  #completedPlayerList {
+    gap: 6px !important;
+    padding: 6px !important;
+  }
+
+  #playerList .player-row.attendance-player-card,
+  #completedPlayerList .player-row.attendance-player-card {
+    padding: 7px !important;
+  }
+
+  .attendance-player-name {
+    font-size: 13px !important;
+  }
+
+  .attendance-player-meta {
+    font-size: 10px !important;
+  }
+
+  .attendance-status-btn {
+    min-height: 28px !important;
+    padding: 5px 4px !important;
+    font-size: 10px !important;
+  }
+
+  .attendance-status-btn.clear-btn {
+    grid-column: 1 / -1 !important;
+  }
+}
