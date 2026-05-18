@@ -1813,50 +1813,41 @@ async function loadPlayers() {
   ensureAttendanceFilterControls();
 
   try {
-    const selectedGroupId = getSelectedGroupIdValue();
     const selectedEventId = eventSelect ? eventSelect.value : "";
 
-    const playerParams = new URLSearchParams();
-    const selectedEventType = getSelectedEventType();
-
-    /*
-      Always send eventId when an event is selected.
-
-      Backend behavior:
-      - Practice: loads active players from the selected practice group.
-        In All Groups mode, ?allMatching=1 loads players from all groups
-        included in that same practice date/name.
-      - Game / Team Event: loads only players assigned to that event roster.
-
-      This keeps Practice from returning zero players and keeps Games / Team
-      Events roster-based after the event is selected.
-    */
-    if (selectedEventId) {
-      playerParams.set("eventId", selectedEventId);
-
-      if (!selectedGroupId) {
-        playerParams.set("allMatching", "1");
+    // ✅ Don’t try to load players until an event is selected
+    const playerList = document.getElementById("playerList");
+    if (!selectedEventId) {
+      if (playerList) {
+        playerList.innerHTML = `
+          <div class="roster-empty-message">Select a practice or event first.</div>
+        `;
       }
-    } else if (selectedGroupId) {
-      playerParams.set("groupId", selectedGroupId);
+      if (completedPlayerList) {
+        completedPlayerList.innerHTML = "";
+        completedPlayerList.classList.add("hidden");
+      }
+      updateAttendanceDisplay();
+      return;
     }
 
-    const playersUrl =
-      playerParams.toString()
-        ? `${API_BASE}/players?${playerParams.toString()}`
-        : `${API_BASE}/players`;
+    // ✅ Use roster endpoint for attendance lists (practice/game/team event)
+    let rosterUrl = `${API_BASE}/events/${selectedEventId}/roster`;
 
-    const res = await fetch(playersUrl, {
+    // ✅ For Practice (and Team Event), load ALL groups for that same day via allMatching
+    const eventType = getSelectedEventType();
+    if (eventType === "Practice" || eventType === "Team Event") {
+      rosterUrl += "?allMatching=1";
+    }
+
+    const res = await fetch(rosterUrl, {
       credentials: "include"
     });
 
     const data = await res.json();
 
-    const players = Array.isArray(data)
-      ? data
-      : data.players || [];
-
-    const playerList = document.getElementById("playerList");
+    // Roster endpoints return { success: true, players: [...] }
+    const players = (data && data.players) ? data.players : [];
 
     if (!playerList) return;
 
@@ -1879,27 +1870,10 @@ async function loadPlayers() {
 
     updateAttendanceDisplay();
 
-    const lastSelectedEventId = getSelectedEvent();
-
-    if (lastSelectedEventId && eventSelect) {
-      const matchingOption = eventSelect.querySelector(
-        `option[value="${lastSelectedEventId}"]`
-      );
-
-      if (matchingOption) {
-        eventSelect.value = lastSelectedEventId;
-        updateEventActionButtons();
-        await loadSelectedEventDetails();
-        await loadAttendanceForEvent();
-        return;
-      }
-    }
-
-    if (eventSelect && eventSelect.value) {
-      updateEventActionButtons();
-      await loadSelectedEventDetails();
-      await loadAttendanceForEvent();
-    }
+    // Load event details + saved attendance after the list is rendered
+    updateEventActionButtons();
+    await loadSelectedEventDetails();
+    await loadAttendanceForEvent();
 
   } catch (err) {
     console.error("Failed to load players", err);
