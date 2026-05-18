@@ -1993,3 +1993,15 @@ hr {
     grid-column: 1 / -1 !important;
   }
 }
+
+/* =========================================================
+   FIX - ATTENDANCE FILTER HIDDEN CARDS
+   Makes filtered-out attendance cards actually disappear.
+   ========================================================= */
+
+#playerList .player-row.hidden,
+#completedPlayerList .player-row.hidden,
+#playerList .attendance-player-card.hidden,
+#completedPlayerList .attendance-player-card.hidden {
+  display: none !important;
+}
