@@ -1157,13 +1157,32 @@ async function loadEvents() {
       eventsUrl += `?groupId=${encodeURIComponent(selectedGroupId)}`;
     }
 
+    console.log("Loading events from:", eventsUrl);
+
     const res = await fetch(eventsUrl, {
       credentials: "include"
     });
 
-    const events = await res.json();
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error("Events API failed:", res.status, data);
+      return;
+    }
+
+    const events = Array.isArray(data)
+      ? data
+      : Array.isArray(data.events)
+        ? data.events
+        : Array.isArray(data.recordset)
+          ? data.recordset
+          : [];
+
+    console.log("Events loaded:", events.length, events);
 
     const filteredEvents = events.filter(event => {
+      if (!event.EventDate || !event.EventType) return false;
+
       const dateInfo = getEventDateParts(event.EventDate);
       const day = dateInfo.dayOfWeek;
 
@@ -1182,6 +1201,8 @@ async function loadEvents() {
 
       return true;
     });
+
+    console.log("Filtered events for tab:", currentTab, filteredEvents.length, filteredEvents);
 
     filteredEvents.forEach(event => addEventOption(event));
 
