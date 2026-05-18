@@ -1142,6 +1142,18 @@ function getEventDateParts(eventDateValue) {
 
 /* =========================
    LOAD EVENTS
+
+   Practice:
+   - Show all SQL events where EventType = Practice.
+   - Do not filter by weekday here because SQL already controls
+     what is a Practice.
+
+   Games:
+   - Show all SQL events where EventType = Game.
+   - Games are now individual real games, not grouped practice-style rows.
+
+   Team Events:
+   - Show all SQL events where EventType = Team Event.
    ========================= */
 async function loadEvents() {
   if (!eventSelect) return;
@@ -1156,8 +1168,6 @@ async function loadEvents() {
     if (selectedGroupId) {
       eventsUrl += `?groupId=${encodeURIComponent(selectedGroupId)}`;
     }
-
-    console.log("Loading events from:", eventsUrl);
 
     const res = await fetch(eventsUrl, {
       credentials: "include"
@@ -1178,28 +1188,23 @@ async function loadEvents() {
           ? data.recordset
           : [];
 
-    console.log("Events loaded:", events.length, events);
-
     const filteredEvents = events.filter(event => {
-      if (!event.EventDate || !event.EventType) return false;
+      if (!event || !event.EventType) return false;
 
-      const isPractice = event.EventType === "Practice";
-      const isGame = event.EventType === "Game";
-      const isTeamEvent = event.EventType === "Team Event";
+      if (currentTab === "Practice") {
+        return event.EventType === "Practice";
+      }
 
-      if (currentTab === "Practice") return isPractice;
-      if (currentTab === "Game") return isGame;
-      if (currentTab === "Team Event") return isTeamEvent;
+      if (currentTab === "Game") {
+        return event.EventType === "Game";
+      }
+
+      if (currentTab === "Team Event") {
+        return event.EventType === "Team Event";
+      }
 
       return true;
     });
-
-    console.log(
-      "Filtered events for tab:",
-      currentTab,
-      filteredEvents.length,
-      filteredEvents
-    );
 
     filteredEvents.forEach(event => addEventOption(event));
 

@@ -146,6 +146,20 @@ function updateAttendanceFilterButtonStates() {
 
 /* =========================
    LOAD PLAYERS
+
+   Practice:
+   - Practice is date/group based.
+   - Use /players with eventId and allMatching=1 so all practice
+     players for that practice date load correctly.
+
+   Games:
+   - Games are roster based.
+   - Use /events/:eventId/roster so only selected game roster players show.
+
+   Team Events:
+   - Team Events are roster based.
+   - Use /events/:eventId/roster, with allMatching=1 when using grouped
+     Team Events.
    ========================= */
 async function loadPlayers() {
   if (currentTab === "Player Management") {
@@ -157,42 +171,81 @@ async function loadPlayers() {
 
   try {
     const selectedEventId = eventSelect ? eventSelect.value : "";
+    const selectedEventType = getSelectedEventType();
+    const selectedGroupId = getSelectedGroupIdValue();
 
-    // ✅ Don’t try to load players until an event is selected
     const playerList = document.getElementById("playerList");
+    if (!playerList) return;
+
     if (!selectedEventId) {
-      if (playerList) {
-        playerList.innerHTML = `
-          <div class="roster-empty-message">Select a practice or event first.</div>
-        `;
-      }
+      playerList.innerHTML = `
+        <div class="roster-empty-message">Select a practice or event first.</div>
+      `;
+
       if (completedPlayerList) {
         completedPlayerList.innerHTML = "";
         completedPlayerList.classList.add("hidden");
       }
+
       updateAttendanceDisplay();
       return;
     }
 
-    // ✅ Use roster endpoint for attendance lists (practice/game/team event)
-    let rosterUrl = `${API_BASE}/events/${selectedEventId}/roster`;
+    let playersUrl = "";
 
-    // ✅ For Practice (and Team Event), load ALL groups for that same day via allMatching
-    const eventType = getSelectedEventType();
-    if (eventType === "Practice" || eventType === "Team Event") {
-      rosterUrl += "?allMatching=1";
+    /*
+      Practice still uses the player endpoint because practice is
+      date/group based, not custom roster based.
+    */
+    if (selectedEventType === "Practice") {
+      const playerParams = new URLSearchParams();
+
+      playerParams.set("eventId", selectedEventId);
+
+      if (selectedGroupId) {
+        playerParams.set("groupId", selectedGroupId);
+      } else {
+        playerParams.set("allMatching", "1");
+      }
+
+      playersUrl = `${API_BASE}/players?${playerParams.toString()}`;
+
+    /*
+      Games and Team Events use custom rosters.
+    */
+    } else {
+      let rosterUrl = `${API_BASE}/events/${selectedEventId}/roster`;
+
+      if (selectedEventType === "Team Event" && !selectedGroupId) {
+        rosterUrl += "?allMatching=1";
+      }
+
+      playersUrl = rosterUrl;
     }
 
-    const res = await fetch(rosterUrl, {
+    const res = await fetch(playersUrl, {
       credentials: "include"
     });
 
     const data = await res.json();
 
-    // Roster endpoints return { success: true, players: [...] }
-    const players = (data && data.players) ? data.players : [];
+    if (!res.ok) {
+      console.error("Players API failed:", res.status, data);
 
-    if (!playerList) return;
+      playerList.innerHTML = `
+        <div class="roster-empty-message">Could not load players.</div>
+      `;
+
+      return;
+    }
+
+    const players = Array.isArray(data)
+      ? data
+      : Array.isArray(data.players)
+        ? data.players
+        : Array.isArray(data.recordset)
+          ? data.recordset
+          : [];
 
     playerList.innerHTML = "";
 
@@ -213,7 +266,6 @@ async function loadPlayers() {
 
     updateAttendanceDisplay();
 
-    // Load event details + saved attendance after the list is rendered
     updateEventActionButtons();
     await loadSelectedEventDetails();
     await loadAttendanceForEvent();
