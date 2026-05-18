@@ -2,6 +2,23 @@
    ATTENDANCE LIST QOL HELPERS
    Compact rows, quick status buttons, search, and filters.
    ========================= */
+
+/* =========================
+   ATTENDANCE SEARCH NORMALIZER
+   Makes search more forgiving:
+   - ignores upper/lowercase
+   - handles extra spaces
+   - keeps player number searchable with or without #
+   ========================= */
+function normalizeAttendanceSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/#/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function ensureAttendanceFilterControls() {
   if (!attendanceSection || !attendanceSummary) return;
 
@@ -79,7 +96,7 @@ function ensureAttendanceFilterControls() {
     searchInput.addEventListener("input", () => {
       clearTimeout(attendanceSearchTimer);
       attendanceSearchTimer = setTimeout(() => {
-        attendanceSearchText = searchInput.value.trim().toLowerCase();
+        attendanceSearchText = normalizeAttendanceSearchText(searchInput.value);
         updateAttendanceDisplay();
       }, 150);
     });
@@ -567,7 +584,6 @@ function updateAttendanceDisplay() {
   }
 }
 
-
 function getAttendanceRowStatus(row) {
   return row ? row.dataset.status || "" : "";
 }
@@ -592,14 +608,21 @@ function rowMatchesAttendanceFilters(row) {
   if (!row) return false;
 
   const status = getAttendanceRowStatus(row);
-  const rowSearchText = row.dataset.searchText || "";
-  const rowBirthYear = row.dataset.birthYear || "";
-  const rowGender = row.dataset.gender || "";
+  const rowSearchText = normalizeAttendanceSearchText(row.dataset.searchText || "");
+  const rowBirthYear = String(row.dataset.birthYear || "");
+  const rowGender = String(row.dataset.gender || "");
 
-  const searchMatches = !attendanceSearchText || rowSearchText.includes(attendanceSearchText);
+  const searchMatches =
+    !attendanceSearchText ||
+    rowSearchText.includes(attendanceSearchText);
 
-  const birthYearMatches = !attendanceBirthYearFilter || rowBirthYear === attendanceBirthYearFilter;
-  const genderMatches = !attendanceGenderFilter || rowGender === attendanceGenderFilter;
+  const birthYearMatches =
+    !attendanceBirthYearFilter ||
+    rowBirthYear === attendanceBirthYearFilter;
+
+  const genderMatches =
+    !attendanceGenderFilter ||
+    rowGender === attendanceGenderFilter;
 
   const statusMatches =
     !attendanceStatusFilter ||
@@ -625,14 +648,19 @@ function createAttendancePlayerRow(player) {
   row.dataset.status = "";
   row.dataset.birthYear = String(birthYear || "");
   row.dataset.gender = String(gender || "");
-  row.dataset.searchText = [
+
+  row.dataset.searchText = normalizeAttendanceSearchText([
     playerName,
+    player.FirstName || "",
+    player.LastName || "",
+    player.FullName || "",
+    player.PlayerNumber || "",
     playerNumber,
     birthYear,
     gender,
-    groupLabel,
-    player.FullName || ""
-  ].join(" ").toLowerCase();
+    formatGenderShort(gender),
+    groupLabel
+  ].join(" "));
 
   row.innerHTML = `
     <div class="attendance-player-info">
