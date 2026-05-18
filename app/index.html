@@ -394,39 +394,56 @@
        - Avoids manually changing ?v= numbers in index.html
   -->
   <script>
-    (async function loadVersionedAssets() {
-      let versionInfo = {
-        webVersion: "web-dev",
-        buildDate: null
-      };
+<script>
+  (async function loadVersionedAssets() {
+    let versionInfo = {
+      webVersion: "web-dev",
+      buildDate: null
+    };
 
-      try {
-        const response = await fetch("version.json?ts=" + Date.now(), {
-          cache: "no-store"
-        });
+    try {
+      const response = await fetch("version.json?ts=" + Date.now(), {
+        cache: "no-store"
+      });
 
-        if (response.ok) {
-          versionInfo = await response.json();
-        }
-      } catch (err) {
-        console.warn("Could not load version.json. Using fallback version.", err);
+      if (response.ok) {
+        versionInfo = await response.json();
       }
+    } catch (err) {
+      console.warn("Could not load version.json. Using fallback version.", err);
+    }
 
-      window.WEB_APP_VERSION = versionInfo;
+    window.WEB_APP_VERSION = versionInfo;
 
-      const assetVersion = encodeURIComponent(
-        versionInfo.webVersion || String(Date.now())
-      );
+    const assetVersion = encodeURIComponent(
+      versionInfo.webVersion || String(Date.now())
+    );
 
-      const stylesheet = document.getElementById("appStylesheet");
-      if (stylesheet) {
-        stylesheet.href = "style.css?v=" + assetVersion;
-      }
+    const stylesheet = document.getElementById("appStylesheet");
+    if (stylesheet) {
+      stylesheet.href = "style.css?v=" + assetVersion;
+    }
 
-      const script = document.createElement("script");
-      script.src = "app.js?v=" + assetVersion;
-      document.body.appendChild(script);
-    })();
-  </script>
+    const scripts = [
+  "./split/app.01.core.js",
+  "./split/app.02.attendance.js",
+  "./split/app.03.team_events.js",
+  "./split/app.04.games.js",
+  "./split/app.05.player_management.js",
+  "./split/app.06.auth_and_misc.js",
+  "./split/app.99.bootstrap.js"
+];
+
+for (const src of scripts) {
+  await new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src + "?v=" + assetVersion;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Failed to load " + src));
+    document.body.appendChild(script);
+  });
+}
+  })();
+</script>
 </body>
 </html>
