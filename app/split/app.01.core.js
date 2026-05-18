@@ -1183,17 +1183,9 @@ async function loadEvents() {
     const filteredEvents = events.filter(event => {
       if (!event.EventDate || !event.EventType) return false;
 
-      const dateInfo = getEventDateParts(event.EventDate);
-      const day = dateInfo.dayOfWeek;
-
-      const isPractice =
-        event.EventType === "Practice" && (day === 1 || day === 3);
-
-      const isGame =
-        event.EventType === "Game" && (day === 5 || day === 6 || day === 0);
-
-      const isTeamEvent =
-        event.EventType === "Team Event";
+      const isPractice = event.EventType === "Practice";
+      const isGame = event.EventType === "Game";
+      const isTeamEvent = event.EventType === "Team Event";
 
       if (currentTab === "Practice") return isPractice;
       if (currentTab === "Game") return isGame;
@@ -1202,7 +1194,12 @@ async function loadEvents() {
       return true;
     });
 
-    console.log("Filtered events for tab:", currentTab, filteredEvents.length, filteredEvents);
+    console.log(
+      "Filtered events for tab:",
+      currentTab,
+      filteredEvents.length,
+      filteredEvents
+    );
 
     filteredEvents.forEach(event => addEventOption(event));
 
@@ -1212,7 +1209,6 @@ async function loadEvents() {
     console.error("Failed to load events", err);
   }
 }
-
 /* =========================
    ADD EVENT TO DROPDOWN
    ========================= */
