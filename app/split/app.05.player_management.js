@@ -265,7 +265,7 @@ function ensurePlayerManagementFilters() {
     filterPanel.id = "playerManagementFilterPanel";
     filterPanel.className = "player-management-filter-panel";
 
-     filterPanel.innerHTML = `
+    filterPanel.innerHTML = `
       <div id="playerManagementQuickCounts" class="player-management-quick-counts">
         Missing: Paperwork 0 | Photo Release 0 | Emergency Info 0
       </div>
@@ -353,8 +353,48 @@ function ensurePlayerManagementFilters() {
   const clearFiltersBtn = document.getElementById("pmClearFiltersBtn");
   const quickFilterButtons = document.querySelectorAll(".player-management-quick-filter-btn");
 
+  /*
+    Player Management top controls.
+    These are in index.html, but after the JS split they need
+    listeners here so Show inactive, Search, and Refresh work reliably.
+  */
+  if (showInactivePlayersToggle && !showInactivePlayersToggle.dataset.listenerAttached) {
+    showInactivePlayersToggle.dataset.listenerAttached = "1";
+
+    showInactivePlayersToggle.addEventListener("change", async () => {
+      playerManagementPageIndex = 0;
+      closePlayerDetails();
+      await loadPlayerManagementList();
+    });
+  }
+
+  if (playerSearchInput && !playerSearchInput.dataset.listenerAttached) {
+    playerSearchInput.dataset.listenerAttached = "1";
+
+    playerSearchInput.addEventListener("input", () => {
+      clearTimeout(playerSearchTimer);
+
+      playerSearchTimer = setTimeout(async () => {
+        playerManagementPageIndex = 0;
+        closePlayerDetails();
+        await loadPlayerManagementList();
+      }, 250);
+    });
+  }
+
+  if (refreshPlayersBtn && !refreshPlayersBtn.dataset.listenerAttached) {
+    refreshPlayersBtn.dataset.listenerAttached = "1";
+
+    refreshPlayersBtn.addEventListener("click", async () => {
+      playerManagementPageIndex = 0;
+      closePlayerDetails();
+      await loadPlayerManagementList();
+    });
+  }
+
   if (birthYearFilter && !birthYearFilter.dataset.listenerAttached) {
     birthYearFilter.dataset.listenerAttached = "1";
+
     birthYearFilter.addEventListener("change", () => {
       playerManagementBirthYearFilter = birthYearFilter.value;
       playerManagementPageIndex = 0;
@@ -364,6 +404,7 @@ function ensurePlayerManagementFilters() {
 
   if (genderFilter && !genderFilter.dataset.listenerAttached) {
     genderFilter.dataset.listenerAttached = "1";
+
     genderFilter.addEventListener("change", () => {
       playerManagementGenderFilter = genderFilter.value;
       playerManagementPageIndex = 0;
@@ -373,6 +414,7 @@ function ensurePlayerManagementFilters() {
 
   if (photoReleaseFilter && !photoReleaseFilter.dataset.listenerAttached) {
     photoReleaseFilter.dataset.listenerAttached = "1";
+
     photoReleaseFilter.addEventListener("change", () => {
       playerManagementPhotoReleaseFilter = photoReleaseFilter.value;
       playerManagementPageIndex = 0;
@@ -382,6 +424,7 @@ function ensurePlayerManagementFilters() {
 
   if (paperworkFilter && !paperworkFilter.dataset.listenerAttached) {
     paperworkFilter.dataset.listenerAttached = "1";
+
     paperworkFilter.addEventListener("change", () => {
       playerManagementPaperworkFilter = paperworkFilter.value;
       playerManagementPageIndex = 0;
@@ -393,9 +436,15 @@ function ensurePlayerManagementFilters() {
     if (button.dataset.listenerAttached) return;
 
     button.dataset.listenerAttached = "1";
+
     button.addEventListener("click", () => {
       const selectedFilter = button.dataset.filter || "";
-      playerManagementQuickFilter = playerManagementQuickFilter === selectedFilter ? "" : selectedFilter;
+
+      playerManagementQuickFilter =
+        playerManagementQuickFilter === selectedFilter
+          ? ""
+          : selectedFilter;
+
       playerManagementPageIndex = 0;
       updatePlayerManagementQuickFilterButtons();
       renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
@@ -404,6 +453,7 @@ function ensurePlayerManagementFilters() {
 
   if (clearFiltersBtn && !clearFiltersBtn.dataset.listenerAttached) {
     clearFiltersBtn.dataset.listenerAttached = "1";
+
     clearFiltersBtn.addEventListener("click", () => {
       playerManagementBirthYearFilter = "";
       playerManagementPhotoReleaseFilter = "";
