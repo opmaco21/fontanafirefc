@@ -400,7 +400,7 @@ function renderExceptionalPlayers(rows) {
     dashboardExceptionalPlayersCount,
     rows,
     "exceptional",
-    "No players are at 85% or higher for practices or games in the selected month yet."
+    "No players have outstanding attendance at 85% or higher for practices or games in the selected month yet."
   );
 }
 
