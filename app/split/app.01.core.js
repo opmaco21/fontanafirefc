@@ -165,6 +165,20 @@ let gameGenderFilter = "";
 let selectedGamePlayerIds = new Set();
 
 /* =========================
+   EDIT ROSTER FILTER STATE
+   Used by Game / Team Event Edit Roster screen.
+   Filters hide/show players only; checked players stay selected
+   even when hidden by a filter.
+   ========================= */
+let latestRosterPlayers = [];
+let selectedRosterPlayerIds = new Set();
+let rosterPlayerSearchTimer = null;
+let rosterPlayerSearchText = "";
+let rosterBirthYearFilter = "";
+let rosterGenderFilter = "";
+let rosterSelectionFilter = "";
+
+/* =========================
  GROUP UI SIMPLIFICATION
  Purpose:
  - Hide the Group dropdown in the main workflow.
@@ -934,14 +948,239 @@ function clearEventRosterSection() {
   }
 }
 
+function normalizeRosterSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/#/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function rosterPlayerIsExpected(player) {
+  return player &&
+    (
+      player.IsExpected === true ||
+      player.IsExpected === 1 ||
+      player.IsExpected === "1" ||
+      player.IsExpected === "true"
+    );
+}
+
+function resetRosterFilters() {
+  rosterPlayerSearchText = "";
+  rosterBirthYearFilter = "";
+  rosterGenderFilter = "";
+  rosterSelectionFilter = "";
+
+  const searchInput = document.getElementById("eventRosterSearchInput");
+  const birthYearSelect = document.getElementById("eventRosterBirthYearFilter");
+  const genderSelect = document.getElementById("eventRosterGenderFilter");
+  const selectionSelect = document.getElementById("eventRosterSelectionFilter");
+
+  if (searchInput) searchInput.value = "";
+  if (birthYearSelect) birthYearSelect.value = "";
+  if (genderSelect) genderSelect.value = "";
+  if (selectionSelect) selectionSelect.value = "";
+}
+
+function ensureEventRosterFilterControls() {
+  if (!eventRosterSection || !eventRosterList) return;
+
+  let filterPanel = document.getElementById("eventRosterFilterPanel");
+
+  if (!filterPanel) {
+    filterPanel = document.createElement("div");
+    filterPanel.id = "eventRosterFilterPanel";
+    filterPanel.className = "event-roster-filter-panel";
+
+    filterPanel.innerHTML = `
+      <div class="event-roster-filter-grid">
+        <label class="event-roster-search-label">
+          Search Players
+          <input
+            id="eventRosterSearchInput"
+            type="text"
+            placeholder="Search by name, number, birth year, group, or gender"
+          />
+        </label>
+
+        <label>
+          Birth Year
+          <select id="eventRosterBirthYearFilter">
+            <option value="">All Birth Years</option>
+            <option value="2012">2012</option>
+            <option value="2013">2013</option>
+            <option value="2014">2014</option>
+            <option value="2015">2015</option>
+            <option value="2016">2016</option>
+            <option value="2017">2017</option>
+            <option value="2018">2018</option>
+            <option value="2019">2019</option>
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+          </select>
+        </label>
+
+        <label>
+          Gender
+          <select id="eventRosterGenderFilter">
+            <option value="">All Genders</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </label>
+
+        <label>
+          Roster View
+          <select id="eventRosterSelectionFilter">
+            <option value="">All Players</option>
+            <option value="selected">Selected Only</option>
+            <option value="notSelected">Not Selected</option>
+          </select>
+        </label>
+      </div>
+    `;
+
+    eventRosterList.parentNode.insertBefore(filterPanel, eventRosterList);
+  }
+
+  const searchInput = document.getElementById("eventRosterSearchInput");
+  const birthYearSelect = document.getElementById("eventRosterBirthYearFilter");
+  const genderSelect = document.getElementById("eventRosterGenderFilter");
+  const selectionSelect = document.getElementById("eventRosterSelectionFilter");
+
+  if (searchInput && !searchInput.dataset.listenerAttached) {
+    searchInput.dataset.listenerAttached = "1";
+    searchInput.addEventListener("input", () => {
+      clearTimeout(rosterPlayerSearchTimer);
+      rosterPlayerSearchTimer = setTimeout(() => {
+        captureRosterSelectionsFromDom();
+        rosterPlayerSearchText = normalizeRosterSearchText(searchInput.value);
+        renderRosterPlayers(latestRosterPlayers);
+      }, 150);
+    });
+  }
+
+  if (birthYearSelect && !birthYearSelect.dataset.listenerAttached) {
+    birthYearSelect.dataset.listenerAttached = "1";
+    birthYearSelect.addEventListener("change", () => {
+      captureRosterSelectionsFromDom();
+      rosterBirthYearFilter = birthYearSelect.value || "";
+      renderRosterPlayers(latestRosterPlayers);
+    });
+  }
+
+  if (genderSelect && !genderSelect.dataset.listenerAttached) {
+    genderSelect.dataset.listenerAttached = "1";
+    genderSelect.addEventListener("change", () => {
+      captureRosterSelectionsFromDom();
+      rosterGenderFilter = genderSelect.value || "";
+      renderRosterPlayers(latestRosterPlayers);
+    });
+  }
+
+  if (selectionSelect && !selectionSelect.dataset.listenerAttached) {
+    selectionSelect.dataset.listenerAttached = "1";
+    selectionSelect.addEventListener("change", () => {
+      captureRosterSelectionsFromDom();
+      rosterSelectionFilter = selectionSelect.value || "";
+      renderRosterPlayers(latestRosterPlayers);
+    });
+  }
+}
+
+function captureRosterSelectionsFromDom() {
+  document.querySelectorAll(".roster-player-checkbox").forEach(checkbox => {
+    const playerId = Number(checkbox.value);
+
+    if (!playerId) return;
+
+    if (checkbox.checked) {
+      selectedRosterPlayerIds.add(playerId);
+    } else {
+      selectedRosterPlayerIds.delete(playerId);
+    }
+  });
+}
+
+function getRosterPlayerSearchText(player) {
+  const playerNumber =
+    player.PlayerNumber === 0 || player.PlayerNumber
+      ? `#${player.PlayerNumber}`
+      : "";
+
+  const groupLabel = player.GroupName || player.GroupCode || "";
+  const birthYear = player.BirthYear || player.GroupCode || groupLabel || "";
+  const gender = player.Gender || "";
+
+  return normalizeRosterSearchText([
+    player.FirstName || "",
+    player.LastName || "",
+    player.FullName || "",
+    playerNumber,
+    player.PlayerNumber || "",
+    birthYear,
+    groupLabel,
+    gender,
+    typeof formatGenderShort === "function" ? formatGenderShort(gender) : ""
+  ].join(" "));
+}
+
+function getFilteredRosterPlayers(players) {
+  return players.filter(player => {
+    const playerId = Number(player.PlayerID);
+    const birthYear = String(player.BirthYear || player.GroupCode || player.GroupName || "");
+    const gender = String(player.Gender || "");
+    const isSelected = selectedRosterPlayerIds.has(playerId);
+
+    const searchMatches =
+      !rosterPlayerSearchText ||
+      getRosterPlayerSearchText(player).includes(rosterPlayerSearchText);
+
+    const birthYearMatches =
+      !rosterBirthYearFilter ||
+      birthYear === rosterBirthYearFilter;
+
+    const genderMatches =
+      !rosterGenderFilter ||
+      gender === rosterGenderFilter;
+
+    const selectionMatches =
+      !rosterSelectionFilter ||
+      (rosterSelectionFilter === "selected" && isSelected) ||
+      (rosterSelectionFilter === "notSelected" && !isSelected);
+
+    return searchMatches && birthYearMatches && genderMatches && selectionMatches;
+  });
+}
+
+function loadRosterPlayers(players) {
+  latestRosterPlayers = Array.isArray(players) ? players : [];
+  selectedRosterPlayerIds = new Set(
+    latestRosterPlayers
+      .filter(rosterPlayerIsExpected)
+      .map(player => Number(player.PlayerID))
+      .filter(playerId => Number.isInteger(playerId) && playerId > 0)
+  );
+
+  ensureEventRosterFilterControls();
+  resetRosterFilters();
+  renderRosterPlayers(latestRosterPlayers);
+}
+
 function updateRosterSummary() {
   if (!eventRosterSummary) return;
 
-  const selectedCount = document.querySelectorAll(
-    ".roster-player-checkbox:checked"
-  ).length;
+  captureRosterSelectionsFromDom();
 
-  eventRosterSummary.textContent = `Selected Players: ${selectedCount}`;
+  const visibleCount = document.querySelectorAll(".roster-player-checkbox").length;
+  const selectedVisibleCount = document.querySelectorAll(".roster-player-checkbox:checked").length;
+  const selectedCount = selectedRosterPlayerIds.size;
+  const totalCount = latestRosterPlayers.length;
+
+  eventRosterSummary.textContent =
+    `Selected Players: ${selectedCount} | Showing: ${visibleCount} of ${totalCount} | Selected Shown: ${selectedVisibleCount}`;
 
   if (continueToAttendanceBtn) {
     if (selectedCount > 0) {
@@ -956,7 +1195,16 @@ function setAllRosterCheckboxes(isChecked) {
   const checkboxes = document.querySelectorAll(".roster-player-checkbox");
 
   checkboxes.forEach(checkbox => {
+    const playerId = Number(checkbox.value);
     checkbox.checked = isChecked;
+
+    if (!playerId) return;
+
+    if (isChecked) {
+      selectedRosterPlayerIds.add(playerId);
+    } else {
+      selectedRosterPlayerIds.delete(playerId);
+    }
   });
 
   updateRosterSummary();
@@ -967,7 +1215,10 @@ function renderRosterPlayers(players) {
 
   eventRosterList.innerHTML = "";
 
-  if (!players.length) {
+  const allPlayers = Array.isArray(players) ? players : [];
+  const filteredPlayers = getFilteredRosterPlayers(allPlayers);
+
+  if (!allPlayers.length) {
     eventRosterList.innerHTML = `
       <div class="roster-empty-message">
         No active players are available for this roster.
@@ -977,24 +1228,57 @@ function renderRosterPlayers(players) {
     return;
   }
 
-  players.forEach(player => {
+  if (!filteredPlayers.length) {
+    eventRosterList.innerHTML = `
+      <div class="roster-empty-message">
+        No players match the current roster filters.
+      </div>
+    `;
+    updateRosterSummary();
+    return;
+  }
+
+  filteredPlayers.forEach(player => {
     const label = document.createElement("label");
     label.className = "roster-player-row";
 
+    const playerId = Number(player.PlayerID);
     const groupLabel = player.GroupName || player.GroupCode || "No Group";
+    const birthYear = player.BirthYear || player.GroupCode || "";
+    const gender = player.Gender || "";
+    const playerNumber =
+      player.PlayerNumber === 0 || player.PlayerNumber
+        ? `#${player.PlayerNumber}`
+        : "No #";
 
     label.innerHTML = `
       <input
         type="checkbox"
         class="roster-player-checkbox"
         value="${player.PlayerID}"
-        ${player.IsExpected ? "checked" : ""}
+        ${selectedRosterPlayerIds.has(playerId) ? "checked" : ""}
       />
       <span class="roster-player-info">
         <span class="roster-player-name">${player.FirstName} ${player.LastName}</span>
-        <span class="roster-player-group">Group: ${groupLabel}</span>
+        <span class="roster-player-group">${playerNumber} | Birth Year: ${birthYear || "-"} | Gender: ${gender || "-"} | Group: ${groupLabel}</span>
       </span>
     `;
+
+    const checkbox = label.querySelector(".roster-player-checkbox");
+
+    if (checkbox) {
+      checkbox.addEventListener("change", () => {
+        const id = Number(checkbox.value);
+
+        if (checkbox.checked) {
+          selectedRosterPlayerIds.add(id);
+        } else {
+          selectedRosterPlayerIds.delete(id);
+        }
+
+        updateRosterSummary();
+      });
+    }
 
     eventRosterList.appendChild(label);
   });
@@ -1029,7 +1313,7 @@ async function updateEventRosterSection() {
 
   eventRosterSection.classList.remove("hidden");
 
- 
+
   if (saveRosterBtn) saveRosterBtn.classList.remove("hidden");
   if (selectAllRosterBtn) selectAllRosterBtn.classList.remove("hidden");
   if (clearRosterBtn) clearRosterBtn.classList.remove("hidden");
@@ -1068,7 +1352,7 @@ async function updateEventRosterSection() {
       return;
     }
 
-    renderRosterPlayers(data.players || []);
+    loadRosterPlayers(data.players || []);
 
   } catch (err) {
     console.error("Load roster error:", err);
@@ -1085,9 +1369,11 @@ async function saveEventRoster() {
   const eventType = getSelectedEventType();
   const selectedGroupId = getSelectedGroupIdValue();
 
-  const selectedPlayerIds = Array.from(
-    document.querySelectorAll(".roster-player-checkbox:checked")
-  ).map(checkbox => Number(checkbox.value));
+  captureRosterSelectionsFromDom();
+
+  const selectedPlayerIds = Array.from(selectedRosterPlayerIds)
+    .map(playerId => Number(playerId))
+    .filter(playerId => Number.isInteger(playerId) && playerId > 0);
 
   const allMatchingParam = !selectedGroupId && eventType === "Team Event"
     ? "?allMatching=1"

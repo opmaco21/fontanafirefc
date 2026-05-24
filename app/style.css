@@ -2899,3 +2899,67 @@ hr {
 .next-month h3 {
   color: #2563eb !important;
 }
+
+
+/* =========================================================
+   BATCH 6H - EDIT ROSTER FILTERS
+   Adds Search, Birth Year, Gender, and Selected/Not Selected
+   filters to the Game / Team Event Edit Roster screen.
+   ========================================================= */
+
+.event-roster-filter-panel {
+  margin: 10px 0 12px;
+  padding: 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.event-roster-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(145px, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.event-roster-filter-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 0;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #222;
+}
+
+.event-roster-filter-grid input,
+.event-roster-filter-grid select {
+  min-width: 0;
+  padding: 10px 11px;
+  font-size: 14px;
+}
+
+.event-roster-search-label {
+  grid-column: span 1;
+}
+
+@media (max-width: 760px) {
+  .event-roster-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .event-roster-search-label {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .event-roster-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-roster-search-label {
+    grid-column: auto;
+  }
+}
