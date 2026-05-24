@@ -36,10 +36,16 @@ const dashboardMessage = document.getElementById("dashboardMessage");
 const dashboardSummaryCards = document.getElementById("dashboardSummaryCards");
 const dashboardMonthlySummary = document.getElementById("dashboardMonthlySummary");
 const dashboardBirthdays = document.getElementById("dashboardBirthdays");
+const dashboardPracticeSummary = document.getElementById("dashboardPracticeSummary");
 const dashboardGameSummary = document.getElementById("dashboardGameSummary");
+const dashboardEventSummary = document.getElementById("dashboardEventSummary");
 const dashboardGroupSummary = document.getElementById("dashboardGroupSummary");
 const dashboardPlayerAlerts = document.getElementById("dashboardPlayerAlerts");
+const dashboardPlayerAlertsCount = document.getElementById("dashboardPlayerAlertsCount");
+const dashboardPerfectPlayers = document.getElementById("dashboardPerfectPlayers");
+const dashboardPerfectPlayersCount = document.getElementById("dashboardPerfectPlayersCount");
 const dashboardExceptionalPlayers = document.getElementById("dashboardExceptionalPlayers");
+const dashboardExceptionalPlayersCount = document.getElementById("dashboardExceptionalPlayersCount");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
 const eventActionButtons = document.getElementById("eventActionButtons");

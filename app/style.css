@@ -2542,3 +2542,108 @@ hr {
     padding: 8px;
   }
 }
+
+/* =========================================================
+   BATCH 6E - DASHBOARD SUMMARY + COLLAPSIBLE PLAYER REPORTS
+   Adds Practice/Event summaries, Perfect Attendance Club,
+   collapsible player sections, and cleaner player cards.
+   ========================================================= */
+
+.dashboard-monthly-six-table {
+  min-width: 0 !important;
+  font-size: 11px;
+}
+
+.dashboard-monthly-six-table th,
+.dashboard-monthly-six-table td {
+  padding: 7px 3px !important;
+}
+
+.dashboard-monthly-six-table th:nth-child(1),
+.dashboard-monthly-six-table td:nth-child(1) {
+  width: 17%;
+}
+
+.dashboard-monthly-six-table th:nth-child(2),
+.dashboard-monthly-six-table td:nth-child(2),
+.dashboard-monthly-six-table th:nth-child(4),
+.dashboard-monthly-six-table td:nth-child(4),
+.dashboard-monthly-six-table th:nth-child(6),
+.dashboard-monthly-six-table td:nth-child(6) {
+  width: 13%;
+}
+
+.dashboard-monthly-six-table th:nth-child(3),
+.dashboard-monthly-six-table td:nth-child(3),
+.dashboard-monthly-six-table th:nth-child(5),
+.dashboard-monthly-six-table td:nth-child(5),
+.dashboard-monthly-six-table th:nth-child(7),
+.dashboard-monthly-six-table td:nth-child(7) {
+  width: 14%;
+}
+
+.dashboard-collapsible-report {
+  padding: 0;
+  overflow: hidden;
+}
+
+.dashboard-collapsible-report summary {
+  cursor: pointer;
+  padding: 13px 14px;
+  font-weight: 900;
+  color: #111827;
+  background: #fffaf5;
+  border-bottom: 1px solid #f2dcc8;
+  list-style-position: inside;
+}
+
+.dashboard-collapsible-report summary::marker {
+  color: #f57c00;
+}
+
+.dashboard-collapsible-report[open] {
+  padding-bottom: 12px;
+}
+
+.dashboard-collapsible-report[open] summary {
+  margin-bottom: 10px;
+}
+
+.dashboard-collapsible-report .dashboard-section-note,
+.dashboard-collapsible-report .dashboard-alert-list,
+.dashboard-collapsible-report .roster-empty-message {
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
+.dashboard-perfect-card {
+  background: #fff7ed;
+  border-color: #f2bf83;
+}
+
+.dashboard-perfect-badge {
+  background: #ffedd5;
+  border-color: #fdba74;
+  color: #9a3412;
+}
+
+/* Bottom summary counts were removed from dashboard player cards.
+   Details are shown only after clicking Practice, Game, or Team Event. */
+.dashboard-alert-counts {
+  display: none !important;
+}
+
+@media (max-width: 520px) {
+  .dashboard-monthly-six-table {
+    font-size: 9px;
+  }
+
+  .dashboard-monthly-six-table th,
+  .dashboard-monthly-six-table td {
+    padding: 6px 2px !important;
+  }
+
+  .dashboard-collapsible-report summary {
+    padding: 12px;
+  }
+}

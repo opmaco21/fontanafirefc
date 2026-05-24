@@ -123,8 +123,14 @@
 
           <div class="dashboard-report-section">
             <h3>Monthly Attendance Summary</h3>
-            <p class="subtext dashboard-section-note">Shows total practices, total games, and attendance percentages for the selected month.</p>
+            <p class="subtext dashboard-section-note">Shows total practices, games, team events, and attendance percentages for the selected month.</p>
             <div id="dashboardMonthlySummary" class="dashboard-table-wrap"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Practice Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Quick practice-only view for the selected month.</p>
+            <div id="dashboardPracticeSummary" class="dashboard-card-grid"></div>
           </div>
 
           <div class="dashboard-report-section">
@@ -134,16 +140,28 @@
           </div>
 
           <div class="dashboard-report-section">
-            <h3>Players Needing Attention</h3>
-            <p class="subtext dashboard-section-note">Shows attendance alerts only. Click Practice, Game, or Team Event to view details.</p>
-            <div id="dashboardPlayerAlerts" class="dashboard-alert-list"></div>
+            <h3>Event Summary</h3>
+            <p class="subtext dashboard-section-note">Quick team-event, scrimmage, and get-together view for the selected month.</p>
+            <div id="dashboardEventSummary" class="dashboard-card-grid"></div>
           </div>
 
-          <div class="dashboard-report-section">
-            <h3>Exceptional Attendance</h3>
-            <p class="subtext dashboard-section-note">Players with strong attendance for the selected month. Click Practice, Game, or Team Event to view details.</p>
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardPlayerAlertsDetails">
+            <summary>Players Needing Attention — <span id="dashboardPlayerAlertsCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows players at 70% or lower for practices or games. Click Practice, Game, or Team Event to view details.</p>
+            <div id="dashboardPlayerAlerts" class="dashboard-alert-list"></div>
+          </details>
+
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardPerfectPlayersDetails">
+            <summary>Perfect Attendance Club — <span id="dashboardPerfectPlayersCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows players with 100% attendance for both practices and games in the selected month.</p>
+            <div id="dashboardPerfectPlayers" class="dashboard-alert-list dashboard-perfect-list"></div>
+          </details>
+
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardExceptionalPlayersDetails">
+            <summary>Exceptional Attendance — <span id="dashboardExceptionalPlayersCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows players at 85% or higher for practices or games, excluding Perfect Attendance Club players.</p>
             <div id="dashboardExceptionalPlayers" class="dashboard-alert-list dashboard-exceptional-list"></div>
-          </div>
+          </details>
         </section>
 
         <!-- EVENT SELECTOR -->

@@ -1,12 +1,13 @@
 /* =========================================================
    FONTANA FIRE FC ATTENDANCE APP
-   Batch 6D Dashboard Reporting Polish
+   Batch 6E Dashboard Summary + Collapsible Player Reports
 
    Purpose:
-   - Keep Player Management as the full player lookup area.
-   - Use Dashboard for birthdays, clean monthly summaries,
-     game summary cards, attention alerts, and exceptional attendance.
-   - Player percentage badges are clickable and show category details.
+   - Dashboard stays a reporting screen, not Player Management.
+   - Monthly summary shows Practices, Games, Team Events and percentages.
+   - Practice, Game, and Event summaries are separate.
+   - Player report sections are collapsible.
+   - Player cards show details only after clicking Practice, Game, or Team Event.
    ========================================================= */
 
 let dashboardSelectedMonth = "";
@@ -81,23 +82,19 @@ function formatDashboardPercent(value) {
 
 function formatDashboardBirthday(value) {
   if (!value) return "-";
-
   const raw = String(value);
   const dateOnly = raw.includes("T") ? raw.split("T")[0] : raw.substring(0, 10);
   const parts = dateOnly.split("-");
-
   if (parts.length !== 3) return escapeDashboardHtml(raw);
-
   return `${parts[1]}/${parts[2]}`;
 }
 
 function getDashboardPercentClass(value, counted) {
   const percent = Number(value);
   const total = Number(counted || 0);
-
   if (!total) return "dashboard-percent-none";
-  if (percent >= 90) return "dashboard-percent-good";
-  if (percent >= 70) return "dashboard-percent-watch";
+  if (percent >= 85) return "dashboard-percent-good";
+  if (percent > 70) return "dashboard-percent-watch";
   return "dashboard-percent-low";
 }
 
@@ -139,7 +136,7 @@ function renderMonthlySummary(rows) {
   }
 
   dashboardMonthlySummary.innerHTML = `
-    <table class="dashboard-table dashboard-monthly-table dashboard-monthly-simple-table">
+    <table class="dashboard-table dashboard-monthly-table dashboard-monthly-simple-table dashboard-monthly-six-table">
       <thead>
         <tr>
           <th>Month</th>
@@ -147,6 +144,8 @@ function renderMonthlySummary(rows) {
           <th>Practice %</th>
           <th>Games</th>
           <th>Game %</th>
+          <th>Events</th>
+          <th>Event %</th>
         </tr>
       </thead>
       <tbody>
@@ -157,6 +156,8 @@ function renderMonthlySummary(rows) {
             <td><strong>${formatDashboardPercent(row.PracticePercent)}</strong></td>
             <td>${row.GameTotal || 0}</td>
             <td><strong>${formatDashboardPercent(row.GamePercent)}</strong></td>
+            <td>${row.EventTotal || 0}</td>
+            <td><strong>${formatDashboardPercent(row.EventPercent)}</strong></td>
           </tr>
         `).join("")}
       </tbody>
@@ -172,7 +173,6 @@ function renderBirthdays(data) {
 
   function list(items, emptyText) {
     if (!items.length) return `<p class="subtext">${escapeDashboardHtml(emptyText)}</p>`;
-
     return `
       <ul>
         ${items.map(player => `
@@ -198,16 +198,37 @@ function renderBirthdays(data) {
   `;
 }
 
+function renderPracticeSummary(summary) {
+  if (!dashboardPracticeSummary) return;
+  const practice = summary || {};
+  dashboardPracticeSummary.innerHTML = [
+    renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month"),
+    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Cancelled does not count"),
+    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention"),
+    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance")
+  ].join("");
+}
+
 function renderGameSummary(summary) {
   if (!dashboardGameSummary) return;
-
   const game = summary || {};
-
   dashboardGameSummary.innerHTML = [
     renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month"),
     renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Cancelled does not count"),
-    renderDashboardCard("Perfect Game Att", game.PerfectGamePlayers || 0, "Players at 100%"),
-    renderDashboardCard("Low Game Att", game.LowGamePlayers || 0, "Players below 70%")
+    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention"),
+    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance")
+  ].join("");
+}
+
+function renderEventSummary(summary) {
+  if (!dashboardEventSummary) return;
+  const event = summary || {};
+  dashboardEventSummary.innerHTML = [
+    renderDashboardCard("Total Events", event.TotalEvents || 0, "Team events / scrimmages"),
+    renderDashboardCard("Event Att %", formatDashboardPercent(event.EventAttendancePercent), "Cancelled does not count"),
+    renderDashboardCard("70% or Lower", event.LowEventPlayers || 0, "Players needing attention"),
+    renderDashboardCard("85% or Higher", event.HighEventPlayers || 0, "Strong attendance"),
+    renderDashboardCard("Cancelled Events", event.CancelledEvents || 0, "Selected month")
   ].join("");
 }
 
@@ -305,9 +326,7 @@ function getOpenDashboardDetail(row, cardType) {
   const playerId = row.PlayerID;
   const prefix = `${cardType}-${playerId}-`;
 
-  if (!dashboardOpenDetailKey || !dashboardOpenDetailKey.startsWith(prefix)) {
-    return "";
-  }
+  if (!dashboardOpenDetailKey || !dashboardOpenDetailKey.startsWith(prefix)) return "";
 
   const category = dashboardOpenDetailKey.replace(prefix, "");
   return getDashboardCategoryDetail(row, category);
@@ -319,65 +338,74 @@ function renderPlayerAlertCard(row, cardType = "attention") {
   const issue = row.AlertType || row.HighlightType || "Review";
   const issueDetail = row.AlertDetail || row.HighlightDetail || "Review attendance record.";
   const isExceptional = cardType === "exceptional";
+  const isPerfect = cardType === "perfect";
 
   return `
-    <article class="dashboard-alert-card ${isExceptional ? "dashboard-exceptional-card" : ""}">
+    <article class="dashboard-alert-card ${isExceptional ? "dashboard-exceptional-card" : ""} ${isPerfect ? "dashboard-perfect-card" : ""}">
       <div class="dashboard-alert-topline">
         <div>
           <h4>${escapeDashboardHtml(playerName || "Player")}</h4>
           <p>Birth Year: <strong>${escapeDashboardHtml(groupLabel)}</strong></p>
         </div>
-        <span class="dashboard-alert-badge ${isExceptional ? "dashboard-exceptional-badge" : ""}">${escapeDashboardHtml(issue)}</span>
+        <span class="dashboard-alert-badge ${isExceptional ? "dashboard-exceptional-badge" : ""} ${isPerfect ? "dashboard-perfect-badge" : ""}">${escapeDashboardHtml(issue)}</span>
       </div>
 
       <p class="dashboard-alert-detail">${escapeDashboardHtml(issueDetail)}</p>
 
       ${renderDashboardCategoryButtons(row, cardType)}
       ${getOpenDashboardDetail(row, cardType)}
-
-      <div class="dashboard-alert-counts">
-        Present: ${row.PresentCount || 0} | Absent: ${row.AbsentCount || 0} | Excused: ${row.ExcusedCount || 0} | Cancelled: ${row.CancelledCount || 0}
-      </div>
     </article>
   `;
 }
 
-function renderPlayerAlerts(rows) {
-  if (!dashboardPlayerAlerts) return;
+function renderCollapsiblePlayerSection(container, countEl, rows, cardType, emptyText) {
+  if (countEl) {
+    const count = rows && rows.length ? rows.length : 0;
+    countEl.textContent = `${count} ${count === 1 ? "player" : "players"}`;
+  }
+
+  if (!container) return;
 
   if (!rows || rows.length === 0) {
-    dashboardPlayerAlerts.innerHTML = `
-      <div class="roster-empty-message">
-        No attendance alerts right now. Full player records are still available in the Players tab.
-      </div>
-    `;
+    container.innerHTML = `<div class="roster-empty-message">${escapeDashboardHtml(emptyText)}</div>`;
     return;
   }
 
-  dashboardPlayerAlerts.innerHTML = rows
-    .map(row => renderPlayerAlertCard(row, "attention"))
-    .join("");
+  container.innerHTML = rows.map(row => renderPlayerAlertCard(row, cardType)).join("");
+}
+
+function renderPlayerAlerts(rows) {
+  renderCollapsiblePlayerSection(
+    dashboardPlayerAlerts,
+    dashboardPlayerAlertsCount,
+    rows,
+    "attention",
+    "No players are at 70% or lower for practices or games in the selected month."
+  );
+}
+
+function renderPerfectPlayers(rows) {
+  renderCollapsiblePlayerSection(
+    dashboardPerfectPlayers,
+    dashboardPerfectPlayersCount,
+    rows,
+    "perfect",
+    "No players have 100% attendance for both practices and games in the selected month yet."
+  );
 }
 
 function renderExceptionalPlayers(rows) {
-  if (!dashboardExceptionalPlayers) return;
-
-  if (!rows || rows.length === 0) {
-    dashboardExceptionalPlayers.innerHTML = `
-      <div class="roster-empty-message">
-        No exceptional attendance records found for the selected month yet.
-      </div>
-    `;
-    return;
-  }
-
-  dashboardExceptionalPlayers.innerHTML = rows
-    .map(row => renderPlayerAlertCard(row, "exceptional"))
-    .join("");
+  renderCollapsiblePlayerSection(
+    dashboardExceptionalPlayers,
+    dashboardExceptionalPlayersCount,
+    rows,
+    "exceptional",
+    "No players are at 85% or higher for practices or games in the selected month yet."
+  );
 }
 
 function setupDashboardDetailClickHandlers() {
-  [dashboardPlayerAlerts, dashboardExceptionalPlayers].forEach(container => {
+  [dashboardPlayerAlerts, dashboardPerfectPlayers, dashboardExceptionalPlayers].forEach(container => {
     if (!container || container.dataset.detailListenerAttached) return;
 
     container.dataset.detailListenerAttached = "1";
@@ -410,9 +438,7 @@ async function loadDashboard() {
     setupDashboardDetailClickHandlers();
 
     const dashboardParams = new URLSearchParams();
-    if (dashboardSelectedMonth) {
-      dashboardParams.set("month", dashboardSelectedMonth);
-    }
+    if (dashboardSelectedMonth) dashboardParams.set("month", dashboardSelectedMonth);
 
     const dashboardUrl = dashboardParams.toString()
       ? `${API_BASE}/dashboard?${dashboardParams.toString()}`
@@ -433,8 +459,11 @@ async function loadDashboard() {
     renderDashboardSummaryCards(data);
     renderBirthdays(data.birthdays || {});
     renderMonthlySummary(data.monthlySummary || []);
+    renderPracticeSummary(data.practiceSummary || {});
     renderGameSummary(data.gameSummary || {});
+    renderEventSummary(data.eventSummary || {});
     renderPlayerAlerts(data.playerAlerts || []);
+    renderPerfectPlayers(data.perfectPlayers || []);
     renderExceptionalPlayers(data.exceptionalPlayers || []);
 
     const filterLabel = dashboardSelectedMonth
