@@ -2647,3 +2647,53 @@ hr {
     padding: 12px;
   }
 }
+
+/* =========================================================
+   DASHBOARD BIRTHDAY COLORS
+   This Month = stronger orange
+   Next Month = lighter blue
+   ========================================================= */
+
+.dashboard-birthday-card.this-month,
+.birthday-card.this-month,
+.dashboard-birthday-this-month {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2) !important;
+  border: 2px solid #f57c00 !important;
+  border-left: 7px solid #f57c00 !important;
+  box-shadow: 0 6px 16px rgba(245, 124, 0, 0.18);
+}
+
+.dashboard-birthday-card.next-month,
+.birthday-card.next-month,
+.dashboard-birthday-next-month {
+  background: linear-gradient(135deg, #f8fbff, #eef6ff) !important;
+  border: 1px solid #bfdbfe !important;
+  border-left: 6px solid #93c5fd !important;
+  box-shadow: 0 4px 12px rgba(147, 197, 253, 0.14);
+}
+
+.dashboard-birthday-card.this-month h3,
+.birthday-card.this-month h3,
+.dashboard-birthday-this-month h3 {
+  color: #c2410c !important;
+}
+
+.dashboard-birthday-card.next-month h3,
+.birthday-card.next-month h3,
+.dashboard-birthday-next-month h3 {
+  color: #2563eb !important;
+}
+
+.dashboard-birthday-card.this-month .birthday-label,
+.birthday-card.this-month .birthday-label,
+.dashboard-birthday-this-month .birthday-label {
+  background: #f57c00;
+  color: #ffffff;
+}
+
+.dashboard-birthday-card.next-month .birthday-label,
+.birthday-card.next-month .birthday-label,
+.dashboard-birthday-next-month .birthday-label {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
