@@ -2305,3 +2305,65 @@ hr {
     max-width: none;
   }
 }
+
+/* =========================================================
+   DASHBOARD MONTHLY SUMMARY - SMALLER COLUMN WIDTHS
+   Makes the monthly summary fit without horizontal scroll.
+   ========================================================= */
+
+.dashboard-section table {
+  width: 100%;
+  table-layout: fixed;
+  font-size: 12px;
+}
+
+.dashboard-section th,
+.dashboard-section td {
+  padding: 7px 5px;
+  white-space: nowrap;
+}
+
+.dashboard-section th:nth-child(1),
+.dashboard-section td:nth-child(1) {
+  width: 17%;
+}
+
+.dashboard-section th:nth-child(2),
+.dashboard-section td:nth-child(2) {
+  width: 16%;
+}
+
+.dashboard-section th:nth-child(3),
+.dashboard-section td:nth-child(3),
+.dashboard-section th:nth-child(4),
+.dashboard-section td:nth-child(4),
+.dashboard-section th:nth-child(5),
+.dashboard-section td:nth-child(5),
+.dashboard-section th:nth-child(6),
+.dashboard-section td:nth-child(6) {
+  width: 13%;
+  text-align: center;
+}
+
+.dashboard-section th:nth-child(7),
+.dashboard-section td:nth-child(7) {
+  width: 15%;
+  text-align: center;
+  font-weight: 800;
+}
+
+.dashboard-section {
+  overflow-x: hidden;
+}
+
+@media (max-width: 520px) {
+  .dashboard-section table {
+    font-size: 11px;
+  }
+
+  .dashboard-section th,
+  .dashboard-section td {
+    padding: 6px 3px;
+  }
+}
+
