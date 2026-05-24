@@ -2157,3 +2157,151 @@ hr {
     font-size: 21px;
   }
 }
+
+/* =========================================================
+   BATCH 6B - DASHBOARD SUMMARY + ALERT CLEANUP
+   Dashboard now shows group summary and players needing
+   attention instead of duplicating full Player Management.
+   ========================================================= */
+
+.dashboard-section-note {
+  margin-top: -6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.dashboard-group-table {
+  min-width: 720px;
+}
+
+.dashboard-percent-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.dashboard-percent-good {
+  background: #e6f4ea;
+  border-color: #a8d5b4;
+  color: #1b5e20;
+}
+
+.dashboard-percent-watch {
+  background: #fff8e1;
+  border-color: #f4d37c;
+  color: #6d4c00;
+}
+
+.dashboard-percent-low {
+  background: #fdecea;
+  border-color: #efb4ad;
+  color: #9f1d1d;
+}
+
+.dashboard-percent-none {
+  background: #eef2f7;
+  border-color: #d1d5db;
+  color: #4b5563;
+}
+
+.dashboard-alert-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.dashboard-alert-card {
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+  padding: 12px;
+}
+
+.dashboard-alert-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.dashboard-alert-card h4 {
+  margin: 0 0 4px;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.dashboard-alert-card p {
+  margin: 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.dashboard-alert-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 120px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  color: #111827;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.dashboard-alert-detail {
+  margin-top: 10px !important;
+}
+
+.dashboard-alert-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.dashboard-alert-metrics span {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+}
+
+.dashboard-alert-counts {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid #e1e5ea;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.35;
+}
+
+@media (max-width: 520px) {
+  .dashboard-alert-list {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-alert-topline {
+    flex-direction: column;
+  }
+
+  .dashboard-alert-badge {
+    max-width: none;
+  }
+}

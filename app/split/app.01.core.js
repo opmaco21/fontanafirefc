@@ -34,7 +34,8 @@ const dashboardMessage = document.getElementById("dashboardMessage");
 const dashboardSummaryCards = document.getElementById("dashboardSummaryCards");
 const dashboardMonthlySummary = document.getElementById("dashboardMonthlySummary");
 const dashboardBirthdays = document.getElementById("dashboardBirthdays");
-const dashboardPlayerReport = document.getElementById("dashboardPlayerReport");
+const dashboardGroupSummary = document.getElementById("dashboardGroupSummary");
+const dashboardPlayerAlerts = document.getElementById("dashboardPlayerAlerts");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
 const eventActionButtons = document.getElementById("eventActionButtons");
