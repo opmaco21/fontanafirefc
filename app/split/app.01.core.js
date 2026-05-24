@@ -80,6 +80,7 @@ let newGameCustomLocation = null;
 let gamePlayerSelectorPanel = null;
 let gamePlayerSearch = null;
 let gameGenderFilterSelect = null;
+let gameRefreshPlayersBtn = null;
 let gameSelectAllPlayersBtn = null;
 let gameClearPlayersBtn = null;
 let gamePlayerSummary = null;
@@ -109,6 +110,7 @@ const eventRosterMessage = document.getElementById("eventRosterMessage");
 const attendanceSection = document.getElementById("attendanceSection");
 const editRosterBtn = document.getElementById("editRosterBtn");
 const attendanceSummary = document.getElementById("attendanceSummary");
+let refreshCurrentPlayersBtn = null;
 const hideMarkedToggle = document.getElementById("hideMarkedToggle");
 const showCompletedBtn = document.getElementById("showCompletedBtn");
 const completedPlayerList = document.getElementById("completedPlayerList");
@@ -322,6 +324,7 @@ async function showApp() {
 
 applyRolePermissions();
 ensureGameManagementElements();
+ensureRefreshPlayersControls();
 setActiveTab();
 resetWorkflowForSelectedEvent();
 updateTeamEventSection();
@@ -511,6 +514,10 @@ function ensureGameManagementElements() {
       </label>
 
       <div class="team-event-player-actions">
+        <button type="button" id="gameRefreshPlayersBtn" class="btn btn-secondary">
+          Refresh Players
+        </button>
+
         <button type="button" id="gameSelectAllPlayersBtn" class="btn btn-secondary">
           Select All Shown
         </button>
@@ -555,6 +562,7 @@ function ensureGameManagementElements() {
   gamePlayerSelectorPanel = document.getElementById("gamePlayerSelectorPanel");
   gamePlayerSearch = document.getElementById("gamePlayerSearch");
   gameGenderFilterSelect = document.getElementById("gameGenderFilter");
+  gameRefreshPlayersBtn = document.getElementById("gameRefreshPlayersBtn");
   gameSelectAllPlayersBtn = document.getElementById("gameSelectAllPlayersBtn");
   gameClearPlayersBtn = document.getElementById("gameClearPlayersBtn");
   gamePlayerSummary = document.getElementById("gamePlayerSummary");
@@ -629,6 +637,13 @@ if (gameGenderFilterSelect && !gameGenderFilterSelect.dataset.listenerAttached) 
   });
 }
 
+if (gameRefreshPlayersBtn && !gameRefreshPlayersBtn.dataset.listenerAttached) {
+  gameRefreshPlayersBtn.dataset.listenerAttached = "1";
+  gameRefreshPlayersBtn.addEventListener("click", async () => {
+    await loadGamePlayerSelector();
+  });
+}
+
 if (gameSelectAllPlayersBtn && !gameSelectAllPlayersBtn.dataset.listenerAttached) {
   gameSelectAllPlayersBtn.dataset.listenerAttached = "1";
   gameSelectAllPlayersBtn.addEventListener("click", () => {
@@ -643,6 +658,72 @@ if (gameClearPlayersBtn && !gameClearPlayersBtn.dataset.listenerAttached) {
     renderGamePlayerOptions();
   });
 }
+}
+
+
+/* =========================
+   REFRESH CURRENT PLAYERS
+   Purpose:
+   - One refresh button for Practice, Games, and Team Events.
+   - Practice/attendance refreshes visible attendance cards.
+   - Game form refreshes the Add Game player selector.
+   - Team Event form refreshes the Team Event player selector.
+   - Edit Roster refreshes the roster editor.
+   ========================= */
+function ensureRefreshPlayersControls() {
+  if (!attendanceSection || refreshCurrentPlayersBtn) return;
+
+  refreshCurrentPlayersBtn = document.createElement("button");
+  refreshCurrentPlayersBtn.id = "refreshCurrentPlayersBtn";
+  refreshCurrentPlayersBtn.type = "button";
+  refreshCurrentPlayersBtn.className = "btn btn-secondary refresh-current-players-btn";
+  refreshCurrentPlayersBtn.textContent = "Refresh Players";
+
+  const insertBeforeTarget = attendanceSummary || attendanceSection.firstChild;
+  attendanceSection.insertBefore(refreshCurrentPlayersBtn, insertBeforeTarget);
+
+  refreshCurrentPlayersBtn.addEventListener("click", refreshCurrentPlayerList);
+}
+
+async function refreshCurrentPlayerList() {
+  if (currentTab === "Player Management") {
+    await loadPlayerManagementList();
+    return;
+  }
+
+  if (currentTab === "Practice") {
+    await loadPlayers();
+    return;
+  }
+
+  if (currentTab === "Game") {
+    if (isGameFormOpen) {
+      await loadGamePlayerSelector();
+      return;
+    }
+
+    if (!isAttendanceModeActive) {
+      await updateEventRosterSection();
+      return;
+    }
+
+    await loadPlayers();
+    return;
+  }
+
+  if (currentTab === "Team Event") {
+    if (isTeamEventFormOpen) {
+      await loadTeamEventPlayerSelector();
+      return;
+    }
+
+    if (!isAttendanceModeActive) {
+      await updateEventRosterSection();
+      return;
+    }
+
+    await loadPlayers();
+  }
 }
 
 /* =========================
@@ -988,6 +1069,7 @@ async function updateEventRosterSection() {
 
   eventRosterSection.classList.remove("hidden");
 
+ 
   if (saveRosterBtn) saveRosterBtn.classList.remove("hidden");
   if (selectAllRosterBtn) selectAllRosterBtn.classList.remove("hidden");
   if (clearRosterBtn) clearRosterBtn.classList.remove("hidden");
@@ -1001,33 +1083,12 @@ async function updateEventRosterSection() {
           : "Choose the exact players expected for this multi-group Team Event.";
   }
 
-  const rosterParams = new URLSearchParams();
-
-  /*
-    Team Events can still be grouped across matching event rows.
-    Games are single real events, so they do not use allMatching here.
-  */
-  if (!selectedGroupId && eventType === "Team Event") {
-    rosterParams.set("allMatching", "1");
-  }
-
-  /*
-    Important:
-    Edit Roster for Games must show ALL active players, with current
-    roster players checked. Without edit=1, the backend returns only
-    currently rostered players. If the roster was cleared, that means
-    zero players appear.
-  */
-  if (eventType === "Game") {
-    rosterParams.set("edit", "1");
-  }
-
-  const rosterQuery = rosterParams.toString()
-    ? `?${rosterParams.toString()}`
+  const allMatchingParam = !selectedGroupId && eventType === "Team Event"
+    ? "?allMatching=1"
     : "";
 
   try {
-    const res = await fetch(`${API_BASE}/events/${selectedEventId}/roster${rosterQuery}`, {
+    const res = await fetch(`${API_BASE}/events/${selectedEventId}/roster${allMatchingParam}`, {
       credentials: "include"
     });
 
@@ -1162,18 +1223,6 @@ function getEventDateParts(eventDateValue) {
 
 /* =========================
    LOAD EVENTS
-
-   Practice:
-   - Show all SQL events where EventType = Practice.
-   - Do not filter by weekday here because SQL already controls
-     what is a Practice.
-
-   Games:
-   - Show all SQL events where EventType = Game.
-   - Games are now individual real games, not grouped practice-style rows.
-
-   Team Events:
-   - Show all SQL events where EventType = Team Event.
    ========================= */
 async function loadEvents() {
   if (!eventSelect) return;
@@ -1188,6 +1237,8 @@ async function loadEvents() {
     if (selectedGroupId) {
       eventsUrl += `?groupId=${encodeURIComponent(selectedGroupId)}`;
     }
+
+    console.log("Loading events from:", eventsUrl);
 
     const res = await fetch(eventsUrl, {
       credentials: "include"
@@ -1208,23 +1259,28 @@ async function loadEvents() {
           ? data.recordset
           : [];
 
+    console.log("Events loaded:", events.length, events);
+
     const filteredEvents = events.filter(event => {
-      if (!event || !event.EventType) return false;
+      if (!event.EventDate || !event.EventType) return false;
 
-      if (currentTab === "Practice") {
-        return event.EventType === "Practice";
-      }
+      const isPractice = event.EventType === "Practice";
+      const isGame = event.EventType === "Game";
+      const isTeamEvent = event.EventType === "Team Event";
 
-      if (currentTab === "Game") {
-        return event.EventType === "Game";
-      }
-
-      if (currentTab === "Team Event") {
-        return event.EventType === "Team Event";
-      }
+      if (currentTab === "Practice") return isPractice;
+      if (currentTab === "Game") return isGame;
+      if (currentTab === "Team Event") return isTeamEvent;
 
       return true;
     });
+
+    console.log(
+      "Filtered events for tab:",
+      currentTab,
+      filteredEvents.length,
+      filteredEvents
+    );
 
     filteredEvents.forEach(event => addEventOption(event));
 

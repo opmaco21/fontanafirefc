@@ -5,19 +5,7 @@
    Purpose:
    - Games use exact player selection, similar to Team Events.
    - Checked players are expected for the game roster.
-   - Search is normalized so newly added players can be found
-     by name, number, birth year, group, or gender.
    ========================= */
-
-function normalizeGameSearchText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/#/g, " ")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function getSelectedGamePlayerIds() {
   return Array.from(selectedGamePlayerIds)
     .map(value => Number(value))
@@ -33,47 +21,30 @@ function updateGamePlayerSummary() {
 
 function getFilteredGamePlayers() {
   const searchText = gamePlayerSearch
-    ? normalizeGameSearchText(gamePlayerSearch.value)
+    ? gamePlayerSearch.value.trim().toLowerCase()
     : "";
 
-  const filteredPlayers = latestGamePlayers.filter(player => {
+  if (!searchText && !gameGenderFilter) {
+    return latestGamePlayers;
+  }
+
+  return latestGamePlayers.filter(player => {
     const genderMatches =
       !gameGenderFilter ||
       (player.Gender || "") === gameGenderFilter;
 
-    const playerNumber =
-      player.PlayerNumber === 0 || player.PlayerNumber
-        ? String(player.PlayerNumber)
-        : "";
-
-    const searchable = normalizeGameSearchText([
+    const searchable = [
       player.FirstName,
       player.LastName,
       player.FullName,
-      playerNumber,
-      playerNumber ? `#${playerNumber}` : "",
+      player.PlayerNumber === 0 || player.PlayerNumber ? `#${player.PlayerNumber}` : "",
       player.GroupName,
       player.GroupCode,
-      player.BirthYear,
       player.Gender,
-      formatGenderShort(player.Gender)
-    ].filter(Boolean).join(" "));
+      player.BirthYear
+    ].filter(Boolean).join(" ").toLowerCase();
 
-    const searchMatches =
-      !searchText ||
-      searchable.includes(searchText);
-
-    return genderMatches && searchMatches;
-  });
-
-  return filteredPlayers.sort((a, b) => {
-    const aName = `${a.FirstName || ""} ${a.LastName || ""}`.trim();
-    const bName = `${b.FirstName || ""} ${b.LastName || ""}`.trim();
-
-    return aName.localeCompare(bName, undefined, {
-      sensitivity: "base",
-      numeric: true
-    });
+    return genderMatches && searchable.includes(searchText);
   });
 }
 
@@ -87,7 +58,7 @@ function renderGamePlayerOptions() {
   if (!players.length) {
     gamePlayerList.innerHTML = `
       <div class="roster-empty-message">
-        No players found.
+        No active players found.
       </div>
     `;
     updateGamePlayerSummary();
@@ -99,17 +70,10 @@ function renderGamePlayerOptions() {
     label.className = "team-event-player-option";
 
     const playerId = Number(player.PlayerID);
-
-    const groupLabel =
-      player.GroupName ||
-      player.GroupCode ||
-      player.BirthYear ||
-      "No Group";
-
-    const playerNumber =
-      player.PlayerNumber === 0 || player.PlayerNumber
-        ? `#${player.PlayerNumber}`
-        : "No #";
+    const groupLabel = player.GroupName || player.GroupCode || player.BirthYear || "No Group";
+    const playerNumber = player.PlayerNumber === 0 || player.PlayerNumber
+      ? `#${player.PlayerNumber}`
+      : "No #";
 
     label.innerHTML = `
       <input
@@ -178,16 +142,6 @@ async function loadGamePlayerSelector() {
       ? data
       : data.players || [];
 
-    latestGamePlayers = latestGamePlayers.sort((a, b) => {
-      const aName = `${a.FirstName || ""} ${a.LastName || ""}`.trim();
-      const bName = `${b.FirstName || ""} ${b.LastName || ""}`.trim();
-
-      return aName.localeCompare(bName, undefined, {
-        sensitivity: "base",
-        numeric: true
-      });
-    });
-
     renderGamePlayerOptions();
 
   } catch (err) {
@@ -225,6 +179,17 @@ function resetGameForm(clearMessage = true) {
     gameMessage.textContent = "";
   }
 }
+
+/* =========================
+   ADD TEAM EVENT
+
+   Purpose:
+   - Creates a manual event such as:
+       Scrimmage
+       Team get-together
+       Other team activity
+   - Supports one group or multiple selected groups.
+   ========================= */
 
 /* =========================
    ADD GAME
