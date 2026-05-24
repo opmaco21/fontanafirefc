@@ -1,16 +1,17 @@
 /* =========================================================
    FONTANA FIRE FC ATTENDANCE APP
-   Batch 6C Dashboard Polish
+   Batch 6D Dashboard Reporting Polish
 
    Purpose:
    - Keep Player Management as the full player lookup area.
-   - Use Dashboard for summary, group trends, birthdays, and
-     attendance alerts that need coach/admin attention.
-   - Adds month filtering and compact table display.
+   - Use Dashboard for birthdays, clean monthly summaries,
+     game summary cards, attention alerts, and exceptional attendance.
+   - Player percentage badges are clickable and show category details.
    ========================================================= */
 
 let dashboardSelectedMonth = "";
 let dashboardMonthFilterReady = false;
+let dashboardOpenDetailKey = "";
 
 function getDashboardCurrentMonthValue() {
   const now = new Date();
@@ -56,6 +57,7 @@ function ensureDashboardMonthFilterOptions() {
 
   dashboardMonthFilter.addEventListener("change", async () => {
     dashboardSelectedMonth = dashboardMonthFilter.value || "";
+    dashboardOpenDetailKey = "";
     await loadDashboard();
   });
 
@@ -137,28 +139,24 @@ function renderMonthlySummary(rows) {
   }
 
   dashboardMonthlySummary.innerHTML = `
-    <table class="dashboard-table dashboard-monthly-table">
+    <table class="dashboard-table dashboard-monthly-table dashboard-monthly-simple-table">
       <thead>
         <tr>
           <th>Month</th>
-          <th>Type</th>
-          <th>Present</th>
-          <th>Absent</th>
-          <th>Excused</th>
-          <th>Cancelled</th>
-          <th>Att %</th>
+          <th>Practices</th>
+          <th>Practice %</th>
+          <th>Games</th>
+          <th>Game %</th>
         </tr>
       </thead>
       <tbody>
         ${rows.map(row => `
           <tr>
             <td><strong>${escapeDashboardHtml(row.AttendanceMonth || "-")}</strong></td>
-            <td>${escapeDashboardHtml(row.EventType || "-")}</td>
-            <td>${row.PresentCount || 0}</td>
-            <td>${row.AbsentCount || 0}</td>
-            <td>${row.ExcusedCount || 0}</td>
-            <td>${row.CancelledCount || 0}</td>
-            <td><strong>${formatDashboardPercent(row.AttendancePercent)}</strong></td>
+            <td>${row.PracticeTotal || 0}</td>
+            <td><strong>${formatDashboardPercent(row.PracticePercent)}</strong></td>
+            <td>${row.GameTotal || 0}</td>
+            <td><strong>${formatDashboardPercent(row.GamePercent)}</strong></td>
           </tr>
         `).join("")}
       </tbody>
@@ -189,61 +187,158 @@ function renderBirthdays(data) {
   }
 
   dashboardBirthdays.innerHTML = `
-    <div class="dashboard-mini-card">
+    <div class="dashboard-mini-card dashboard-birthday-current">
       <h4>This Month</h4>
       ${list(thisMonth, "No birthdays this month.")}
     </div>
-    <div class="dashboard-mini-card">
+    <div class="dashboard-mini-card dashboard-birthday-next">
       <h4>Next Month</h4>
       ${list(nextMonth, "No birthdays next month.")}
     </div>
   `;
 }
 
-function renderGroupSummary(rows) {
-  if (!dashboardGroupSummary) return;
+function renderGameSummary(summary) {
+  if (!dashboardGameSummary) return;
 
-  if (!rows || rows.length === 0) {
-    dashboardGroupSummary.innerHTML = `<div class="roster-empty-message">No group attendance data found yet.</div>`;
-    return;
+  const game = summary || {};
+
+  dashboardGameSummary.innerHTML = [
+    renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month"),
+    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Cancelled does not count"),
+    renderDashboardCard("Perfect Game Att", game.PerfectGamePlayers || 0, "Players at 100%"),
+    renderDashboardCard("Low Game Att", game.LowGamePlayers || 0, "Players below 70%")
+  ].join("");
+}
+
+function getDashboardCategoryConfig(category) {
+  if (category === "practice") {
+    return {
+      label: "Practice",
+      counted: "PracticeCounted",
+      present: "PracticePresent",
+      absent: "PracticeAbsent",
+      excused: "PracticeExcused",
+      cancelled: "PracticeCancelled",
+      percent: "PracticePercent"
+    };
   }
 
-  dashboardGroupSummary.innerHTML = `
-    <table class="dashboard-table dashboard-group-table">
-      <thead>
-        <tr>
-          <th>Group</th>
-          <th>Players</th>
-          <th>Practice</th>
-          <th>Game</th>
-          <th>Team Event</th>
-          <th>Absent</th>
-          <th>Excused</th>
-          <th>Cancelled</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(row => {
-          const groupLabel = row.GroupCode || row.GroupName || row.BirthYear || "No Group";
-          const practiceClass = getDashboardPercentClass(row.PracticePercent, row.PracticeCounted);
-          const gameClass = getDashboardPercentClass(row.GamePercent, row.GameCounted);
-          const teamEventClass = getDashboardPercentClass(row.TeamEventPercent, row.TeamEventCounted);
+  if (category === "game") {
+    return {
+      label: "Game",
+      counted: "GameCounted",
+      present: "GamePresent",
+      absent: "GameAbsent",
+      excused: "GameExcused",
+      cancelled: "GameCancelled",
+      percent: "GamePercent"
+    };
+  }
 
-          return `
-            <tr>
-              <td><strong>${escapeDashboardHtml(groupLabel)}</strong></td>
-              <td>${row.ActivePlayers || 0}</td>
-              <td><span class="dashboard-percent-badge ${practiceClass}">${formatDashboardPercent(row.PracticePercent)}</span></td>
-              <td><span class="dashboard-percent-badge ${gameClass}">${formatDashboardPercent(row.GamePercent)}</span></td>
-              <td><span class="dashboard-percent-badge ${teamEventClass}">${formatDashboardPercent(row.TeamEventPercent)}</span></td>
-              <td>${row.AbsentCount || 0}</td>
-              <td>${row.ExcusedCount || 0}</td>
-              <td>${row.CancelledCount || 0}</td>
-            </tr>
-          `;
-        }).join("")}
-      </tbody>
-    </table>
+  return {
+    label: "Team Event",
+    counted: "TeamEventCounted",
+    present: "TeamEventPresent",
+    absent: "TeamEventAbsent",
+    excused: "TeamEventExcused",
+    cancelled: "TeamEventCancelled",
+    percent: "TeamEventPercent"
+  };
+}
+
+function getDashboardCategoryDetail(row, category) {
+  const config = getDashboardCategoryConfig(category);
+  const counted = Number(row[config.counted] || 0);
+  const cancelled = Number(row[config.cancelled] || 0);
+
+  if (!counted && !cancelled) {
+    return `
+      <div class="dashboard-player-detail-box">
+        <strong>${config.label} Details</strong>
+        <p>No ${config.label.toLowerCase()} attendance has been recorded for this player in the selected month.</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="dashboard-player-detail-box">
+      <strong>${config.label} Details</strong>
+      <div class="dashboard-player-detail-grid">
+        <span>Total Counted: <strong>${counted}</strong></span>
+        <span>Present: <strong>${row[config.present] || 0}</strong></span>
+        <span>Absent: <strong>${row[config.absent] || 0}</strong></span>
+        <span>Excused: <strong>${row[config.excused] || 0}</strong></span>
+        <span>Cancelled: <strong>${cancelled}</strong></span>
+        <span>Attendance: <strong>${formatDashboardPercent(row[config.percent])}</strong></span>
+      </div>
+    </div>
+  `;
+}
+
+function renderDashboardCategoryButtons(row, cardType) {
+  const playerId = row.PlayerID;
+
+  function button(category, label, percentField, countedField) {
+    const detailKey = `${cardType}-${playerId}-${category}`;
+    const active = dashboardOpenDetailKey === detailKey;
+    const badgeClass = getDashboardPercentClass(row[percentField], row[countedField]);
+
+    return `
+      <button type="button" class="dashboard-category-btn ${active ? "active-dashboard-category" : ""}" data-dashboard-detail-key="${detailKey}">
+        <span>${label}</span>
+        <strong class="dashboard-percent-badge ${badgeClass}">${formatDashboardPercent(row[percentField])}</strong>
+      </button>
+    `;
+  }
+
+  return `
+    <div class="dashboard-alert-metrics dashboard-clickable-metrics">
+      ${button("practice", "Practice", "PracticePercent", "PracticeCounted")}
+      ${button("game", "Game", "GamePercent", "GameCounted")}
+      ${button("teamEvent", "Team Event", "TeamEventPercent", "TeamEventCounted")}
+    </div>
+  `;
+}
+
+function getOpenDashboardDetail(row, cardType) {
+  const playerId = row.PlayerID;
+  const prefix = `${cardType}-${playerId}-`;
+
+  if (!dashboardOpenDetailKey || !dashboardOpenDetailKey.startsWith(prefix)) {
+    return "";
+  }
+
+  const category = dashboardOpenDetailKey.replace(prefix, "");
+  return getDashboardCategoryDetail(row, category);
+}
+
+function renderPlayerAlertCard(row, cardType = "attention") {
+  const playerName = `${row.FirstName || ""} ${row.LastName || ""}`.trim();
+  const groupLabel = row.BirthYear || row.GroupCode || "-";
+  const issue = row.AlertType || row.HighlightType || "Review";
+  const issueDetail = row.AlertDetail || row.HighlightDetail || "Review attendance record.";
+  const isExceptional = cardType === "exceptional";
+
+  return `
+    <article class="dashboard-alert-card ${isExceptional ? "dashboard-exceptional-card" : ""}">
+      <div class="dashboard-alert-topline">
+        <div>
+          <h4>${escapeDashboardHtml(playerName || "Player")}</h4>
+          <p>Birth Year: <strong>${escapeDashboardHtml(groupLabel)}</strong></p>
+        </div>
+        <span class="dashboard-alert-badge ${isExceptional ? "dashboard-exceptional-badge" : ""}">${escapeDashboardHtml(issue)}</span>
+      </div>
+
+      <p class="dashboard-alert-detail">${escapeDashboardHtml(issueDetail)}</p>
+
+      ${renderDashboardCategoryButtons(row, cardType)}
+      ${getOpenDashboardDetail(row, cardType)}
+
+      <div class="dashboard-alert-counts">
+        Present: ${row.PresentCount || 0} | Absent: ${row.AbsentCount || 0} | Excused: ${row.ExcusedCount || 0} | Cancelled: ${row.CancelledCount || 0}
+      </div>
+    </article>
   `;
 }
 
@@ -259,39 +354,45 @@ function renderPlayerAlerts(rows) {
     return;
   }
 
-  dashboardPlayerAlerts.innerHTML = rows.map(row => {
-    const playerName = `${row.FirstName || ""} ${row.LastName || ""}`.trim();
-    const groupLabel = row.BirthYear || row.GroupCode || "-";
-    const issue = row.AlertType || "Needs Review";
-    const issueDetail = row.AlertDetail || "Review attendance record.";
-    const practiceClass = getDashboardPercentClass(row.PracticePercent, row.PracticeCounted);
-    const gameClass = getDashboardPercentClass(row.GamePercent, row.GameCounted);
-    const teamEventClass = getDashboardPercentClass(row.TeamEventPercent, row.TeamEventCounted);
+  dashboardPlayerAlerts.innerHTML = rows
+    .map(row => renderPlayerAlertCard(row, "attention"))
+    .join("");
+}
 
-    return `
-      <article class="dashboard-alert-card">
-        <div class="dashboard-alert-topline">
-          <div>
-            <h4>${escapeDashboardHtml(playerName || "Player")}</h4>
-            <p>Birth Year: <strong>${escapeDashboardHtml(groupLabel)}</strong></p>
-          </div>
-          <span class="dashboard-alert-badge">${escapeDashboardHtml(issue)}</span>
-        </div>
+function renderExceptionalPlayers(rows) {
+  if (!dashboardExceptionalPlayers) return;
 
-        <p class="dashboard-alert-detail">${escapeDashboardHtml(issueDetail)}</p>
-
-        <div class="dashboard-alert-metrics">
-          <span>Practice <strong class="dashboard-percent-badge ${practiceClass}">${formatDashboardPercent(row.PracticePercent)}</strong></span>
-          <span>Game <strong class="dashboard-percent-badge ${gameClass}">${formatDashboardPercent(row.GamePercent)}</strong></span>
-          <span>Team Event <strong class="dashboard-percent-badge ${teamEventClass}">${formatDashboardPercent(row.TeamEventPercent)}</strong></span>
-        </div>
-
-        <div class="dashboard-alert-counts">
-          Present: ${row.PresentCount || 0} | Absent: ${row.AbsentCount || 0} | Excused: ${row.ExcusedCount || 0} | Cancelled: ${row.CancelledCount || 0}
-        </div>
-      </article>
+  if (!rows || rows.length === 0) {
+    dashboardExceptionalPlayers.innerHTML = `
+      <div class="roster-empty-message">
+        No exceptional attendance records found for the selected month yet.
+      </div>
     `;
-  }).join("");
+    return;
+  }
+
+  dashboardExceptionalPlayers.innerHTML = rows
+    .map(row => renderPlayerAlertCard(row, "exceptional"))
+    .join("");
+}
+
+function setupDashboardDetailClickHandlers() {
+  [dashboardPlayerAlerts, dashboardExceptionalPlayers].forEach(container => {
+    if (!container || container.dataset.detailListenerAttached) return;
+
+    container.dataset.detailListenerAttached = "1";
+    container.addEventListener("click", event => {
+      const button = event.target.closest(".dashboard-category-btn");
+      if (!button) return;
+
+      const nextKey = button.dataset.dashboardDetailKey || "";
+      dashboardOpenDetailKey = dashboardOpenDetailKey === nextKey ? "" : nextKey;
+
+      if (typeof loadDashboard === "function") {
+        loadDashboard();
+      }
+    });
+  });
 }
 
 async function loadDashboard() {
@@ -306,6 +407,7 @@ async function loadDashboard() {
     }
 
     ensureDashboardMonthFilterOptions();
+    setupDashboardDetailClickHandlers();
 
     const dashboardParams = new URLSearchParams();
     if (dashboardSelectedMonth) {
@@ -329,10 +431,11 @@ async function loadDashboard() {
     }
 
     renderDashboardSummaryCards(data);
-    renderMonthlySummary(data.monthlySummary || []);
     renderBirthdays(data.birthdays || {});
-    renderGroupSummary(data.groupSummary || []);
+    renderMonthlySummary(data.monthlySummary || []);
+    renderGameSummary(data.gameSummary || {});
     renderPlayerAlerts(data.playerAlerts || []);
+    renderExceptionalPlayers(data.exceptionalPlayers || []);
 
     const filterLabel = dashboardSelectedMonth
       ? formatDashboardMonthLabel(dashboardSelectedMonth)
@@ -354,5 +457,5 @@ async function loadDashboard() {
   }
 }
 
-
 ensureDashboardMonthFilterOptions();
+setupDashboardDetailClickHandlers();

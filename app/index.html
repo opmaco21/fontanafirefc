@@ -116,26 +116,33 @@
 
           <div id="dashboardSummaryCards" class="dashboard-card-grid"></div>
 
-          <div class="dashboard-report-section">
-            <h3>Monthly Attendance Summary</h3>
-            <div id="dashboardMonthlySummary" class="dashboard-table-wrap"></div>
-          </div>
-
-          <div class="dashboard-report-section">
+          <div class="dashboard-report-section dashboard-birthday-section">
             <h3>Birthdays</h3>
             <div id="dashboardBirthdays" class="dashboard-mini-list"></div>
           </div>
 
           <div class="dashboard-report-section">
-            <h3>Group Attendance Summary</h3>
-            <p class="subtext dashboard-section-note">Attendance by birth year/group. Cancelled does not count against percentages.</p>
-            <div id="dashboardGroupSummary" class="dashboard-table-wrap"></div>
+            <h3>Monthly Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Shows total practices, total games, and attendance percentages for the selected month.</p>
+            <div id="dashboardMonthlySummary" class="dashboard-table-wrap"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Game Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Quick game-only view for the selected month.</p>
+            <div id="dashboardGameSummary" class="dashboard-card-grid"></div>
           </div>
 
           <div class="dashboard-report-section">
             <h3>Players Needing Attention</h3>
-            <p class="subtext dashboard-section-note">Shows attendance alerts only. Use the Players tab for full player lookup and paperwork details.</p>
+            <p class="subtext dashboard-section-note">Shows attendance alerts only. Click Practice, Game, or Team Event to view details.</p>
             <div id="dashboardPlayerAlerts" class="dashboard-alert-list"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Exceptional Attendance</h3>
+            <p class="subtext dashboard-section-note">Players with strong attendance for the selected month. Click Practice, Game, or Team Event to view details.</p>
+            <div id="dashboardExceptionalPlayers" class="dashboard-alert-list dashboard-exceptional-list"></div>
           </div>
         </section>
 

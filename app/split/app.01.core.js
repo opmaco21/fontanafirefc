@@ -36,8 +36,10 @@ const dashboardMessage = document.getElementById("dashboardMessage");
 const dashboardSummaryCards = document.getElementById("dashboardSummaryCards");
 const dashboardMonthlySummary = document.getElementById("dashboardMonthlySummary");
 const dashboardBirthdays = document.getElementById("dashboardBirthdays");
+const dashboardGameSummary = document.getElementById("dashboardGameSummary");
 const dashboardGroupSummary = document.getElementById("dashboardGroupSummary");
 const dashboardPlayerAlerts = document.getElementById("dashboardPlayerAlerts");
+const dashboardExceptionalPlayers = document.getElementById("dashboardExceptionalPlayers");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
 const eventActionButtons = document.getElementById("eventActionButtons");
