@@ -583,21 +583,6 @@ hr {
   color: #f57c00;
 }
 
-.soccer-ball {
-  display: inline-block;
-  font-size: 24px;
-  animation: soccer-bounce 0.8s ease-in-out infinite alternate;
-}
-
-@keyframes soccer-bounce {
-  from {
-    transform: translateY(0) rotate(0deg);
-  }
-
-  to {
-    transform: translateY(-8px) rotate(18deg);
-  }
-}
 
 .btn:disabled {
   opacity: 0.75;
@@ -2649,56 +2634,6 @@ hr {
 }
 
 /* =========================================================
-   DASHBOARD BIRTHDAY COLORS
-   Current Month = purple
-   Next Month = light blue
-   ========================================================= */
-
-.dashboard-birthday-card.this-month,
-.birthday-card.this-month,
-.dashboard-birthday-this-month {
-  background: linear-gradient(135deg, #f5f3ff, #ede9fe) !important;
-  border: 2px solid #7c3aed !important;
-  border-left: 7px solid #7c3aed !important;
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.18);
-}
-
-.dashboard-birthday-card.next-month,
-.birthday-card.next-month,
-.dashboard-birthday-next-month {
-  background: linear-gradient(135deg, #f8fbff, #eef6ff) !important;
-  border: 1px solid #bfdbfe !important;
-  border-left: 6px solid #93c5fd !important;
-  box-shadow: 0 4px 12px rgba(147, 197, 253, 0.14);
-}
-
-.dashboard-birthday-card.this-month h3,
-.birthday-card.this-month h3,
-.dashboard-birthday-this-month h3 {
-  color: #5b21b6 !important;
-}
-
-.dashboard-birthday-card.next-month h3,
-.birthday-card.next-month h3,
-.dashboard-birthday-next-month h3 {
-  color: #2563eb !important;
-}
-
-.dashboard-birthday-card.this-month .birthday-label,
-.birthday-card.this-month .birthday-label,
-.dashboard-birthday-this-month .birthday-label {
-  background: #7c3aed;
-  color: #ffffff;
-}
-
-.dashboard-birthday-card.next-month .birthday-label,
-.birthday-card.next-month .birthday-label,
-.dashboard-birthday-next-month .birthday-label {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-/* =========================================================
    LOGIN LOADING UPGRADE - SPINNING SOCCER BALL WITH FIRE
    Shows while login is connecting.
    ========================================================= */
@@ -2808,11 +2743,6 @@ hr {
   color: #6b7280;
 }
 
-/* Keep compatibility with the old soccer-ball class if it still exists anywhere */
-.soccer-ball {
-  display: inline-block;
-  animation: ball-spin 0.58s linear infinite, ball-bounce 0.72s infinite alternate cubic-bezier(.5, .05, .45, .95);
-}
 
 @keyframes ball-bounce {
   from {
@@ -2875,4 +2805,97 @@ hr {
   .loader-subtext {
     font-size: 12px;
   }
+}
+
+/* =========================================================
+   FINAL DASHBOARD BIRTHDAY COLORS
+   Current Month = Purple
+   Next Month = Light Blue
+   Keep this at the bottom so it overrides older orange birthday styles.
+   ========================================================= */
+
+#dashboardSection .dashboard-birthday-current,
+#dashboardSection .dashboard-birthday-card.this-month,
+#dashboardSection .birthday-card.this-month,
+#dashboardSection .dashboard-birthday-this-month,
+#dashboardSection .birthday-current,
+#dashboardSection .current-month,
+#dashboardBirthdaysSection .dashboard-birthday-current,
+#dashboardBirthdaysSection .dashboard-birthday-card.this-month,
+#dashboardBirthdaysSection .birthday-card.this-month,
+#dashboardBirthdaysSection .dashboard-birthday-this-month,
+#dashboardBirthdaysSection .birthday-current,
+#dashboardBirthdaysSection .current-month,
+.dashboard-birthday-current,
+.dashboard-birthday-card.this-month,
+.birthday-card.this-month,
+.dashboard-birthday-this-month,
+.birthday-current,
+.current-month {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe) !important;
+  border-color: #7c3aed !important;
+  border-left: 7px solid #7c3aed !important;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.18) !important;
+}
+
+#dashboardSection .dashboard-birthday-current h4,
+#dashboardSection .dashboard-birthday-current h3,
+#dashboardSection .dashboard-birthday-this-month h4,
+#dashboardSection .dashboard-birthday-this-month h3,
+#dashboardSection .birthday-current h4,
+#dashboardSection .birthday-current h3,
+#dashboardSection .current-month h4,
+#dashboardSection .current-month h3,
+.dashboard-birthday-current h4,
+.dashboard-birthday-current h3,
+.dashboard-birthday-this-month h4,
+.dashboard-birthday-this-month h3,
+.birthday-current h4,
+.birthday-current h3,
+.current-month h4,
+.current-month h3 {
+  color: #5b21b6 !important;
+}
+
+#dashboardSection .dashboard-birthday-next,
+#dashboardSection .dashboard-birthday-card.next-month,
+#dashboardSection .birthday-card.next-month,
+#dashboardSection .dashboard-birthday-next-month,
+#dashboardSection .birthday-next,
+#dashboardSection .next-month,
+#dashboardBirthdaysSection .dashboard-birthday-next,
+#dashboardBirthdaysSection .dashboard-birthday-card.next-month,
+#dashboardBirthdaysSection .birthday-card.next-month,
+#dashboardBirthdaysSection .dashboard-birthday-next-month,
+#dashboardBirthdaysSection .birthday-next,
+#dashboardBirthdaysSection .next-month,
+.dashboard-birthday-next,
+.dashboard-birthday-card.next-month,
+.birthday-card.next-month,
+.dashboard-birthday-next-month,
+.birthday-next,
+.next-month {
+  background: linear-gradient(135deg, #f8fbff, #eef6ff) !important;
+  border-color: #bfdbfe !important;
+  border-left: 6px solid #93c5fd !important;
+  box-shadow: 0 4px 12px rgba(147, 197, 253, 0.14) !important;
+}
+
+#dashboardSection .dashboard-birthday-next h4,
+#dashboardSection .dashboard-birthday-next h3,
+#dashboardSection .dashboard-birthday-next-month h4,
+#dashboardSection .dashboard-birthday-next-month h3,
+#dashboardSection .birthday-next h4,
+#dashboardSection .birthday-next h3,
+#dashboardSection .next-month h4,
+#dashboardSection .next-month h3,
+.dashboard-birthday-next h4,
+.dashboard-birthday-next h3,
+.dashboard-birthday-next-month h4,
+.dashboard-birthday-next-month h3,
+.birthday-next h4,
+.birthday-next h3,
+.next-month h4,
+.next-month h3 {
+  color: #2563eb !important;
 }
