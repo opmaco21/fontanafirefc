@@ -210,6 +210,69 @@ function setMessage(el, text, isError = false) {
 }
 
 /* =========================
+   AUTO LOGOUT ON SESSION EXPIRED
+   Purpose:
+   - If any protected API call returns 401 / not logged in,
+     return the user to the login screen automatically.
+   - Login failures are ignored so invalid passwords still show
+     the normal login error message.
+   ========================= */
+let authExpiredHandled = false;
+
+function isLoginRequest(input) {
+  const url = typeof input === "string"
+    ? input
+    : input && input.url
+      ? input.url
+      : "";
+
+  return String(url).includes("/auth/login");
+}
+
+function handleAuthExpired(message = "Session expired. Please log in again.") {
+  if (authExpiredHandled) return;
+
+  authExpiredHandled = true;
+  currentUser = null;
+
+  localStorage.removeItem("attendanceUser");
+  clearSelectedEvent();
+
+  if (appScreen) {
+    appScreen.classList.add("hidden");
+  }
+
+  if (loginScreen) {
+    loginScreen.classList.remove("hidden");
+  }
+
+  if (welcomeText) {
+    welcomeText.textContent = "Welcome";
+  }
+
+  if (roleText) {
+    roleText.textContent = "";
+  }
+
+  setLoginLoading(false);
+  setMessage(loginMessage, message, true);
+}
+
+(function installAuthExpiredInterceptor() {
+  const originalFetch = window.fetch.bind(window);
+
+  window.fetch = async function attendanceAppFetch(input, init) {
+    const response = await originalFetch(input, init);
+
+    if (response && response.status === 401 && !isLoginRequest(input)) {
+      handleAuthExpired();
+    }
+
+    return response;
+  };
+})();
+
+/* =========================
    LOGIN LOADING STATE
    ========================= */
 function setLoginLoading(isLoading) {
