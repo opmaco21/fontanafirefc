@@ -31,6 +31,17 @@ function formatDashboardMonthLabel(value) {
   return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 }
 
+function getNextDashboardMonthValue(value) {
+  if (!value) return "";
+  const parts = String(value).split("-");
+  if (parts.length !== 2) return "";
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  if (!year || !month) return "";
+  const date = new Date(year, month, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
 function ensureDashboardMonthFilterOptions() {
   if (!dashboardMonthFilter || dashboardMonthFilterReady) return;
 
@@ -186,14 +197,26 @@ function renderBirthdays(data) {
     `;
   }
 
+  const selectedBirthdayLabel = dashboardSelectedMonth
+    ? formatDashboardMonthLabel(dashboardSelectedMonth)
+    : "This Month";
+
+  const nextBirthdayMonth = dashboardSelectedMonth
+    ? getNextDashboardMonthValue(dashboardSelectedMonth)
+    : "";
+
+  const nextBirthdayLabel = nextBirthdayMonth
+    ? formatDashboardMonthLabel(nextBirthdayMonth)
+    : "Next Month";
+
   dashboardBirthdays.innerHTML = `
     <div class="dashboard-mini-card dashboard-birthday-current">
-      <h4>This Month</h4>
-      ${list(thisMonth, "No birthdays this month.")}
+      <h4>${escapeDashboardHtml(selectedBirthdayLabel)}</h4>
+      ${list(thisMonth, `No birthdays for ${selectedBirthdayLabel}.`)}
     </div>
     <div class="dashboard-mini-card dashboard-birthday-next">
-      <h4>Next Month</h4>
-      ${list(nextMonth, "No birthdays next month.")}
+      <h4>${escapeDashboardHtml(nextBirthdayLabel)}</h4>
+      ${list(nextMonth, `No birthdays for ${nextBirthdayLabel}.`)}
     </div>
   `;
 }

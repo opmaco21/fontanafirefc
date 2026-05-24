@@ -202,13 +202,20 @@ function showPlayerDetails(playerId) {
       </section>
 
       <section class="player-details-section">
-        <h4>Emergency / Address</h4>
-        ${detailLine("Address", fullAddress)}
-        ${detailLine("Emergency Contact", player.EmergencyContactName)}
+        <h4>Address</h4>
+        ${detailLine("Street", player.StreetAddress)}
+        ${detailLine("City", player.City)}
+        ${detailLine("State", player.State)}
+        ${detailLine("ZIP", player.ZipCode)}
+        ${detailLine("Full Address", fullAddress)}
+      </section>
+
+      <section class="player-details-section">
+        <h4>Emergency Contact</h4>
+        ${detailLine("Name", player.EmergencyContactName)}
         ${detailLine("Relationship", player.EmergencyContactRelationship)}
-        ${detailLine("Emergency Phone", player.EmergencyContactPhone)}
-        ${detailLine("Alt Phone", player.EmergencyContactAltPhone)}
-        ${detailLine("Emergency Notes", player.EmergencyNotes)}
+        ${detailLine("Phone", player.EmergencyContactPhone)}
+        ${detailLine("Notes", player.EmergencyNotes)}
       </section>
 
       <section class="player-details-section">

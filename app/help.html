@@ -69,7 +69,7 @@
 <h2>Quick Start</h2>
 <ol>
   <li>Log in with your assigned account.</li>
-  <li>Select <strong>Practice</strong>, <strong>Games</strong>, <strong>Team Events</strong>, or <strong>Players</strong>.</li>
+  <li>Select <strong>Dashboard</strong>, <strong>Practice</strong>, <strong>Games</strong>, <strong>Team Events</strong>, or <strong>Players</strong>.</li>
   <li>Select the event or open Player Management.</li>
   <li>Save changes before leaving the page.</li>
 </ol>
@@ -79,6 +79,18 @@
   <li><strong>Admin:</strong> can manage players, create games and team events, manage rosters, and take attendance.</li>
   <li><strong>Team Mom:</strong> can manage players, create games and team events, manage rosters, and take attendance.</li>
   <li><strong>Main Coach:</strong> can view players and take attendance, but cannot add, edit, or create events.</li>
+</ul>
+
+
+<h2>Dashboard</h2>
+<ul>
+  <li>The Dashboard is for quick reports, not player editing.</li>
+  <li>Use the month filter to review April, May, June, the current month, or all months.</li>
+  <li>Birthdays follow the selected month. If All Months is selected, birthdays show the current month and next month.</li>
+  <li>Monthly Attendance Summary shows total practices, games, team events, and attendance percentages.</li>
+  <li>Practice, Game, and Event summaries show totals, attendance percentage, players at 70% or lower, and players at 85% or higher.</li>
+  <li><strong>Players Needing Attention</strong>, <strong>Perfect Attendance Club</strong>, and <strong>Outstanding Attendance</strong> are collapsible sections.</li>
+  <li>Player cards have clickable Practice, Game, and Team Event buttons to show details only when needed.</li>
 </ul>
 
 <h2>Practice Attendance</h2>
@@ -98,8 +110,9 @@
   <li>Open the <strong>Games</strong> tab.</li>
   <li>To create a new game: click <strong>+ Add New Game</strong>, fill in the name/opponent, date, start time, and location, then select the expected players and click <strong>Save Game</strong>.</li>
   <li>To take attendance on an existing game: select the game from the dropdown. Only the rostered players will appear.</li>
-  <li>If the roster needs changes before taking attendance: click <strong>Edit Roster</strong>. All active players will appear with the current roster pre-checked. Make changes and click <strong>Save Roster</strong>.</li>
-  <li>Use search, birth year, gender, and status filters as needed.</li>
+  <li>If the roster needs changes before taking attendance: click <strong>Edit Roster</strong>. All active players will appear with the current roster pre-checked.</li>
+  <li>Use the Edit Roster filters: search, birth year, gender, and roster view. Roster View can show all players, selected only, or not selected.</li>
+  <li>Use search, birth year, gender, and status filters during attendance as needed.</li>
   <li>Mark each player and click <strong>Submit Attendance</strong>.</li>
 </ol>
 
@@ -109,15 +122,17 @@
   <li>Click <strong>+ Add New Team Event</strong>.</li>
   <li>Enter the event name and date. Select the exact players for the event. Use the Gender filter for girls-only or boys-only events.</li>
   <li>Click <strong>Add Team Event</strong>. The event is created and selected automatically.</li>
+  <li>Only selected roster players should appear in Team Event attendance.</li>
   <li>Continue to attendance when ready.</li>
-  <li>To edit the roster later: select the event and click <strong>Edit Roster</strong>.</li>
+  <li>To edit the roster later: select the event and click <strong>Edit Roster</strong>. Edit Roster should show eligible players with selected players checked.</li>
 </ol>
 
 <h2>Player Management</h2>
 <ul>
   <li>Click <strong>Add New Player</strong> to open the add form.</li>
   <li>Player cards show player number, birth year, gender, status, Parent 1 name, phone, email, and Parent 2 contact if entered.</li>
-  <li>Click <strong>View Details</strong> or tap a player card to see the full read-only profile, including snack preference, paperwork status, photo release, emergency contact, address, and last updated date.</li>
+  <li>Click <strong>View Details</strong> or tap a player card to see the full read-only profile, including snack preference, paperwork status, photo release, address, emergency contact, and last updated date.</li>
+  <li>Address and Emergency Contact are shown as separate sections for easier reading. Alt emergency phone stays in Edit Player but is not shown on the quick details card.</li>
   <li>Use <strong>Edit</strong> only when changing player information.</li>
   <li>Use filters for birth year, gender, missing paperwork, missing photo release, and missing emergency info.</li>
   <li>Use <strong>Make Inactive</strong> when a player should no longer appear in attendance lists. Use <strong>Show inactive players</strong> to view or restore them.</li>
@@ -133,7 +148,7 @@
 <h2>Event Actions</h2>
 <ul>
   <li><strong>Cancel Event:</strong> use for rainouts or normal cancellations. Keeps event history and can be restored.</li>
-  <li><strong>Restore Event:</strong> reopens a cancelled event and recovers previous attendance if a backup exists.</li>
+  <li><strong>Restore Event:</strong> reopens a cancelled event and removes cancelled attendance rows so attendance can be marked again.</li>
   <li><strong>Delete Event:</strong> permanent. Use only for mistakes or duplicate events — not for normal cancellations.</li>
 </ul>
 
@@ -149,6 +164,7 @@
   <li>If players do not show for a game, confirm the game roster has been saved. Click <strong>Edit Roster</strong> to check.</li>
   <li>If players do not show for a practice, confirm the correct practice date is selected.</li>
   <li>If login fails, refresh and try again. If it continues, check that the backend API is online.</li>
+  <li>If your session expires, the app should automatically return to the login screen and ask you to log in again.</li>
 </ul>
 
 <a class="back-link" href="https://www.fontanafirefc.com/app/index.html">← Back to Attendance App</a>

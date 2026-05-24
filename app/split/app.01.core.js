@@ -1411,7 +1411,7 @@ async function updateEventRosterSection() {
     eventType === "Game"
       ? "?edit=1"
       : !selectedGroupId && eventType === "Team Event"
-        ? "?allMatching=1"
+        ? "?allMatching=1&edit=1"
         : "";
 
   try {
