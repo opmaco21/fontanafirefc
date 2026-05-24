@@ -818,7 +818,9 @@ function ensurePlayerManagementForm() {
     });
   }
 
+  if (playerManagementMode !== "edit") {
   resetPlayerManagementForm(false);
+}
 }
 
 function setPlayerManagementMessage(text, isError = false) {
@@ -1071,9 +1073,18 @@ function editPlayer(playerId) {
   }
 
   playerManagementMode = "edit";
-  editingPlayerId = player.PlayerID;
-  isPlayerManagementFormExpanded = true;
-  ensurePlayerManagementForm();
+editingPlayerId = player.PlayerID;
+isPlayerManagementFormExpanded = true;
+
+ensurePlayerManagementForm();
+
+/*
+  Safety reset:
+  ensurePlayerManagementForm() rebuilds the form, so keep edit mode locked
+  after the form exists.
+*/
+playerManagementMode = "edit";
+editingPlayerId = player.PlayerID;
 
   const title = document.getElementById("playerFormTitle");
   const saveBtn = document.getElementById("pmSavePlayerBtn");
