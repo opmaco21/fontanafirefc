@@ -3,172 +3,155 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fontana Fire FC Attendance App Help</title>
+  <title>Fontana Fire FC – Attendance App Help Guide</title>
   <style>
-    * { box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      color: #1f2933;
-      line-height: 1.5;
-    }
-    .topbar {
-      background: #111;
-      color: #fff;
-      padding: 18px 20px;
-      border-bottom: 5px solid #f57c00;
-    }
-    .brand {
-      max-width: 900px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 720px;
       margin: 0 auto;
+      padding: 24px 16px 48px;
+      color: #1a1a1a;
+      background: #fff;
+      line-height: 1.6;
+    }
+    header {
       display: flex;
       align-items: center;
       gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e53935;
     }
-    .logo { font-size: 30px; }
-    h1 { margin: 0; font-size: 24px; }
-    .brand p { margin: 3px 0 0; color: #ddd; }
-    main {
-      width: min(100% - 24px, 900px);
-      margin: 24px auto;
-      background: #fff;
-      border-radius: 18px;
-      padding: 22px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.10);
-    }
+    header .logo { font-size: 2rem; }
+    header h1 { margin: 0; font-size: 1.3rem; color: #b71c1c; }
+    header p  { margin: 2px 0 0; font-size: 0.85rem; color: #555; }
     h2 {
-      border-bottom: 1px solid #e1e5ea;
-      padding-bottom: 8px;
-      margin-top: 28px;
+      font-size: 1.1rem;
+      color: #b71c1c;
+      margin: 28px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #fcc;
     }
-    h2:first-child { margin-top: 0; }
+    ol, ul { padding-left: 1.4em; margin: 6px 0 12px; }
+    li { margin-bottom: 5px; }
+    strong { color: #111; }
     .note {
-      background: #fffaf5;
-      border: 1px solid #f2dcc8;
-      border-radius: 12px;
-      padding: 12px;
-      font-weight: 700;
+      background: #fff8e1;
+      border-left: 4px solid #f9a825;
+      padding: 8px 12px;
+      margin: 10px 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.92rem;
     }
-    ul, ol { padding-left: 22px; }
-    li { margin-bottom: 7px; }
-    .term { font-weight: 800; }
     .back-link {
       display: inline-block;
-      background: #333;
+      margin-top: 32px;
+      padding: 10px 20px;
+      background: #e53935;
       color: #fff;
+      border-radius: 6px;
       text-decoration: none;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-weight: 800;
-      margin-top: 14px;
+      font-weight: 600;
     }
-    .back-link:hover { background: #111; }
-    @media (max-width: 520px) {
-      main { padding: 16px; }
-      h1 { font-size: 21px; }
-    }
+    .back-link:hover { background: #b71c1c; }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">🔥</div>
-      <div>
-        <h1>Fontana Fire FC</h1>
-        <p>Attendance App Help Guide</p>
-      </div>
-    </div>
-  </header>
 
-  <main>
-    <h2>Quick Start</h2>
-    <ol>
-      <li>Log in with your assigned account.</li>
-      <li>Select a group or keep <span class="term">All Groups</span> when appropriate.</li>
-      <li>Select <span class="term">Practice</span>, <span class="term">Games</span>, <span class="term">Team Events</span>, or <span class="term">Players</span>.</li>
-      <li>Select the event or open Player Management.</li>
-      <li>Save changes before leaving the page.</li>
-    </ol>
+<header>
+  <div class="logo">🔥</div>
+  <div>
+    <h1>Fontana Fire FC</h1>
+    <p>Attendance App Help Guide</p>
+  </div>
+</header>
 
-    <h2>Roles</h2>
-    <ul>
-      <li><span class="term">Admin:</span> can manage players, create team events, manage rosters, and take attendance.</li>
-      <li><span class="term">Team Mom:</span> can manage players, create team events, manage rosters, and take attendance.</li>
-      <li><span class="term">Main Coach:</span> can view players and take attendance, but should not add or edit players.</li>
-    </ul>
+<h2>Quick Start</h2>
+<ol>
+  <li>Log in with your assigned account.</li>
+  <li>Select <strong>Practice</strong>, <strong>Games</strong>, <strong>Team Events</strong>, or <strong>Players</strong>.</li>
+  <li>Select the event or open Player Management.</li>
+  <li>Save changes before leaving the page.</li>
+</ol>
 
-    <h2>Practice Attendance</h2>
-    <ol>
-      <li>Select a birth-year group or choose <span class="term">All Groups</span>.</li>
-      <li>Open the <span class="term">Practice</span> tab.</li>
-      <li>Select the practice date.</li>
-      <li>Use search, birth year, gender, and status filters to narrow the list.</li>
-      <li>Tap <span class="term">Present</span>, <span class="term">Absent</span>, <span class="term">Excused</span>, <span class="term">Cancelled</span>, or <span class="term">Clear / Reset</span>.</li>
-      <li>Click <span class="term">Submit Attendance</span>.</li>
-    </ol>
+<h2>Roles</h2>
+<ul>
+  <li><strong>Admin:</strong> can manage players, create games and team events, manage rosters, and take attendance.</li>
+  <li><strong>Team Mom:</strong> can manage players, create games and team events, manage rosters, and take attendance.</li>
+  <li><strong>Main Coach:</strong> can view players and take attendance, but cannot add, edit, or create events.</li>
+</ul>
 
-    <h2>Game Attendance</h2>
-    <div class="note">Game rosters are managed one team at a time. Select a specific birth-year group before editing a Game roster.</div>
-    <ol>
-      <li>Select the specific group for the game.</li>
-      <li>Open the <span class="term">Games</span> tab.</li>
-      <li>Select the game date.</li>
-      <li>Use <span class="term">Manage Event Roster</span> to choose the expected players.</li>
-      <li>Save the roster, then continue to attendance.</li>
-      <li>Use search, birth year, gender, and status filters as needed.</li>
-      <li>Submit attendance.</li>
-    </ol>
+<h2>Practice Attendance</h2>
+<ol>
+  <li>Open the <strong>Practice</strong> tab.</li>
+  <li>Select the practice date from the dropdown.</li>
+  <li>Use search, birth year, gender, and status filters to narrow the list.</li>
+  <li>Tap <strong>Present</strong>, <strong>Absent</strong>, <strong>Excused</strong>, <strong>Cancelled</strong>, or <strong>Clear / Reset</strong> for each player.</li>
+  <li>Click <strong>Submit Attendance</strong>.</li>
+</ol>
 
-    <h2>Team Events</h2>
-    <ol>
-      <li>Open the <span class="term">Team Events</span> tab.</li>
-      <li>Create a new Team Event when needed.</li>
-      <li>Select the exact players for the event. Use Gender filter for girls-only scrimmages or special events.</li>
-      <li>Save the Team Event.</li>
-      <li>After the event is created, continue to roster review or attendance.</li>
-    </ol>
+<h2>Game Attendance</h2>
+<div class="note">
+  Games use an exact player roster. You pick the specific players for each game when creating it, and the roster can be edited any time before or during the event.
+</div>
+<ol>
+  <li>Open the <strong>Games</strong> tab.</li>
+  <li>To create a new game: click <strong>+ Add New Game</strong>, fill in the name/opponent, date, start time, and location, then select the expected players and click <strong>Save Game</strong>.</li>
+  <li>To take attendance on an existing game: select the game from the dropdown. Only the rostered players will appear.</li>
+  <li>If the roster needs changes before taking attendance: click <strong>Edit Roster</strong>. All active players will appear with the current roster pre-checked. Make changes and click <strong>Save Roster</strong>.</li>
+  <li>Use search, birth year, gender, and status filters as needed.</li>
+  <li>Mark each player and click <strong>Submit Attendance</strong>.</li>
+</ol>
 
-    <h2>Player Management</h2>
-    <ul>
-      <li>Use <span class="term">Add New Player</span> to open the add form.</li>
-      <li>Player cards are designed for quick lookup. They show player number, birth year, gender, status, Parent 1 name, phone, email, and Parent 2 contact if entered.</li>
-      <li>Use <span class="term">View Details</span> or tap a player card to see the full read-only profile, including snack, paperwork, photo release, emergency contact, address, and last updated date.</li>
-      <li>Use <span class="term">Edit</span> only when changing player information.</li>
-      <li>Use filters for birth year, gender, missing paperwork, missing photo release, and missing emergency info.</li>
-      <li>Use <span class="term">Make Inactive</span> when a player should no longer appear in attendance lists.</li>
-    </ul>
+<h2>Team Events</h2>
+<ol>
+  <li>Open the <strong>Team Events</strong> tab.</li>
+  <li>Click <strong>+ Add New Team Event</strong>.</li>
+  <li>Enter the event name and date. Select the exact players for the event. Use the Gender filter for girls-only or boys-only events.</li>
+  <li>Click <strong>Add Team Event</strong>. The event is created and selected automatically.</li>
+  <li>Continue to attendance when ready.</li>
+  <li>To edit the roster later: select the event and click <strong>Edit Roster</strong>.</li>
+</ol>
 
-    <h2>Gender Field</h2>
-    <ul>
-      <li>Gender options are <span class="term">Male</span> and <span class="term">Female</span>.</li>
-      <li>Player cards show gender as <span class="term">M</span> or <span class="term">F</span>.</li>
-      <li>Gender filters are available in Player Management, Practice attendance, Game attendance, and Team Event player selection.</li>
-    </ul>
+<h2>Player Management</h2>
+<ul>
+  <li>Click <strong>Add New Player</strong> to open the add form.</li>
+  <li>Player cards show player number, birth year, gender, status, Parent 1 name, phone, email, and Parent 2 contact if entered.</li>
+  <li>Click <strong>View Details</strong> or tap a player card to see the full read-only profile, including snack preference, paperwork status, photo release, emergency contact, address, and last updated date.</li>
+  <li>Use <strong>Edit</strong> only when changing player information.</li>
+  <li>Use filters for birth year, gender, missing paperwork, missing photo release, and missing emergency info.</li>
+  <li>Use <strong>Make Inactive</strong> when a player should no longer appear in attendance lists. Use <strong>Show inactive players</strong> to view or restore them.</li>
+</ul>
 
-    <h2>Event Actions</h2>
-    <ul>
-      <li><span class="term">Cancel Event:</span> use for rainouts or normal cancellations. This keeps event history.</li>
-      <li><span class="term">Restore Event:</span> use when a cancelled event needs to be reopened.</li>
-      <li><span class="term">Delete Event:</span> use only for mistakes or duplicate events. Delete is permanent.</li>
-    </ul>
+<h2>Gender Field</h2>
+<ul>
+  <li>Gender options are <strong>Male</strong> and <strong>Female</strong>.</li>
+  <li>Player cards show gender as <strong>M</strong> or <strong>F</strong>.</li>
+  <li>Gender filters are available in Player Management, Practice attendance, Game attendance, and Team Event player selection.</li>
+</ul>
 
-    <h2>Snack Rules</h2>
-    <ul>
-      <li><span class="term">Bring Snack:</span> family can be assigned snack duty.</li>
-      <li><span class="term">Paid Out:</span> player is tracked, but parent is skipped for snack duty and coach provides snacks.</li>
-      <li>Cancelled games should roll snack duty forward to the next game when snack scheduling is added.</li>
-    </ul>
+<h2>Event Actions</h2>
+<ul>
+  <li><strong>Cancel Event:</strong> use for rainouts or normal cancellations. Keeps event history and can be restored.</li>
+  <li><strong>Restore Event:</strong> reopens a cancelled event and recovers previous attendance if a backup exists.</li>
+  <li><strong>Delete Event:</strong> permanent. Use only for mistakes or duplicate events — not for normal cancellations.</li>
+</ul>
 
-    <h2>Troubleshooting</h2>
-    <ul>
-      <li>If the app looks old after an update, hard refresh with <span class="term">Ctrl + F5</span>.</li>
-      <li>If players do not show, confirm the correct group and event are selected.</li>
-      <li>For Games, confirm a roster has been saved before taking attendance.</li>
-      <li>If login fails, refresh and try again. If it continues, check that the backend API is online.</li>
-    </ul>
+<h2>Snack Rules</h2>
+<ul>
+  <li><strong>Bring Snack:</strong> family can be assigned snack duty.</li>
+  <li><strong>Paid Out:</strong> player is tracked, but parent is skipped for snack duty and coach provides snacks.</li>
+</ul>
 
-    <a class="back-link" href="index.html">Back to Attendance App</a>
-  </main>
+<h2>Troubleshooting</h2>
+<ul>
+  <li>If the app looks old after an update, hard refresh with <strong>Ctrl + F5</strong>.</li>
+  <li>If players do not show for a game, confirm the game roster has been saved. Click <strong>Edit Roster</strong> to check.</li>
+  <li>If players do not show for a practice, confirm the correct practice date is selected.</li>
+  <li>If login fails, refresh and try again. If it continues, check that the backend API is online.</li>
+</ul>
+
+<a class="back-link" href="https://www.fontanafirefc.com/app/index.html">← Back to Attendance App</a>
+
 </body>
 </html>
