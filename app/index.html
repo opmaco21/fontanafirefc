@@ -53,11 +53,24 @@
           <span id="loginBtnText">Login</span>
         </button>
 
-        <!-- LOGIN LOADING CUE -->
-        <div id="loginLoading" class="login-loading hidden" aria-live="polite">
-          <span class="soccer-ball" aria-hidden="true">&#9917;</span>
-          <span>Connecting...</span>
-        </div>
+        <div id="loginLoading" class="login-loading fire-loader hidden" aria-live="polite">
+  <div class="fire-ball-track">
+    <div class="flame-trail" aria-hidden="true">
+      <span class="flame one"></span>
+      <span class="flame two"></span>
+      <span class="flame three"></span>
+    </div>
+
+    <div class="soccer-wrap" aria-hidden="true">
+      <span class="soccer-ball-fire">&#9917;</span>
+    </div>
+
+    <div class="ground-shadow" aria-hidden="true"></div>
+  </div>
+
+  <div class="loader-text">Connecting to Attendance App...</div>
+  <p class="loader-subtext">Please wait while we log you in.</p>
+</div>
 
         <p id="loginMessage" class="message"></p>
       </section>
