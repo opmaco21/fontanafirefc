@@ -343,7 +343,6 @@ async function showApp() {
 
 applyRolePermissions();
 ensureGameManagementElements();
-ensureRefreshPlayersControls();
 setActiveTab();
 resetWorkflowForSelectedEvent();
 updateTeamEventSection();
@@ -544,9 +543,6 @@ function ensureGameManagementElements() {
       </label>
 
       <div class="team-event-player-actions">
-        <button type="button" id="gameRefreshPlayersBtn" class="btn btn-secondary">
-          Refresh Players
-        </button>
 
         <button type="button" id="gameSelectAllPlayersBtn" class="btn btn-secondary">
           Select All Shown
@@ -667,12 +663,6 @@ if (gameGenderFilterSelect && !gameGenderFilterSelect.dataset.listenerAttached) 
   });
 }
 
-if (gameRefreshPlayersBtn && !gameRefreshPlayersBtn.dataset.listenerAttached) {
-  gameRefreshPlayersBtn.dataset.listenerAttached = "1";
-  gameRefreshPlayersBtn.addEventListener("click", async () => {
-    await loadGamePlayerSelector();
-  });
-}
 
 if (gameSelectAllPlayersBtn && !gameSelectAllPlayersBtn.dataset.listenerAttached) {
   gameSelectAllPlayersBtn.dataset.listenerAttached = "1";
@@ -690,81 +680,6 @@ if (gameClearPlayersBtn && !gameClearPlayersBtn.dataset.listenerAttached) {
 }
 }
 
-
-/* =========================
-   REFRESH CURRENT PLAYERS
-   Purpose:
-   - One refresh button for Practice, Games, and Team Events.
-   - Practice/attendance refreshes visible attendance cards.
-   - Game form refreshes the Add Game player selector.
-   - Team Event form refreshes the Team Event player selector.
-   - Edit Roster refreshes the roster editor.
-   ========================= */
-function ensureRefreshPlayersControls() {
-  if (!attendanceSection || refreshCurrentPlayersBtn) return;
-
-  refreshCurrentPlayersBtn = document.createElement("button");
-  refreshCurrentPlayersBtn.id = "refreshCurrentPlayersBtn";
-  refreshCurrentPlayersBtn.type = "button";
-  refreshCurrentPlayersBtn.className = "btn btn-secondary refresh-current-players-btn";
-  refreshCurrentPlayersBtn.textContent = "Refresh Players";
-
-  // attendanceSummary lives inside .attendance-tools, not directly in attendanceSection.
-  // insertBefore requires the reference node to be a direct child of the parent,
-  // so we must find the right container first.
-  const toolsContainer = attendanceSummary
-    ? attendanceSummary.closest(".attendance-tools")
-    : null;
-
-  if (toolsContainer && toolsContainer.parentNode === attendanceSection) {
-    attendanceSection.insertBefore(refreshCurrentPlayersBtn, toolsContainer);
-  } else {
-    attendanceSection.insertBefore(refreshCurrentPlayersBtn, attendanceSection.firstChild);
-  }
-
-  refreshCurrentPlayersBtn.addEventListener("click", refreshCurrentPlayerList);
-}
-
-async function refreshCurrentPlayerList() {
-  if (currentTab === "Player Management") {
-    await loadPlayerManagementList();
-    return;
-  }
-
-  if (currentTab === "Practice") {
-    await loadPlayers();
-    return;
-  }
-
-  if (currentTab === "Game") {
-    if (isGameFormOpen) {
-      await loadGamePlayerSelector();
-      return;
-    }
-
-    if (!isAttendanceModeActive) {
-      await updateEventRosterSection();
-      return;
-    }
-
-    await loadPlayers();
-    return;
-  }
-
-  if (currentTab === "Team Event") {
-    if (isTeamEventFormOpen) {
-      await loadTeamEventPlayerSelector();
-      return;
-    }
-
-    if (!isAttendanceModeActive) {
-      await updateEventRosterSection();
-      return;
-    }
-
-    await loadPlayers();
-  }
-}
 
 /* =========================
    MAIN MODE VISIBILITY
