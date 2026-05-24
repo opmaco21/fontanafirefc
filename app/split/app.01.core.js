@@ -1251,6 +1251,21 @@ function renderRosterPlayers(players) {
         ? `#${player.PlayerNumber}`
         : "No #";
 
+    const shortGender =
+      typeof formatGenderShort === "function"
+        ? formatGenderShort(gender)
+        : gender === "Female"
+          ? "F"
+          : gender === "Male"
+            ? "M"
+            : "-";
+
+    const rosterMeta = [
+      playerNumber,
+      birthYear || groupLabel || "No Group",
+      shortGender && shortGender !== "-" ? shortGender : null
+    ].filter(Boolean).join(" | ");
+
     label.innerHTML = `
       <input
         type="checkbox"
@@ -1260,7 +1275,7 @@ function renderRosterPlayers(players) {
       />
       <span class="roster-player-info">
         <span class="roster-player-name">${player.FirstName} ${player.LastName}</span>
-        <span class="roster-player-group">${playerNumber} | Birth Year: ${birthYear || "-"} | Gender: ${gender || "-"} | Group: ${groupLabel}</span>
+        <span class="roster-player-group">${rosterMeta}</span>
       </span>
     `;
 
