@@ -988,7 +988,6 @@ async function updateEventRosterSection() {
 
   eventRosterSection.classList.remove("hidden");
 
- 
   if (saveRosterBtn) saveRosterBtn.classList.remove("hidden");
   if (selectAllRosterBtn) selectAllRosterBtn.classList.remove("hidden");
   if (clearRosterBtn) clearRosterBtn.classList.remove("hidden");
@@ -1002,12 +1001,33 @@ async function updateEventRosterSection() {
           : "Choose the exact players expected for this multi-group Team Event.";
   }
 
-  const allMatchingParam = !selectedGroupId && eventType === "Team Event"
-    ? "?allMatching=1"
+  const rosterParams = new URLSearchParams();
+
+  /*
+    Team Events can still be grouped across matching event rows.
+    Games are single real events, so they do not use allMatching here.
+  */
+  if (!selectedGroupId && eventType === "Team Event") {
+    rosterParams.set("allMatching", "1");
+  }
+
+  /*
+    Important:
+    Edit Roster for Games must show ALL active players, with current
+    roster players checked. Without edit=1, the backend returns only
+    currently rostered players. If the roster was cleared, that means
+    zero players appear.
+  */
+  if (eventType === "Game") {
+    rosterParams.set("edit", "1");
+  }
+
+  const rosterQuery = rosterParams.toString()
+    ? `?${rosterParams.toString()}`
     : "";
 
   try {
-    const res = await fetch(`${API_BASE}/events/${selectedEventId}/roster${allMatchingParam}`, {
+    const res = await fetch(`${API_BASE}/events/${selectedEventId}/roster${rosterQuery}`, {
       credentials: "include"
     });
 
