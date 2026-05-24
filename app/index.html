@@ -97,12 +97,22 @@
               <p class="subtext">Quick reports for attendance, roster status, paperwork, snacks, and birthdays.</p>
             </div>
 
-            <button id="refreshDashboardBtn" type="button" class="btn btn-secondary">
-              Refresh Dashboard
-            </button>
+            <div class="dashboard-header-actions">
+              <label class="dashboard-month-filter-label" for="dashboardMonthFilter">
+                Month
+                <select id="dashboardMonthFilter">
+                  <option value="">All Months</option>
+                </select>
+              </label>
+
+              <button id="refreshDashboardBtn" type="button" class="btn btn-secondary">
+                Refresh Dashboard
+              </button>
+            </div>
           </div>
 
           <p id="dashboardMessage" class="message"></p>
+          <p id="dashboardLastUpdated" class="dashboard-last-updated">Last updated: -</p>
 
           <div id="dashboardSummaryCards" class="dashboard-card-grid"></div>
 

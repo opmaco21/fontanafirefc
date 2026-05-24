@@ -2306,64 +2306,99 @@ hr {
   }
 }
 
+
 /* =========================================================
-   DASHBOARD MONTHLY SUMMARY - SMALLER COLUMN WIDTHS
-   Makes the monthly summary fit without horizontal scroll.
+   BATCH 6C - DASHBOARD POLISH
+   - Compact monthly summary so it fits without side-scroll.
+   - Adds month filter layout and last updated text.
    ========================================================= */
 
-.dashboard-section table {
-  width: 100%;
+.dashboard-header-actions {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dashboard-month-filter-label {
+  min-width: 170px;
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.dashboard-month-filter-label select {
+  margin-top: 7px;
+  padding: 10px 11px;
+  font-size: 14px;
+}
+
+.dashboard-last-updated {
+  margin: -4px 0 12px;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.dashboard-monthly-table {
+  min-width: 0 !important;
+  width: 100% !important;
   table-layout: fixed;
   font-size: 12px;
 }
 
-.dashboard-section th,
-.dashboard-section td {
-  padding: 7px 5px;
+.dashboard-monthly-table th,
+.dashboard-monthly-table td {
+  padding: 7px 4px !important;
   white-space: nowrap;
-}
-
-.dashboard-section th:nth-child(1),
-.dashboard-section td:nth-child(1) {
-  width: 17%;
-}
-
-.dashboard-section th:nth-child(2),
-.dashboard-section td:nth-child(2) {
-  width: 16%;
-}
-
-.dashboard-section th:nth-child(3),
-.dashboard-section td:nth-child(3),
-.dashboard-section th:nth-child(4),
-.dashboard-section td:nth-child(4),
-.dashboard-section th:nth-child(5),
-.dashboard-section td:nth-child(5),
-.dashboard-section th:nth-child(6),
-.dashboard-section td:nth-child(6) {
-  width: 13%;
   text-align: center;
 }
 
-.dashboard-section th:nth-child(7),
-.dashboard-section td:nth-child(7) {
+.dashboard-monthly-table th:nth-child(1),
+.dashboard-monthly-table td:nth-child(1) {
+  width: 18%;
+  text-align: left;
+}
+
+.dashboard-monthly-table th:nth-child(2),
+.dashboard-monthly-table td:nth-child(2) {
   width: 15%;
-  text-align: center;
-  font-weight: 800;
+  text-align: left;
 }
 
-.dashboard-section {
-  overflow-x: hidden;
+.dashboard-monthly-table th:nth-child(3),
+.dashboard-monthly-table td:nth-child(3),
+.dashboard-monthly-table th:nth-child(4),
+.dashboard-monthly-table td:nth-child(4),
+.dashboard-monthly-table th:nth-child(5),
+.dashboard-monthly-table td:nth-child(5),
+.dashboard-monthly-table th:nth-child(6),
+.dashboard-monthly-table td:nth-child(6) {
+  width: 12%;
+}
+
+.dashboard-monthly-table th:nth-child(7),
+.dashboard-monthly-table td:nth-child(7) {
+  width: 19%;
 }
 
 @media (max-width: 520px) {
-  .dashboard-section table {
-    font-size: 11px;
+  .dashboard-header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .dashboard-section th,
-  .dashboard-section td {
-    padding: 6px 3px;
+  .dashboard-month-filter-label,
+  .dashboard-header-actions .btn-secondary {
+    width: 100%;
+  }
+
+  .dashboard-monthly-table {
+    font-size: 10px;
+  }
+
+  .dashboard-monthly-table th,
+  .dashboard-monthly-table td {
+    padding: 6px 2px !important;
   }
 }
-

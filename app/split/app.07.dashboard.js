@@ -1,12 +1,66 @@
 /* =========================================================
    FONTANA FIRE FC ATTENDANCE APP
-   Batch 6B Dashboard Cleanup
+   Batch 6C Dashboard Polish
 
    Purpose:
    - Keep Player Management as the full player lookup area.
    - Use Dashboard for summary, group trends, birthdays, and
      attendance alerts that need coach/admin attention.
+   - Adds month filtering and compact table display.
    ========================================================= */
+
+let dashboardSelectedMonth = "";
+let dashboardMonthFilterReady = false;
+
+function getDashboardCurrentMonthValue() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  return `${now.getFullYear()}-${month}`;
+}
+
+function formatDashboardMonthLabel(value) {
+  if (!value) return "All Months";
+  const parts = String(value).split("-");
+  if (parts.length !== 2) return value;
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  if (!year || !month) return value;
+  const date = new Date(year, month - 1, 1);
+  return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+}
+
+function ensureDashboardMonthFilterOptions() {
+  if (!dashboardMonthFilter || dashboardMonthFilterReady) return;
+
+  const currentMonth = getDashboardCurrentMonthValue();
+  const options = [
+    { value: "", label: "All Months" },
+    { value: currentMonth, label: `Current Month (${formatDashboardMonthLabel(currentMonth)})` },
+    { value: "2026-04", label: "April 2026" },
+    { value: "2026-05", label: "May 2026" },
+    { value: "2026-06", label: "June 2026" }
+  ];
+
+  const seen = new Set();
+  dashboardMonthFilter.innerHTML = options
+    .filter(option => {
+      const key = option.value || "all";
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map(option => `<option value="${option.value}">${option.label}</option>`)
+    .join("");
+
+  dashboardMonthFilter.value = dashboardSelectedMonth;
+
+  dashboardMonthFilter.addEventListener("change", async () => {
+    dashboardSelectedMonth = dashboardMonthFilter.value || "";
+    await loadDashboard();
+  });
+
+  dashboardMonthFilterReady = true;
+}
 
 function escapeDashboardHtml(value) {
   return String(value === null || value === undefined ? "" : value)
@@ -92,7 +146,7 @@ function renderMonthlySummary(rows) {
           <th>Absent</th>
           <th>Excused</th>
           <th>Cancelled</th>
-          <th>Attendance %</th>
+          <th>Att %</th>
         </tr>
       </thead>
       <tbody>
@@ -251,7 +305,18 @@ async function loadDashboard() {
       refreshDashboardBtn.textContent = "Loading...";
     }
 
-    const res = await fetch(`${API_BASE}/dashboard`, {
+    ensureDashboardMonthFilterOptions();
+
+    const dashboardParams = new URLSearchParams();
+    if (dashboardSelectedMonth) {
+      dashboardParams.set("month", dashboardSelectedMonth);
+    }
+
+    const dashboardUrl = dashboardParams.toString()
+      ? `${API_BASE}/dashboard?${dashboardParams.toString()}`
+      : `${API_BASE}/dashboard`;
+
+    const res = await fetch(dashboardUrl, {
       credentials: "include",
       cache: "no-store"
     });
@@ -269,7 +334,15 @@ async function loadDashboard() {
     renderGroupSummary(data.groupSummary || []);
     renderPlayerAlerts(data.playerAlerts || []);
 
-    setMessage(dashboardMessage, "Dashboard updated.", false);
+    const filterLabel = dashboardSelectedMonth
+      ? formatDashboardMonthLabel(dashboardSelectedMonth)
+      : "All Months";
+
+    if (dashboardLastUpdated) {
+      dashboardLastUpdated.textContent = `Last updated: ${new Date().toLocaleString()} | Filter: ${filterLabel}`;
+    }
+
+    setMessage(dashboardMessage, `Dashboard updated. Showing: ${filterLabel}.`, false);
   } catch (err) {
     console.error("Dashboard load error:", err);
     setMessage(dashboardMessage, "Could not load dashboard.", true);
@@ -280,3 +353,6 @@ async function loadDashboard() {
     }
   }
 }
+
+
+ensureDashboardMonthFilterOptions();
