@@ -23,10 +23,18 @@ const roleText = document.getElementById("roleText");
 const groupSelect = document.getElementById("groupSelect");
 const eventSelect = document.getElementById("eventSelect");
 
+const dashboardTab = document.getElementById("dashboardTab");
 const practiceTab = document.getElementById("practiceTab");
 const gamesTab = document.getElementById("gamesTab");
 const teamEventsTab = document.getElementById("teamEventsTab");
 const playerManagementTab = document.getElementById("playerManagementTab");
+const dashboardSection = document.getElementById("dashboardSection");
+const refreshDashboardBtn = document.getElementById("refreshDashboardBtn");
+const dashboardMessage = document.getElementById("dashboardMessage");
+const dashboardSummaryCards = document.getElementById("dashboardSummaryCards");
+const dashboardMonthlySummary = document.getElementById("dashboardMonthlySummary");
+const dashboardBirthdays = document.getElementById("dashboardBirthdays");
+const dashboardPlayerReport = document.getElementById("dashboardPlayerReport");
 
 const saveAttendanceBtn = document.getElementById("saveAttendanceBtn");
 const eventActionButtons = document.getElementById("eventActionButtons");
@@ -122,7 +130,7 @@ const apiVersionText = document.getElementById("apiVersionText");
    APP STATE
    ========================= */
 let currentUser = null;
-let currentTab = "Practice";
+let currentTab = "Dashboard";
 let isTeamEventFormOpen = false;
 let isAttendanceModeActive = true;
 let playerSearchTimer = null;
@@ -332,6 +340,14 @@ updateGameSection();
 updateAttendanceSectionVisibility();
 
   await loadGroups();
+
+  if (currentTab === "Dashboard") {
+    if (typeof loadDashboard === "function") {
+      await loadDashboard();
+    }
+    return;
+  }
+
   await loadEvents();
   await updateEventRosterSection();
   await loadPlayers();
@@ -404,14 +420,17 @@ async function loadGroups() {
    ACTIVE TAB STYLE
    ========================= */
 function setActiveTab() {
-  if (!practiceTab || !gamesTab || !teamEventsTab || !playerManagementTab) return;
+  if (!dashboardTab || !practiceTab || !gamesTab || !teamEventsTab || !playerManagementTab) return;
 
+  dashboardTab.classList.remove("active");
   practiceTab.classList.remove("active");
   gamesTab.classList.remove("active");
   teamEventsTab.classList.remove("active");
   playerManagementTab.classList.remove("active");
 
-  if (currentTab === "Practice") {
+  if (currentTab === "Dashboard") {
+    dashboardTab.classList.add("active");
+  } else if (currentTab === "Practice") {
     practiceTab.classList.add("active");
   } else if (currentTab === "Game") {
     gamesTab.classList.add("active");
@@ -421,9 +440,9 @@ function setActiveTab() {
     playerManagementTab.classList.add("active");
   }
 
-updateMainModeVisibility();
-updateTeamEventSection();
-updateGameSection();
+  updateMainModeVisibility();
+  updateTeamEventSection();
+  updateGameSection();
 }
 
 /* =========================
@@ -740,6 +759,7 @@ async function refreshCurrentPlayerList() {
    MAIN MODE VISIBILITY
    ========================= */
 function updateMainModeVisibility() {
+  const isDashboard = currentTab === "Dashboard";
   const isPlayerManagement = currentTab === "Player Management";
 
   const eventFlowElements = [
@@ -757,7 +777,7 @@ function updateMainModeVisibility() {
   eventFlowElements.forEach(element => {
     if (!element) return;
 
-    if (isPlayerManagement) {
+    if (isDashboard || isPlayerManagement) {
       element.classList.add("hidden");
     } else if (
       element !== eventDetailsSection &&
@@ -771,6 +791,10 @@ function updateMainModeVisibility() {
     }
   });
 
+  if (dashboardSection) {
+    dashboardSection.classList.toggle("hidden", !isDashboard);
+  }
+
   if (playerManagementSection) {
     playerManagementSection.classList.toggle("hidden", !isPlayerManagement);
   }
@@ -782,7 +806,7 @@ function updateMainModeVisibility() {
 function updateTeamEventSection() {
   if (!teamEventSection) return;
 
-  if (currentTab === "Player Management") {
+  if (currentTab === "Dashboard" || currentTab === "Player Management") {
     teamEventSection.classList.add("hidden");
     if (teamEventWorkflowBar) teamEventWorkflowBar.classList.add("hidden");
     return;
@@ -873,7 +897,7 @@ function resetWorkflowForSelectedEvent() {
 function updateAttendanceSectionVisibility() {
   if (!attendanceSection) return;
 
-  if (currentTab === "Player Management") {
+  if (currentTab === "Dashboard" || currentTab === "Player Management") {
     attendanceSection.classList.add("hidden");
     if (editRosterBtn) editRosterBtn.classList.add("hidden");
     return;
@@ -1055,7 +1079,7 @@ function renderRosterPlayers(players) {
 async function updateEventRosterSection() {
   if (!eventRosterSection) return;
 
-  if (currentTab === "Player Management") {
+  if (currentTab === "Dashboard" || currentTab === "Player Management") {
     clearEventRosterSection();
     eventRosterSection.classList.add("hidden");
     return;

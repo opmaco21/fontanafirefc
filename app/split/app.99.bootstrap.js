@@ -147,6 +147,28 @@ if (groupSelect) {
   });
 }
 
+if (dashboardTab) {
+  dashboardTab.addEventListener("click", async () => {
+    currentTab = "Dashboard";
+    setActiveTab();
+    clearSelectedEvent();
+
+    if (eventSelect) {
+      eventSelect.value = "";
+    }
+
+    resetWorkflowForSelectedEvent();
+    clearSelectedEventDetails();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+
+    if (typeof loadDashboard === "function") {
+      await loadDashboard();
+    }
+  });
+}
+
 if (practiceTab) {
   practiceTab.addEventListener("click", async () => {
     currentTab = "Practice";
@@ -269,6 +291,13 @@ if (showCompletedBtn) {
   });
 }
 
+if (refreshDashboardBtn) {
+  refreshDashboardBtn.addEventListener("click", async () => {
+    if (typeof loadDashboard === "function") {
+      await loadDashboard();
+    }
+  });
+}
 
 
 /* =========================

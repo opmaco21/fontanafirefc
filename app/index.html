@@ -77,13 +77,50 @@
           </select>
         </div>
 
-        <!-- PRACTICE / GAME / TEAM EVENT TABS -->
+        <!-- DASHBOARD / PRACTICE / GAME / TEAM EVENT TABS -->
         <div class="tabs">
-          <button id="practiceTab" class="tab active">Practice</button>
+          <button id="dashboardTab" class="tab active">Dashboard</button>
+          <button id="practiceTab" class="tab">Practice</button>
           <button id="gamesTab" class="tab">Games</button>
           <button id="teamEventsTab" class="tab">Team Events</button>
           <button id="playerManagementTab" class="tab">Players</button>
         </div>
+
+        <!-- DASHBOARD / REPORTS SECTION
+             Shows club totals, paperwork/snack counts, birthdays,
+             monthly attendance summaries, and player attendance reports.
+        -->
+        <section id="dashboardSection" class="dashboard-section">
+          <div class="dashboard-header">
+            <div>
+              <h3>Dashboard</h3>
+              <p class="subtext">Quick reports for attendance, roster status, paperwork, snacks, and birthdays.</p>
+            </div>
+
+            <button id="refreshDashboardBtn" type="button" class="btn btn-secondary">
+              Refresh Dashboard
+            </button>
+          </div>
+
+          <p id="dashboardMessage" class="message"></p>
+
+          <div id="dashboardSummaryCards" class="dashboard-card-grid"></div>
+
+          <div class="dashboard-report-section">
+            <h3>Monthly Attendance Summary</h3>
+            <div id="dashboardMonthlySummary" class="dashboard-table-wrap"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Birthdays</h3>
+            <div id="dashboardBirthdays" class="dashboard-mini-list"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Player Attendance Report</h3>
+            <div id="dashboardPlayerReport" class="dashboard-table-wrap"></div>
+          </div>
+        </section>
 
         <!-- EVENT SELECTOR -->
         <div class="form-row">
@@ -430,6 +467,7 @@
         "split/app.04.games.js",
         "split/app.05.player_management.js",
         "split/app.06.auth_and_misc.js",
+        "split/app.07.dashboard.js",
         "split/app.99.bootstrap.js"
       ];
 
