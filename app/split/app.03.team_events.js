@@ -249,3 +249,124 @@ async function loadTeamEventPlayerSelector() {
     }
   }
 }
+
+/* =========================
+   ADD TEAM EVENT
+
+   Purpose:
+   - Submits the Team Event creation form.
+   - Uses the exact players selected in the player selector panel.
+   - Backend creates one Events row per group represented.
+   ========================= */
+async function addTeamEvent() {
+  if (teamEventMessage) {
+    teamEventMessage.textContent = "";
+  }
+
+  if (currentUser && currentUser.RoleName === "MainCoach") {
+    setMessage(
+      teamEventMessage,
+      "Access denied. Only Admin and Team Mom can add team events.",
+      true
+    );
+    return;
+  }
+
+  const selectedPlayerIds = getSelectedTeamEventPlayerIds();
+
+  const eventName = newTeamEventName ? newTeamEventName.value.trim() : "";
+  const eventDate = newTeamEventDate ? newTeamEventDate.value : "";
+  const startTime = newTeamEventStartTime ? newTeamEventStartTime.value : "";
+  const endTime = newTeamEventEndTime ? newTeamEventEndTime.value : "";
+  const locationName = newTeamEventLocation ? newTeamEventLocation.value.trim() : "";
+  const notes = newTeamEventNotes ? newTeamEventNotes.value.trim() : "";
+
+  if (selectedPlayerIds.length === 0 || !eventName || !eventDate) {
+    setMessage(
+      teamEventMessage,
+      "Select at least one player and enter an event name and date.",
+      true
+    );
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/events`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        playerIds: selectedPlayerIds,
+        eventDate,
+        eventType: "Team Event",
+        eventName,
+        startTime: startTime || null,
+        endTime: endTime || null,
+        locationName: locationName || null,
+        notes: notes || null
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      if (res.status === 401) {
+        setMessage(teamEventMessage, "Session expired. Please login again.", true);
+      } else if (res.status === 403) {
+        setMessage(teamEventMessage, "Access denied.", true);
+      } else {
+        setMessage(teamEventMessage, data.message || "Could not add team event.", true);
+      }
+      return;
+    }
+
+    if (newTeamEventName) newTeamEventName.value = "";
+    if (newTeamEventDate) newTeamEventDate.value = "";
+    if (newTeamEventStartTime) newTeamEventStartTime.value = "";
+    if (newTeamEventEndTime) newTeamEventEndTime.value = "";
+    if (newTeamEventLocation) newTeamEventLocation.value = "";
+    if (newTeamEventNotes) newTeamEventNotes.value = "";
+
+    setAllTeamEventPlayerCheckboxes(false);
+
+    if (groupSelect) {
+      groupSelect.value = "";
+    }
+
+    const createdCount = data.createdEvents || 1;
+
+    setMessage(
+      teamEventMessage,
+      createdCount === 1
+        ? "✅ Team event added."
+        : `✅ Team event added for ${createdCount} groups.`,
+      false
+    );
+
+    await loadEvents();
+
+    if (eventSelect && data.event && data.event.EventID) {
+      const createdEventOption = eventSelect.querySelector(
+        `option[value="${data.event.EventID}"]`
+      );
+
+      if (createdEventOption) {
+        eventSelect.value = String(data.event.EventID);
+        saveSelectedEvent();
+      }
+    }
+
+    resetWorkflowForSelectedEvent();
+    updateEventActionButtons();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+    await loadPlayers();
+
+  } catch (err) {
+    console.error("Add team event error:", err);
+    setMessage(teamEventMessage, "Server error adding team event.", true);
+  }
+}

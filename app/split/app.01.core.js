@@ -679,8 +679,18 @@ function ensureRefreshPlayersControls() {
   refreshCurrentPlayersBtn.className = "btn btn-secondary refresh-current-players-btn";
   refreshCurrentPlayersBtn.textContent = "Refresh Players";
 
-  const insertBeforeTarget = attendanceSummary || attendanceSection.firstChild;
-  attendanceSection.insertBefore(refreshCurrentPlayersBtn, insertBeforeTarget);
+  // attendanceSummary lives inside .attendance-tools, not directly in attendanceSection.
+  // insertBefore requires the reference node to be a direct child of the parent,
+  // so we must find the right container first.
+  const toolsContainer = attendanceSummary
+    ? attendanceSummary.closest(".attendance-tools")
+    : null;
+
+  if (toolsContainer && toolsContainer.parentNode === attendanceSection) {
+    attendanceSection.insertBefore(refreshCurrentPlayersBtn, toolsContainer);
+  } else {
+    attendanceSection.insertBefore(refreshCurrentPlayersBtn, attendanceSection.firstChild);
+  }
 
   refreshCurrentPlayersBtn.addEventListener("click", refreshCurrentPlayerList);
 }
@@ -1083,12 +1093,17 @@ async function updateEventRosterSection() {
           : "Choose the exact players expected for this multi-group Team Event.";
   }
 
-  const allMatchingParam = !selectedGroupId && eventType === "Team Event"
-    ? "?allMatching=1"
-    : "";
+  // Games use ?edit=1 so the backend returns ALL active players with
+  // IsExpected checked/unchecked, not just the rostered subset.
+  const rosterParam =
+    eventType === "Game"
+      ? "?edit=1"
+      : !selectedGroupId && eventType === "Team Event"
+        ? "?allMatching=1"
+        : "";
 
   try {
-    const res = await fetch(`${API_BASE}/events/${selectedEventId}/roster${allMatchingParam}`, {
+    const res = await fetch(`${API_BASE}/events/${selectedEventId}/roster${rosterParam}`, {
       credentials: "include"
     });
 
