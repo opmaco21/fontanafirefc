@@ -206,7 +206,7 @@ function showPlayerDetails(playerId) {
         ${detailLine("Street", player.StreetAddress)}
         ${detailLine("City", player.City)}
         ${detailLine("State", player.State)}
-        ${detailLine("ZIP", player.ZipCode)}
+        ${detailLine("ZIP Code", player.ZipCode)}
         ${detailLine("Full Address", fullAddress)}
       </section>
 
@@ -682,8 +682,8 @@ function ensurePlayerManagementForm() {
       </div>
 
       <div class="player-form-section player-private-section">
-        <h4>Emergency / Address Info</h4>
-        <p class="player-form-note">This information stays inside Edit Player and is not shown on player cards.</p>
+        <h4>Address</h4>
+        <p class="player-form-note">Address information stays inside Edit Player and View Details.</p>
 
         <div class="player-form-grid">
           <label>
@@ -705,7 +705,14 @@ function ensurePlayerManagementForm() {
             ZIP Code
             <input id="pmZipCode" type="text" placeholder="ZIP code" />
           </label>
+        </div>
+      </div>
 
+      <div class="player-form-section player-private-section">
+        <h4>Emergency Contact</h4>
+        <p class="player-form-note">Emergency information stays inside Edit Player and View Details.</p>
+
+        <div class="player-form-grid">
           <label>
             Emergency Contact Name
             <input id="pmEmergencyContactName" type="text" placeholder="Emergency contact name" />
