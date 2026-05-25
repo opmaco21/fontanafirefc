@@ -104,7 +104,6 @@ function getDashboardPercentClass(value, counted) {
   const percent = Number(value);
   const total = Number(counted || 0);
   if (!total) return "dashboard-percent-none";
-  if (percent >= 100) return "dashboard-percent-perfect";
   if (percent >= 85) return "dashboard-percent-good";
   if (percent > 70) return "dashboard-percent-watch";
   return "dashboard-percent-low";
@@ -222,6 +221,7 @@ function renderBirthdays(data) {
   `;
 }
 
+
 function formatDashboardDate(value) {
   if (!value) return "-";
   const raw = String(value);
@@ -248,16 +248,25 @@ function formatDashboardTime(value) {
 }
 
 function renderUpcomingSnapshot(rows) {
-  if (!dashboardUpcomingSnapshot) return;
+  const container = typeof dashboardUpcomingSnapshot !== "undefined"
+    ? dashboardUpcomingSnapshot
+    : document.getElementById("dashboardUpcomingSnapshot");
+
+  if (!container) return;
 
   if (!rows || rows.length === 0) {
-    dashboardUpcomingSnapshot.innerHTML = `
+    container.innerHTML = `
       <div class="roster-empty-message">No games or team events found for this view.</div>
     `;
     return;
   }
 
-  dashboardUpcomingSnapshot.innerHTML = rows.map(event => {
+  const snapshotCount = rows.length;
+  const snapshotNote = dashboardSelectedMonth
+    ? `${snapshotCount} ${snapshotCount === 1 ? "game/event" : "games/events"} found for ${formatDashboardMonthLabel(dashboardSelectedMonth)}.`
+    : `Showing next ${snapshotCount} upcoming ${snapshotCount === 1 ? "game/event" : "games/events"}.`;
+
+  const cardsHtml = rows.map(event => {
     const eventType = event.EventType || "Event";
     const eventName = event.EventName || eventType;
     const dateText = formatDashboardDate(event.EventDate);
@@ -281,6 +290,11 @@ function renderUpcomingSnapshot(rows) {
       </article>
     `;
   }).join("");
+
+  container.innerHTML = `
+    <div class="dashboard-upcoming-count">${escapeDashboardHtml(snapshotNote)}</div>
+    ${cardsHtml}
+  `;
 }
 
 function renderPracticeSummary(summary) {
