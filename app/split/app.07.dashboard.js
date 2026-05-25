@@ -104,6 +104,7 @@ function getDashboardPercentClass(value, counted) {
   const percent = Number(value);
   const total = Number(counted || 0);
   if (!total) return "dashboard-percent-none";
+  if (percent >= 100) return "dashboard-percent-perfect";
   if (percent >= 85) return "dashboard-percent-good";
   if (percent > 70) return "dashboard-percent-watch";
   return "dashboard-percent-low";
@@ -219,6 +220,67 @@ function renderBirthdays(data) {
       ${list(nextMonth, `No birthdays for ${nextBirthdayLabel}.`)}
     </div>
   `;
+}
+
+function formatDashboardDate(value) {
+  if (!value) return "-";
+  const raw = String(value);
+  const dateOnly = raw.includes("T") ? raw.split("T")[0] : raw.substring(0, 10);
+  const parts = dateOnly.split("-");
+  if (parts.length !== 3) return escapeDashboardHtml(raw);
+  return `${parts[1]}/${parts[2]}/${parts[0]}`;
+}
+
+function formatDashboardTime(value) {
+  if (!value) return "Time TBD";
+  const raw = String(value);
+  const match = raw.match(/(\d{1,2}):(\d{2})/);
+  if (!match) return escapeDashboardHtml(raw);
+
+  let hour = Number(match[1]);
+  const minute = match[2];
+  if (!Number.isFinite(hour)) return escapeDashboardHtml(raw);
+
+  const suffix = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+  return `${hour}:${minute} ${suffix}`;
+}
+
+function renderUpcomingSnapshot(rows) {
+  if (!dashboardUpcomingSnapshot) return;
+
+  if (!rows || rows.length === 0) {
+    dashboardUpcomingSnapshot.innerHTML = `
+      <div class="roster-empty-message">No games or team events found for this view.</div>
+    `;
+    return;
+  }
+
+  dashboardUpcomingSnapshot.innerHTML = rows.map(event => {
+    const eventType = event.EventType || "Event";
+    const eventName = event.EventName || eventType;
+    const dateText = formatDashboardDate(event.EventDate);
+    const timeText = formatDashboardTime(event.StartTime);
+    const locationText = event.LocationName || "Location TBD";
+    const teamText = event.GroupCode || event.GroupName || "Team TBD";
+    const snackText = event.AssignedSnackFamily || event.SnackStatus || "Not assigned yet";
+
+    return `
+      <article class="dashboard-upcoming-card">
+        <div class="dashboard-upcoming-topline">
+          <span class="dashboard-upcoming-type">${escapeDashboardHtml(eventType)}</span>
+          <strong>${escapeDashboardHtml(dateText)} • ${escapeDashboardHtml(timeText)}</strong>
+        </div>
+        <h4>${escapeDashboardHtml(eventName)}</h4>
+        <div class="dashboard-upcoming-meta">
+          <span><strong>Team:</strong> ${escapeDashboardHtml(teamText)}</span>
+          <span><strong>Location:</strong> ${escapeDashboardHtml(locationText)}</span>
+          <span><strong>Snack:</strong> ${escapeDashboardHtml(snackText)}</span>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 function renderPracticeSummary(summary) {
@@ -481,6 +543,7 @@ async function loadDashboard() {
 
     renderDashboardSummaryCards(data);
     renderBirthdays(data.birthdays || {});
+    renderUpcomingSnapshot(data.upcomingSnapshot || []);
     renderMonthlySummary(data.monthlySummary || []);
     renderPracticeSummary(data.practiceSummary || {});
     renderGameSummary(data.gameSummary || {});
