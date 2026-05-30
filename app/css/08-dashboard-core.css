@@ -1,0 +1,495 @@
+/* Fontana Fire FC Attendance App - 08-dashboard-core.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   BATCH 6 - DASHBOARD / REPORTS
+   Summary cards, monthly reports, birthdays, and player
+   attendance report tables.
+   ========================================================= */
+
+.dashboard-section {
+  margin-bottom: 18px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dashboard-header h3 {
+  margin-bottom: 4px;
+}
+
+.dashboard-header .btn-secondary {
+  width: auto;
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+
+.dashboard-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 10px;
+  margin: 12px 0 18px;
+}
+
+.dashboard-stat-card {
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+  padding: 12px;
+}
+
+.dashboard-stat-label {
+  color: #666;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.dashboard-stat-value {
+  margin-top: 7px;
+  font-size: 24px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.dashboard-stat-note {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.25;
+}
+
+.dashboard-report-section {
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.dashboard-report-section h3 {
+  margin-top: 0;
+}
+
+.dashboard-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+  font-size: 14px;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  border-bottom: 1px solid #e1e5ea;
+  padding: 9px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dashboard-table th {
+  background: #fffaf5;
+  color: #333;
+  font-weight: 900;
+}
+
+.dashboard-table td strong {
+  color: #111827;
+}
+
+.dashboard-mini-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.dashboard-mini-card {
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  background: #fafafa;
+  padding: 10px;
+}
+
+.dashboard-mini-card h4 {
+  margin: 0 0 8px;
+}
+
+.dashboard-mini-card ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.dashboard-mini-card li {
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+@media (max-width: 520px) {
+  .dashboard-header {
+    flex-direction: column;
+  }
+
+  .dashboard-header .btn-secondary {
+    width: 100%;
+  }
+
+  .dashboard-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-stat-value {
+    font-size: 21px;
+  }
+}
+
+/* =========================================================
+   BATCH 6C - DASHBOARD POLISH
+   - Compact monthly summary so it fits without side-scroll.
+   - Adds month filter layout and last updated text.
+   ========================================================= */
+
+.dashboard-header-actions {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dashboard-month-filter-label {
+  min-width: 170px;
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.dashboard-month-filter-label select {
+  margin-top: 7px;
+  padding: 10px 11px;
+  font-size: 14px;
+}
+
+.dashboard-last-updated {
+  margin: -4px 0 12px;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.dashboard-monthly-table {
+  min-width: 0 !important;
+  width: 100% !important;
+  table-layout: fixed;
+  font-size: 12px;
+}
+
+.dashboard-monthly-table th,
+.dashboard-monthly-table td {
+  padding: 7px 4px !important;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.dashboard-monthly-table th:nth-child(1),
+.dashboard-monthly-table td:nth-child(1) {
+  width: 18%;
+  text-align: left;
+}
+
+.dashboard-monthly-table th:nth-child(2),
+.dashboard-monthly-table td:nth-child(2) {
+  width: 15%;
+  text-align: left;
+}
+
+.dashboard-monthly-table th:nth-child(3),
+.dashboard-monthly-table td:nth-child(3),
+.dashboard-monthly-table th:nth-child(4),
+.dashboard-monthly-table td:nth-child(4),
+.dashboard-monthly-table th:nth-child(5),
+.dashboard-monthly-table td:nth-child(5),
+.dashboard-monthly-table th:nth-child(6),
+.dashboard-monthly-table td:nth-child(6) {
+  width: 12%;
+}
+
+.dashboard-monthly-table th:nth-child(7),
+.dashboard-monthly-table td:nth-child(7) {
+  width: 19%;
+}
+
+@media (max-width: 520px) {
+  .dashboard-header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-month-filter-label,
+  .dashboard-header-actions .btn-secondary {
+    width: 100%;
+  }
+
+  .dashboard-monthly-table {
+    font-size: 10px;
+  }
+
+  .dashboard-monthly-table th,
+  .dashboard-monthly-table td {
+    padding: 6px 2px !important;
+  }
+}
+
+/* =========================================================
+   BATCH 6D - DASHBOARD REPORTING POLISH
+   Birthdays move higher, monthly summary is simplified,
+   and player report cards have clickable attendance badges.
+   ========================================================= */
+
+.dashboard-birthday-section {
+  border-color: #f2dcc8;
+  background: #fffaf5;
+}
+
+.dashboard-birthday-current {
+  background: #fff3e0;
+  border-color: #f2bf83;
+}
+
+.dashboard-birthday-current h4 {
+  color: #b45309;
+}
+
+.dashboard-birthday-next {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.dashboard-birthday-next h4 {
+  color: #111827;
+}
+
+.dashboard-monthly-simple-table {
+  min-width: 0 !important;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.dashboard-monthly-simple-table th,
+.dashboard-monthly-simple-table td {
+  white-space: normal !important;
+  text-align: center;
+  padding: 8px 5px !important;
+}
+
+.dashboard-monthly-simple-table th:nth-child(1),
+.dashboard-monthly-simple-table td:nth-child(1) {
+  width: 24%;
+  text-align: left;
+}
+
+.dashboard-monthly-simple-table th:nth-child(2),
+.dashboard-monthly-simple-table td:nth-child(2),
+.dashboard-monthly-simple-table th:nth-child(4),
+.dashboard-monthly-simple-table td:nth-child(4) {
+  width: 18%;
+}
+
+.dashboard-monthly-simple-table th:nth-child(3),
+.dashboard-monthly-simple-table td:nth-child(3),
+.dashboard-monthly-simple-table th:nth-child(5),
+.dashboard-monthly-simple-table td:nth-child(5) {
+  width: 20%;
+  font-weight: 800;
+}
+
+.dashboard-clickable-metrics {
+  gap: 7px;
+}
+
+.dashboard-category-btn {
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 8px 9px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #333;
+}
+
+.dashboard-category-btn:hover,
+.dashboard-category-btn.active-dashboard-category {
+  border-color: #f57c00;
+  box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.12);
+}
+
+.dashboard-player-detail-box {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #f2dcc8;
+  border-radius: 12px;
+  background: #fffaf5;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.dashboard-player-detail-box p {
+  margin-top: 6px;
+}
+
+.dashboard-player-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  margin-top: 8px;
+}
+
+.dashboard-exceptional-card {
+  background: #f0fdf4;
+  border-color: #a8d5b4;
+}
+
+.dashboard-exceptional-badge {
+  background: #e6f4ea;
+  border-color: #a8d5b4;
+  color: #1b5e20;
+}
+
+@media (max-width: 520px) {
+  .dashboard-monthly-simple-table {
+    font-size: 11px;
+  }
+
+  .dashboard-monthly-simple-table th,
+  .dashboard-monthly-simple-table td {
+    padding: 7px 3px !important;
+  }
+
+  .dashboard-player-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-category-btn {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+/* =========================================================
+   BATCH 6E - DASHBOARD SUMMARY + COLLAPSIBLE PLAYER REPORTS
+   Adds Practice/Event summaries, Perfect Attendance Club,
+   collapsible player sections, and cleaner player cards.
+   ========================================================= */
+
+.dashboard-monthly-six-table {
+  min-width: 0 !important;
+  font-size: 11px;
+}
+
+.dashboard-monthly-six-table th,
+.dashboard-monthly-six-table td {
+  padding: 7px 3px !important;
+}
+
+.dashboard-monthly-six-table th:nth-child(1),
+.dashboard-monthly-six-table td:nth-child(1) {
+  width: 17%;
+}
+
+.dashboard-monthly-six-table th:nth-child(2),
+.dashboard-monthly-six-table td:nth-child(2),
+.dashboard-monthly-six-table th:nth-child(4),
+.dashboard-monthly-six-table td:nth-child(4),
+.dashboard-monthly-six-table th:nth-child(6),
+.dashboard-monthly-six-table td:nth-child(6) {
+  width: 13%;
+}
+
+.dashboard-monthly-six-table th:nth-child(3),
+.dashboard-monthly-six-table td:nth-child(3),
+.dashboard-monthly-six-table th:nth-child(5),
+.dashboard-monthly-six-table td:nth-child(5),
+.dashboard-monthly-six-table th:nth-child(7),
+.dashboard-monthly-six-table td:nth-child(7) {
+  width: 14%;
+}
+
+.dashboard-collapsible-report {
+  padding: 0;
+  overflow: hidden;
+}
+
+.dashboard-collapsible-report summary {
+  cursor: pointer;
+  padding: 13px 14px;
+  font-weight: 900;
+  color: #111827;
+  background: #fffaf5;
+  border-bottom: 1px solid #f2dcc8;
+  list-style-position: inside;
+}
+
+.dashboard-collapsible-report summary::marker {
+  color: #f57c00;
+}
+
+.dashboard-collapsible-report[open] {
+  padding-bottom: 12px;
+}
+
+.dashboard-collapsible-report[open] summary {
+  margin-bottom: 10px;
+}
+
+.dashboard-collapsible-report .dashboard-section-note,
+.dashboard-collapsible-report .dashboard-alert-list,
+.dashboard-collapsible-report .roster-empty-message {
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
+.dashboard-perfect-card {
+  background: #fff7ed;
+  border-color: #f2bf83;
+}
+
+.dashboard-perfect-badge {
+  background: #ffedd5;
+  border-color: #fdba74;
+  color: #9a3412;
+}
+
+/* Bottom summary counts were removed from dashboard player cards.
+   Details are shown only after clicking Practice, Game, or Team Event. */
+.dashboard-alert-counts {
+  display: none !important;
+}
+
+@media (max-width: 520px) {
+  .dashboard-monthly-six-table {
+    font-size: 9px;
+  }
+
+  .dashboard-monthly-six-table th,
+  .dashboard-monthly-six-table td {
+    padding: 6px 2px !important;
+  }
+
+  .dashboard-collapsible-report summary {
+    padding: 12px;
+  }
+}

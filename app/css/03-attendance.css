@@ -1,0 +1,161 @@
+/* Fontana Fire FC Attendance App - 03-attendance.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   ATTENDANCE TOOLS
+   New section above player list.
+   Shows live attendance counts and lets coaches hide or
+   show completed attendance rows.
+   ========================================================= */
+
+.attendance-tools {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.attendance-summary {
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.hide-marked-toggle {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.hide-marked-toggle input {
+  width: auto;
+  margin-right: 6px;
+}
+
+/* =========================================================
+   BATCH 3M - PRACTICE / GAME ATTENDANCE SCROLL POLISH
+   Makes the actual attendance lists scroll on mobile/desktop.
+   Uses existing containers: #playerList and #completedPlayerList.
+   ========================================================= */
+
+#playerList,
+#completedPlayerList {
+  max-height: 58vh;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #d9e0ea;
+  border-radius: 14px;
+  background: #ffffff;
+  margin-top: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Keep card spacing clean inside scroll areas */
+#playerList .attendance-player-card,
+#completedPlayerList .attendance-player-card,
+#playerList .player-row,
+#completedPlayerList .player-row {
+  margin-bottom: 10px;
+}
+
+/* Avoid extra bottom spacing on the last card */
+#playerList .attendance-player-card:last-child,
+#completedPlayerList .attendance-player-card:last-child,
+#playerList .player-row:last-child,
+#completedPlayerList .player-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Mobile tuning */
+@media (max-width: 700px) {
+  #playerList,
+  #completedPlayerList {
+    max-height: 55vh;
+    padding: 8px;
+  }
+
+  #playerList .attendance-player-card,
+  #completedPlayerList .attendance-player-card,
+  #playerList .player-row,
+  #completedPlayerList .player-row {
+    margin-bottom: 8px;
+  }
+}
+
+/* =========================================================
+   PLAYER ATTENDANCE LIST
+   Main list of players who still need attendance marked.
+   Each row has the player name and attendance dropdown.
+   ========================================================= */
+
+#playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-row {
+  display: grid;
+  grid-template-columns: 1fr 145px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.player-row span {
+  font-weight: bold;
+}
+
+/* =========================================================
+   COMPLETED ATTENDANCE LIST
+   Marked players move here when "Hide marked players" is on.
+   Coaches can expand this section to review or fix mistakes.
+   ========================================================= */
+
+.completed-player-list {
+  margin-top: 12px;
+  border-top: 2px solid #ddd;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* =========================================================
+   ATTENDANCE STATUS COLORS
+   Color codes rows after a player is marked.
+   Present = green
+   Absent = red
+   Excused = yellow
+   Cancelled = gray
+   Remove / Reset = light gray
+   ========================================================= */
+
+.player-row.status-present {
+  background: #e6f4ea;
+  border-left: 5px solid #2e7d32;
+}
+
+.player-row.status-absent {
+  background: #fdecea;
+  border-left: 5px solid #c62828;
+}
+
+.player-row.status-excused {
+  background: #fff8e1;
+  border-left: 5px solid #f9a825;
+}
+
+.player-row.status-cancelled {
+  background: #e0e0e0;
+  border-left: 5px solid #757575;
+}
+
+.player-row.status-clear {
+  background: #eef2f7;
+  border-left: 5px solid #6b7280;
+}

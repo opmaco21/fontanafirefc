@@ -1,0 +1,674 @@
+/* Fontana Fire FC Attendance App - 05-player-management.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   PLAYER MANAGEMENT
+   Keeps player admin work separate from event attendance.
+   ========================================================= */
+
+.player-management-tools {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.player-management-tools .btn-secondary {
+  margin-top: 10px;
+}
+
+.player-management-toggle {
+  margin-top: 10px;
+}
+
+.player-management-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-management-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.player-management-row.inactive-player {
+  background: #f3f4f6;
+  opacity: 0.82;
+}
+
+.player-management-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.player-management-meta {
+  font-size: 14px;
+  color: #666;
+  margin-top: 3px;
+}
+
+.player-management-status {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.active-status {
+  background: #e6f4ea;
+  color: #2e7d32;
+}
+
+.inactive-status {
+  background: #e0e0e0;
+  color: #555;
+}
+
+.player-management-actions .btn-secondary {
+  margin-top: 0;
+}
+
+@media (max-width: 520px) {
+  .player-management-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   PLAYER MANAGEMENT BATCH 3E QOL
+   Missing-item quick filters, readable 2-column filters,
+   collapsed form, and save/loading polish.
+   ========================================================= */
+
+.player-management-filter-panel {
+  padding: 12px;
+}
+
+.player-management-quick-counts {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.35;
+}
+
+.player-management-quick-filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.player-management-quick-filter-btn {
+  margin-top: 0;
+  padding: 9px 10px;
+  font-size: 13px;
+  border-radius: 10px;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.player-management-quick-filter-btn.active-quick-filter {
+  background: #f57c00;
+  color: #fff;
+}
+
+.player-management-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.player-management-filter-grid label {
+  min-width: 0;
+}
+
+.player-management-filter-grid select {
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  text-overflow: ellipsis;
+}
+
+#pmClearFiltersBtn,
+#playerClearFiltersBtn {
+  width: 100%;
+  min-height: 48px;
+  white-space: normal;
+  line-height: 1.15;
+  padding: 10px 12px;
+}
+
+.player-management-filter-grid #pmClearFiltersBtn,
+.player-management-filter-grid #playerClearFiltersBtn {
+  grid-column: 1 / -1;
+}
+
+.player-management-collapsed-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.player-management-collapsed-form .btn-primary {
+  margin-top: 0;
+}
+
+.player-management-collapsed-note {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.35;
+}
+
+#pmSavePlayerBtn:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+@media (max-width: 700px) {
+  .player-management-quick-filter-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .player-management-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .player-management-filter-grid #pmClearFiltersBtn,
+  .player-management-filter-grid #playerClearFiltersBtn {
+    grid-column: auto;
+  }
+
+  .player-management-collapsed-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* =========================================================
+   BATCH 3H GENDER FILTER POLISH
+   Adds readable spacing for Gender filters across Player
+   Management, Team Event creation, Practice, and Games.
+   ========================================================= */
+
+.team-event-gender-filter-label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 10px 0;
+}
+
+.attendance-gender-filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 8px;
+}
+
+.player-management-main-filter-grid {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+/* =========================================================
+   BATCH 3I/J - COMPACT PLAYER CARDS + DETAILS + HELP LINK
+   Keeps cards compact, makes answers bold, and adds read-only
+   player details so Edit is only used for actual changes.
+   ========================================================= */
+
+.app-help-box {
+  margin: 14px 0 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.app-help-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: auto;
+  margin-top: 0;
+}
+
+.player-management-card-scroll-item {
+  cursor: pointer;
+}
+
+.player-management-card-scroll-item:focus {
+  outline: none;
+  border-color: #f57c00;
+  box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.15);
+}
+
+.player-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.player-card-header-row .player-management-status {
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+
+.player-management-card-line span {
+  font-weight: 400;
+  color: #555;
+}
+
+.player-management-card-line strong {
+  font-weight: 800;
+  color: #111827;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary {
+  font-size: 12px;
+  padding: 9px 8px;
+}
+
+.player-details-panel {
+  background: #ffffff;
+  border: 1px solid #f2dcc8;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 12px 0 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.player-details-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  border-bottom: 1px solid #e1e5ea;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.player-details-header h3 {
+  margin: 0 0 4px;
+}
+
+.player-details-header p {
+  margin: 0;
+  color: #555;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.player-details-close-btn {
+  margin-top: 0;
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.player-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.player-details-section {
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fafafa;
+}
+
+.player-details-section h4 {
+  margin: 0 0 10px;
+  color: #222;
+}
+
+.player-detail-line {
+  display: grid;
+  grid-template-columns: minmax(95px, auto) 1fr;
+  gap: 6px;
+  margin-bottom: 7px;
+  line-height: 1.35;
+}
+
+.player-detail-label {
+  font-weight: 400;
+  color: #555;
+}
+
+.player-detail-value {
+  font-weight: 800;
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .app-help-link,
+  .player-details-close-btn {
+    width: 100%;
+  }
+
+  .player-details-header {
+    flex-direction: column;
+  }
+
+  .player-detail-line {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .player-card-header-row {
+    flex-direction: column;
+  }
+
+  .player-management-card-scroll-item .player-management-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   BATCH 3K - PLAYER CARD CONTACT LOOKUP + HELP CLEANUP
+   Keeps one Help button, makes player cards easier to scan,
+   and moves admin/status details into View Details.
+   ========================================================= */
+
+.app-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.app-footer-actions .btn-secondary {
+  margin-top: 0;
+}
+
+#helpBtn,
+#logoutBtn {
+  width: auto;
+}
+
+.player-card-title-block {
+  min-width: 0;
+}
+
+.player-card-badge-row,
+.player-details-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.player-card-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.player-number-badge {
+  background: #111827;
+  border-color: #111827;
+  color: #ffffff;
+}
+
+.player-card-contact-block {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e1e5ea;
+}
+
+.player-card-contact-block .player-management-card-line {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 6px;
+  align-items: start;
+  margin-top: 5px;
+}
+
+.player-card-contact-block .player-management-card-line span {
+  color: #555;
+  font-weight: 400;
+}
+
+.player-card-contact-block .player-management-card-line strong {
+  color: #111827;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.player-details-header p {
+  display: none;
+}
+
+.player-details-badge-row {
+  margin-top: 6px;
+}
+
+.player-details-section {
+  min-width: 0;
+}
+
+.player-detail-line {
+  grid-template-columns: minmax(125px, auto) minmax(0, 1fr);
+  align-items: start;
+}
+
+.player-detail-value {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+@media (max-width: 520px) {
+  .app-footer-actions {
+    flex-direction: row;
+  }
+
+  .app-footer-actions .btn-secondary {
+    flex: 1 1 140px;
+    width: auto;
+  }
+
+  .player-card-contact-block .player-management-card-line {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .player-management-card-scroll-item .player-management-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .player-detail-line {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   BATCH 6B - DASHBOARD SUMMARY + ALERT CLEANUP
+   Dashboard now shows group summary and players needing
+   attention instead of duplicating full Player Management.
+   ========================================================= */
+
+.dashboard-section-note {
+  margin-top: -6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.dashboard-group-table {
+  min-width: 720px;
+}
+
+.dashboard-percent-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.dashboard-percent-good {
+  background: #e6f4ea;
+  border-color: #a8d5b4;
+  color: #1b5e20;
+}
+
+.dashboard-percent-watch {
+  background: #fff8e1;
+  border-color: #f4d37c;
+  color: #6d4c00;
+}
+
+.dashboard-percent-low {
+  background: #fdecea;
+  border-color: #efb4ad;
+  color: #9f1d1d;
+}
+
+.dashboard-percent-none {
+  background: #eef2f7;
+  border-color: #d1d5db;
+  color: #4b5563;
+}
+
+.dashboard-alert-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.dashboard-alert-card {
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+  padding: 12px;
+}
+
+.dashboard-alert-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.dashboard-alert-card h4 {
+  margin: 0 0 4px;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.dashboard-alert-card p {
+  margin: 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.dashboard-alert-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 120px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  color: #111827;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.dashboard-alert-detail {
+  margin-top: 10px !important;
+}
+
+.dashboard-alert-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.dashboard-alert-metrics span {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+}
+
+.dashboard-alert-counts {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid #e1e5ea;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.35;
+}
+
+@media (max-width: 520px) {
+  .dashboard-alert-list {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-alert-topline {
+    flex-direction: column;
+  }
+
+  .dashboard-alert-badge {
+    max-width: none;
+  }
+}

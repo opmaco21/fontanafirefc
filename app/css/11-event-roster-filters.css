@@ -1,0 +1,225 @@
+/* Fontana Fire FC Attendance App - 11-event-roster-filters.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   BATCH 6H - EDIT ROSTER FILTERS
+   Adds Search, Birth Year, Gender, and Selected/Not Selected
+   filters to the Game / Team Event Edit Roster screen.
+   ========================================================= */
+
+.event-roster-filter-panel {
+  margin: 10px 0 12px;
+  padding: 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.event-roster-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(145px, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.event-roster-filter-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 0;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #222;
+}
+
+.event-roster-filter-grid input,
+.event-roster-filter-grid select {
+  min-width: 0;
+  padding: 10px 11px;
+  font-size: 14px;
+}
+
+.event-roster-search-label {
+  grid-column: span 1;
+}
+
+@media (max-width: 760px) {
+  .event-roster-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .event-roster-search-label {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .event-roster-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-roster-search-label {
+    grid-column: auto;
+  }
+}
+
+/* =========================================================
+   BATCH 6I - EDIT ROSTER VISUAL CLEANUP
+   Makes roster filters and player cards easier to read inside
+   the mobile-width app card.
+   ========================================================= */
+
+#eventRosterFilterPanel.event-roster-filter-panel {
+  padding: 12px !important;
+  margin: 12px 0 !important;
+  border-radius: 14px !important;
+}
+
+#eventRosterFilterPanel .event-roster-filter-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  align-items: end !important;
+}
+
+#eventRosterFilterPanel .event-roster-search-label {
+  grid-column: 1 / -1 !important;
+}
+
+#eventRosterFilterPanel label {
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}
+
+#eventRosterFilterPanel input,
+#eventRosterFilterPanel select {
+  height: 40px !important;
+  padding: 8px 10px !important;
+  font-size: 14px !important;
+  border-radius: 10px !important;
+}
+
+#eventRosterFilterPanel input::placeholder {
+  font-size: 13px !important;
+}
+
+#eventRosterList,
+.event-roster-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  max-height: 520px !important;
+  padding: 6px !important;
+}
+
+#eventRosterList .roster-player-row,
+.event-roster-list .roster-player-row {
+  min-height: 52px !important;
+  padding: 8px 9px !important;
+  align-items: flex-start !important;
+  border-radius: 11px !important;
+}
+
+#eventRosterList .roster-player-row input[type="checkbox"],
+.event-roster-list .roster-player-row input[type="checkbox"] {
+  margin-top: 2px !important;
+  transform: scale(0.95);
+}
+
+#eventRosterList .roster-player-info,
+.event-roster-list .roster-player-info {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+#eventRosterList .roster-player-name,
+.event-roster-list .roster-player-name {
+  font-size: 13px !important;
+  line-height: 1.12 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#eventRosterList .roster-player-group,
+.event-roster-list .roster-player-group {
+  margin-top: 2px !important;
+  font-size: 11px !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  color: #4f5b6b !important;
+}
+
+.roster-tools {
+  padding: 12px !important;
+  border-radius: 14px !important;
+}
+
+.roster-summary {
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  margin-bottom: 9px !important;
+}
+
+.roster-action-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, auto)) !important;
+  justify-content: start !important;
+  gap: 10px !important;
+}
+
+.roster-action-buttons .btn-secondary {
+  width: auto !important;
+  min-width: 108px !important;
+  padding: 11px 14px !important;
+  border-radius: 11px !important;
+}
+
+@media (max-width: 520px) {
+  #eventRosterFilterPanel .event-roster-filter-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #eventRosterFilterPanel .event-roster-search-label {
+    grid-column: auto !important;
+  }
+
+  #eventRosterList,
+  .event-roster-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  #eventRosterList .roster-player-row,
+  .event-roster-list .roster-player-row {
+    padding: 7px 8px !important;
+  }
+
+  #eventRosterList .roster-player-name,
+  .event-roster-list .roster-player-name {
+    font-size: 12px !important;
+  }
+
+  #eventRosterList .roster-player-group,
+  .event-roster-list .roster-player-group {
+    font-size: 10px !important;
+  }
+
+  .roster-action-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .roster-action-buttons .btn-secondary {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  #eventRosterList,
+  .event-roster-list {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -1,0 +1,201 @@
+/* Fontana Fire FC Attendance App - 01-base-layout.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   FONTANA FIRE FC ATTENDANCE APP - STYLE.CSS
+   Purpose:
+   Controls the full mobile-friendly design for the login,
+   attendance screen, player list, tabs, buttons, and the
+   attendance summary / hide completed player tools.
+   ========================================================= */
+
+/* =========================================================
+   GLOBAL RESET / BASE SETTINGS
+   Applies consistent sizing across all elements.
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  color: #1f2933;
+}
+
+/* =========================================================
+   TOP HEADER / BRANDING
+   Black header with orange club accent border.
+   ========================================================= */
+
+.topbar {
+  background: #111;
+  color: #fff;
+  padding: 18px 20px;
+  border-bottom: 5px solid #f57c00;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.logo {
+  font-size: 30px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.brand p {
+  margin: 3px 0 0;
+  color: #ddd;
+  font-size: 14px;
+}
+
+/* =========================================================
+   MAIN PAGE LAYOUT
+   Centers the app card and keeps it mobile friendly.
+   ========================================================= */
+
+.container {
+  max-width: 620px;
+  margin: 28px auto;
+  padding: 0 14px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* =========================================================
+   HEADINGS / TEXT
+   Basic heading spacing and smaller role text.
+   ========================================================= */
+
+h2 {
+  margin-top: 0;
+}
+
+h3 {
+  margin: 8px 0 12px;
+}
+
+.subtext {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.message {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+/* =========================================================
+   FORM FIELDS
+   Applies to login fields, group/event dropdowns,
+   add player inputs, and attendance dropdowns.
+   ========================================================= */
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 7px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cfd4dc;
+  border-radius: 10px;
+  font-size: 16px;
+  background: #fff;
+}
+
+textarea {
+  min-height: 72px;
+  resize: vertical;
+  font-family: Arial, sans-serif;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #f57c00;
+  box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.15);
+}
+
+/* =========================================================
+   DIVIDER LINE
+   Separates attendance section from add player/logout area.
+   ========================================================= */
+
+hr {
+  border: none;
+  border-top: 1px solid #e1e5ea;
+  margin: 22px 0;
+}
+
+/* =========================================================
+   APP VERSION DISPLAY
+   ========================================================= */
+
+.app-version {
+  margin: 18px 0 12px;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 10px;
+}
+
+/* =========================================================
+   MOBILE RESPONSIVE DESIGN
+   Makes player rows stack on smaller phone screens.
+   ========================================================= */
+
+@media (max-width: 520px) {
+  .container {
+    margin: 18px auto;
+  }
+
+  .card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .player-row {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .event-details-grid {
+    grid-template-columns: 1fr;
+  }
+}

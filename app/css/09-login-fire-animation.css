@@ -1,0 +1,492 @@
+/* Fontana Fire FC Attendance App - 09-login-fire-animation.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   LOGIN LOADING CUE
+   Shows an animated soccer ball while login is processing.
+   ========================================================= */
+
+.login-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-weight: bold;
+  color: #f57c00;
+}
+
+
+.btn:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+/* Keeps Team Event field labels visually separated from
+   the input directly above them on mobile and desktop. */
+#teamEventSection > label {
+  margin-top: 10px;
+}
+
+#teamEventSection > label:first-of-type {
+  margin-top: 0;
+}
+
+/* =========================================================
+   BATCH 6N - LOGIN FIRE ANIMATION V5
+   Spin-only soccer ball with layered fire behind the ball.
+   Keeps the existing #loginLoading show/hide behavior.
+   ========================================================= */
+
+.fire-loader-v5 {
+  margin: 22px auto 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  color: #f57c00;
+}
+
+.fire-scene-v5 {
+  position: relative;
+  width: 190px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  overflow: visible;
+}
+
+.heat-haze-v5 {
+  position: absolute;
+  left: 16px;
+  top: 23px;
+  width: 96px;
+  height: 44px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 84% 50%, rgba(255, 255, 255, 0.48), transparent 15%),
+    radial-gradient(circle at 58% 50%, rgba(253, 186, 116, 0.52), transparent 40%),
+    radial-gradient(circle at 28% 50%, rgba(239, 68, 68, 0.34), transparent 64%);
+  filter: blur(8px);
+  animation: heatPulseV5 0.35s infinite alternate ease-in-out;
+  z-index: 0;
+}
+
+.smoke-v5 {
+  position: absolute;
+  left: 0;
+  top: 25px;
+  width: 78px;
+  height: 42px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.smoke-v5 i {
+  position: absolute;
+  display: block;
+  width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  background: rgba(75, 85, 99, 0.20);
+  filter: blur(1.2px);
+  animation: smokeFloatV5 1.4s infinite ease-out;
+}
+
+.smoke-v5 i:nth-child(1) {
+  left: 8px;
+  top: 16px;
+  animation-delay: 0s;
+}
+
+.smoke-v5 i:nth-child(2) {
+  left: 26px;
+  top: 6px;
+  width: 14px;
+  height: 14px;
+  animation-delay: 0.18s;
+}
+
+.smoke-v5 i:nth-child(3) {
+  left: 42px;
+  top: 24px;
+  width: 12px;
+  height: 12px;
+  animation-delay: 0.34s;
+}
+
+.smoke-v5 i:nth-child(4) {
+  left: 56px;
+  top: 12px;
+  width: 10px;
+  height: 10px;
+  animation-delay: 0.52s;
+}
+
+.flame-engine-v5 {
+  position: absolute;
+  left: 8px;
+  top: 27px;
+  width: 106px;
+  height: 38px;
+  transform-origin: right center;
+  animation: engineKickV5 0.25s infinite alternate ease-in-out;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flame-core-v5,
+.flame-mid-v5,
+.flame-outer-v5 {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  border-radius: 70% 8% 8% 70% / 60% 35% 35% 60%;
+  transform-origin: right center;
+  translate: 0 -50%;
+}
+
+.flame-outer-v5 {
+  width: 102px;
+  height: 32px;
+  background:
+    radial-gradient(circle at 96% 50%, #fff7ed 0 8%, #facc15 11%, transparent 20%),
+    linear-gradient(90deg, rgba(127, 29, 29, 0), #b91c1c 22%, #dc2626 45%, #f97316 76%, #facc15 100%);
+  filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.85));
+  animation: outerFlickerV5 0.28s infinite alternate ease-in-out;
+  opacity: 0.95;
+}
+
+.flame-mid-v5 {
+  width: 82px;
+  height: 22px;
+  background:
+    radial-gradient(circle at 98% 50%, #fff 0 7%, #fde68a 12%, transparent 22%),
+    linear-gradient(90deg, rgba(234, 88, 12, 0), #ea580c 28%, #fb923c 68%, #fef3c7 100%);
+  filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.75));
+  animation: midFlickerV5 0.20s infinite alternate-reverse ease-in-out;
+}
+
+.flame-core-v5 {
+  width: 52px;
+  height: 12px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fef3c7 34%, #ffffff 100%);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
+  animation: coreFlashV5 0.16s infinite alternate ease-in-out;
+}
+
+.flame-tongue-v5 {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 85% 20% 85% 20%;
+  transform: rotate(45deg);
+  background: #f97316;
+  filter: drop-shadow(0 0 7px rgba(249, 115, 22, 0.8));
+  animation: tongueFlickerV5 0.24s infinite alternate ease-in-out;
+}
+
+.flame-tongue-v5.t1 {
+  left: 2px;
+  top: 3px;
+  background: #dc2626;
+  animation-delay: 0s;
+}
+
+.flame-tongue-v5.t2 {
+  left: 24px;
+  top: 21px;
+  width: 17px;
+  height: 17px;
+  background: #fb923c;
+  animation-delay: 0.07s;
+}
+
+.flame-tongue-v5.t3 {
+  left: 43px;
+  top: 2px;
+  width: 15px;
+  height: 15px;
+  background: #facc15;
+  animation-delay: 0.13s;
+}
+
+.flame-tongue-v5.t4 {
+  left: 61px;
+  top: 23px;
+  width: 10px;
+  height: 10px;
+  background: #fff7ed;
+  animation-delay: 0.19s;
+}
+
+.sparks-v5 {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  width: 116px;
+  height: 62px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.sparks-v5 i {
+  position: absolute;
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #facc15;
+  box-shadow: 0 0 8px #f97316, 0 0 14px rgba(239, 68, 68, 0.65);
+  animation: sparkTravelV5 0.8s infinite ease-out;
+}
+
+.sparks-v5 i:nth-child(1) {
+  left: 68px;
+  top: 20px;
+  animation-delay: 0s;
+}
+
+.sparks-v5 i:nth-child(2) {
+  left: 80px;
+  top: 10px;
+  width: 4px;
+  height: 4px;
+  animation-delay: 0.13s;
+}
+
+.sparks-v5 i:nth-child(3) {
+  left: 56px;
+  top: 48px;
+  width: 3px;
+  height: 3px;
+  animation-delay: 0.28s;
+}
+
+.sparks-v5 i:nth-child(4) {
+  left: 34px;
+  top: 26px;
+  width: 4px;
+  height: 4px;
+  animation-delay: 0.43s;
+}
+
+.sparks-v5 i:nth-child(5) {
+  left: 94px;
+  top: 34px;
+  width: 3px;
+  height: 3px;
+  animation-delay: 0.56s;
+}
+
+.soccer-shell-v5 {
+  position: relative;
+  z-index: 4;
+  transform: translateY(0);
+}
+
+.soccer-ball-v5 {
+  display: inline-block;
+  font-size: 48px;
+  line-height: 1;
+  animation: ballSpinV5 0.48s linear infinite;
+  filter:
+    drop-shadow(0 10px 10px rgba(17, 24, 39, 0.16))
+    drop-shadow(0 0 12px rgba(245, 124, 0, 0.38));
+}
+
+.ball-aura-v5 {
+  position: absolute;
+  inset: -9px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(251, 146, 60, 0.28), transparent 66%);
+  animation: auraPulseV5 0.4s infinite alternate ease-in-out;
+  z-index: -1;
+}
+
+.ground-shadow-v5 {
+  position: absolute;
+  bottom: 7px;
+  width: 66px;
+  height: 11px;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.14);
+  z-index: 0;
+}
+
+.loader-text {
+  font-weight: 900;
+  color: #f57c00;
+  letter-spacing: 0.01em;
+}
+
+.loader-subtext {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+@keyframes ballSpinV5 {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes engineKickV5 {
+  from {
+    transform: translateX(4px) scaleX(0.82) scaleY(0.92);
+    opacity: 0.88;
+  }
+
+  to {
+    transform: translateX(-14px) scaleX(1.16) scaleY(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes outerFlickerV5 {
+  from {
+    transform: translateY(-50%) rotate(-7deg) scaleX(0.9);
+  }
+
+  to {
+    transform: translateY(-50%) rotate(3deg) scaleX(1.12);
+  }
+}
+
+@keyframes midFlickerV5 {
+  from {
+    transform: translateY(-50%) rotate(4deg) scaleX(0.88);
+    opacity: 0.82;
+  }
+
+  to {
+    transform: translateY(-50%) rotate(-5deg) scaleX(1.18);
+    opacity: 1;
+  }
+}
+
+@keyframes coreFlashV5 {
+  from {
+    transform: translateY(-50%) scaleX(0.65);
+    opacity: 0.65;
+  }
+
+  to {
+    transform: translateY(-50%) scaleX(1.2);
+    opacity: 1;
+  }
+}
+
+@keyframes tongueFlickerV5 {
+  from {
+    transform: rotate(35deg) scale(0.72);
+    opacity: 0.65;
+  }
+
+  to {
+    transform: rotate(60deg) scale(1.16);
+    opacity: 1;
+  }
+}
+
+@keyframes sparkTravelV5 {
+  0% {
+    transform: translate(26px, 6px) scale(0.2);
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-58px, -24px) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@keyframes smokeFloatV5 {
+  0% {
+    transform: translate(28px, 8px) scale(0.6);
+    opacity: 0;
+  }
+
+  35% {
+    opacity: 0.55;
+  }
+
+  100% {
+    transform: translate(-30px, -15px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes heatPulseV5 {
+  from {
+    transform: scaleX(0.78) scaleY(0.9);
+    opacity: 0.5;
+  }
+
+  to {
+    transform: scaleX(1.1) scaleY(1.08);
+    opacity: 0.85;
+  }
+}
+
+@keyframes auraPulseV5 {
+  from {
+    transform: scale(0.86);
+    opacity: 0.44;
+  }
+
+  to {
+    transform: scale(1.18);
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 520px) {
+  .fire-scene-v5 {
+    width: 170px;
+    height: 88px;
+  }
+
+  .soccer-ball-v5 {
+    font-size: 44px;
+  }
+
+  .flame-engine-v5 {
+    left: 5px;
+    width: 94px;
+  }
+
+  .flame-outer-v5 {
+    width: 92px;
+  }
+
+  .flame-mid-v5 {
+    width: 74px;
+  }
+
+  .heat-haze-v5 {
+    left: 14px;
+    width: 82px;
+  }
+
+  .loader-text {
+    font-size: 14px;
+  }
+
+  .loader-subtext {
+    font-size: 12px;
+  }
+}

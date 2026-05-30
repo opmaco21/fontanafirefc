@@ -1,0 +1,665 @@
+/* Fontana Fire FC Attendance App - 02-buttons-tabs-events.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   BUTTONS
+   Primary button is orange.
+   Secondary button is dark.
+   Used for login, submit attendance, add player, logout,
+   and show/hide completed attendance.
+   ========================================================= */
+
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #f57c00;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #e86f00;
+}
+
+.btn-secondary {
+  background: #333;
+  color: #fff;
+  margin-top: 14px;
+}
+
+.btn-secondary:hover {
+  background: #111;
+}
+
+.btn-danger {
+  background: #c62828;
+  color: #ffffff;
+  border: none;
+}
+
+.btn-danger:hover {
+  background: #a91f1f;
+}
+
+.status-cancelled {
+  background: #e0e0e0;
+  border-left: 5px solid #757575;
+}
+
+/* =========================================================
+   PRACTICE / GAMES / TEAM EVENTS TABS
+   Lets coaches switch between practice attendance,
+   game attendance, and manually created team events.
+   ========================================================= */
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  flex: 1;
+  padding: 13px;
+  border: none;
+  border-radius: 12px;
+  background: #e5e7eb;
+  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: #f57c00;
+  color: #fff;
+}
+
+.tab:hover {
+  background: #d6d8dc;
+}
+
+.tab.active:hover {
+  background: #e86f00;
+}
+
+/* =========================================================
+   TEAM EVENT GROUP CHECKBOXES
+   Lets Admin / Team Mom choose one or more groups when
+   creating a Team Event.
+   ========================================================= */
+
+.team-event-group-box {
+  border: 1px solid #f2dcc8;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #fffaf5;
+}
+
+.team-event-group-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.team-event-group-option:last-child {
+  margin-bottom: 0;
+}
+
+.team-event-group-option input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+#teamEventGroupCheckboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* =========================================================
+   EVENT ACTION BUTTONS / DETAILS PANEL
+   Keeps event actions together and makes the selected event
+   easy to review before roster work or attendance.
+   ========================================================= */
+
+.event-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.event-action-buttons .btn {
+  margin-top: 0;
+}
+
+.btn-delete {
+  background: #7f1d1d;
+  color: #ffffff;
+}
+
+.btn-delete:hover {
+  background: #641818;
+}
+
+.event-details-card {
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  background: #fafafa;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.event-details-card h3 {
+  margin-top: 0;
+}
+
+.event-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.event-details-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-detail-wide {
+  grid-column: 1 / -1;
+}
+
+.event-detail-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.event-detail-value {
+  font-weight: bold;
+  line-height: 1.35;
+}
+
+/* =========================================================
+   PLAYER MANAGEMENT BATCH 3D FILTERS + CLEAN CARD TEXT
+   Adds birth year, photo release, and paperwork filters.
+   Keeps the 2 x 5 card layout and bottom action buttons.
+   ========================================================= */
+
+.player-management-filter-panel {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 0 0 12px;
+}
+
+.player-management-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.player-management-filter-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 0;
+}
+
+.player-management-filter-grid .btn-secondary {
+  margin-top: 0;
+  height: 48px;
+}
+
+.player-management-topline {
+  margin-bottom: 8px;
+}
+
+.player-management-card-line {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.35;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+.player-management-card-line strong {
+  color: #333;
+}
+
+@media (max-width: 700px) {
+  .player-management-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .player-management-filter-grid .btn-secondary {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   PLAYER MANAGEMENT SMALLER BUTTONS / BETTER CARD READABILITY
+   Batch 3D polish
+   ========================================================= */
+
+.player-management-card-scroll-item {
+  grid-template-columns: 1fr;
+}
+
+.player-management-card-scroll-item .player-management-info {
+  width: 100%;
+}
+
+.player-management-card-scroll-item .player-management-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e1e5ea;
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary {
+  flex: 1;
+  width: auto;
+  margin-top: 0;
+  padding: 9px 10px;
+  font-size: 13px;
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
+.player-card-scroll-nav .btn-secondary {
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+.player-card-page-label {
+  font-size: 14px;
+}
+
+.player-management-filters .btn-secondary,
+#playerClearFiltersBtn {
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+@media (max-width: 520px) {
+  .player-management-card-scroll-item .player-management-actions {
+    flex-direction: row;
+  }
+
+  .player-management-card-scroll-item .player-management-actions .btn-secondary {
+    font-size: 13px;
+    padding: 9px 8px;
+  }
+}
+
+/* =========================================================
+   BATCH 3G - PRACTICE / GAME ATTENDANCE LIST QOL
+   Compact attendance cards, quick status buttons, search,
+   status filters, birth-year filters, and auto-fit layout.
+   ========================================================= */
+
+.attendance-filter-panel {
+  margin: 10px 0 12px;
+  padding: 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.attendance-filter-row {
+  margin-bottom: 12px;
+}
+
+.attendance-filter-row:last-child {
+  margin-bottom: 0;
+}
+
+.attendance-search-row {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.attendance-filter-label {
+  display: block;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 7px;
+}
+
+.attendance-filter-label input {
+  margin-top: 7px;
+}
+
+.attendance-status-filter-buttons,
+.attendance-birth-year-filter-buttons,
+.attendance-gender-filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 8px;
+}
+
+.attendance-filter-btn {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 9px 8px;
+  background: #f9fafb;
+  color: #222;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.15;
+  cursor: pointer;
+  white-space: normal;
+}
+
+.attendance-filter-btn.active-filter {
+  background: #f57c00;
+  border-color: #f57c00;
+  color: #ffffff;
+}
+
+#playerList,
+#completedPlayerList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.player-row.attendance-player-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 12px;
+}
+
+.attendance-player-info {
+  min-width: 0;
+}
+
+.attendance-player-name {
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.attendance-player-meta {
+  margin-top: 3px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.3;
+}
+
+.attendance-status-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.attendance-status-btn {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 9px 7px;
+  background: #ffffff;
+  color: #222;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.1;
+  cursor: pointer;
+  white-space: normal;
+}
+
+.attendance-status-btn.active-status-btn {
+  color: #ffffff;
+}
+
+.attendance-status-btn.present-btn.active-status-btn {
+  background: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.attendance-status-btn.absent-btn.active-status-btn {
+  background: #c62828;
+  border-color: #c62828;
+}
+
+.attendance-status-btn.excused-btn.active-status-btn {
+  background: #f9a825;
+  border-color: #f9a825;
+  color: #111827;
+}
+
+.attendance-status-btn.cancelled-btn.active-status-btn {
+  background: #757575;
+  border-color: #757575;
+}
+
+.attendance-status-btn.clear-btn {
+  grid-column: 1 / -1;
+  background: #f3f4f6;
+}
+
+.attendance-status-btn.clear-btn.active-status-btn {
+  background: #6b7280;
+  border-color: #6b7280;
+  color: #ffffff;
+}
+
+.player-row.status-present .attendance-player-name,
+.player-row.status-absent .attendance-player-name,
+.player-row.status-excused .attendance-player-name,
+.player-row.status-cancelled .attendance-player-name,
+.player-row.status-clear .attendance-player-name {
+  color: #111827;
+}
+
+@media (max-width: 700px) {
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+
+  .tab {
+    min-height: 58px;
+  }
+
+  .attendance-status-filter-buttons,
+  .attendance-birth-year-filter-buttons,
+  .attendance-gender-filter-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+  }
+
+  #playerList,
+  #completedPlayerList {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .attendance-status-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .attendance-status-btn.clear-btn {
+    grid-column: auto;
+  }
+}
+
+/* =========================================================
+   BATCH 3G PLAYER FILTER CLEANUP
+   Keeps quick missing-item buttons visible and moves secondary
+   dropdown filters behind a More filters disclosure to avoid
+   duplicate-looking controls.
+   ========================================================= */
+
+.player-management-main-filter-grid {
+  grid-template-columns: minmax(180px, 1fr) minmax(150px, 220px);
+}
+
+.player-management-secondary-filter-grid {
+  margin-top: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.player-management-advanced-filters {
+  margin-top: 10px;
+  border-top: 1px solid #e1e5ea;
+  padding-top: 10px;
+}
+
+.player-management-advanced-filters summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #333;
+  list-style-position: inside;
+}
+
+.player-management-advanced-filters summary::marker {
+  color: #f57c00;
+}
+
+.player-management-quick-counts {
+  overflow-wrap: normal;
+}
+
+@media (max-width: 560px) {
+  .player-management-main-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   QOL - COMPACT ATTENDANCE PLAYER CARDS
+   Purpose:
+   - Make attendance cards smaller.
+   - Show 2 player cards per row on mobile/tablet.
+   - Keep status buttons compact.
+   - Keep Clear / Reset full width inside each card.
+   ========================================================= */
+
+/* Main attendance lists: 2 cards per row */
+#playerList,
+#completedPlayerList {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  padding: 8px !important;
+}
+
+/* Smaller card shell */
+#playerList .player-row.attendance-player-card,
+#completedPlayerList .player-row.attendance-player-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+  padding: 8px !important;
+  margin-bottom: 0 !important;
+  border-radius: 12px !important;
+  min-width: 0 !important;
+}
+
+/* Compact player name and info */
+.attendance-player-name {
+  font-size: 14px !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attendance-player-meta {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  margin-top: 2px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Smaller status button grid */
+.attendance-status-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+}
+
+/* Smaller buttons */
+.attendance-status-btn {
+  min-height: 30px !important;
+  padding: 6px 5px !important;
+  font-size: 11px !important;
+  line-height: 1.05 !important;
+  border-radius: 8px !important;
+}
+
+/* Keep Clear / Reset across the full card */
+.attendance-status-btn.clear-btn {
+  grid-column: 1 / -1 !important;
+}
+
+/* On very small screens, still keep 2 cards per row */
+@media (max-width: 700px) {
+  #playerList,
+  #completedPlayerList {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .attendance-status-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Extra-tight phones */
+@media (max-width: 420px) {
+  #playerList,
+  #completedPlayerList {
+    gap: 6px !important;
+    padding: 6px !important;
+  }
+
+  #playerList .player-row.attendance-player-card,
+  #completedPlayerList .player-row.attendance-player-card {
+    padding: 7px !important;
+  }
+
+  .attendance-player-name {
+    font-size: 13px !important;
+  }
+
+  .attendance-player-meta {
+    font-size: 10px !important;
+  }
+
+  .attendance-status-btn {
+    min-height: 28px !important;
+    padding: 5px 4px !important;
+    font-size: 10px !important;
+  }
+
+  .attendance-status-btn.clear-btn {
+    grid-column: 1 / -1 !important;
+  }
+}

@@ -1,0 +1,239 @@
+/* Fontana Fire FC Attendance App - 12-dashboard-final-badges-snapshot.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   BATCH 6O - DASHBOARD UPCOMING GAMES / SNACK SNAPSHOT
+   Adds a compact snapshot under Birthdays before Monthly Summary.
+   Also separates 100% attendance badges from 85%-99% badges.
+   ========================================================= */
+
+.dashboard-percent-perfect {
+  background: #fef3c7 !important;
+  border-color: #f59e0b !important;
+  color: #92400e !important;
+}
+
+.dashboard-upcoming-snapshot-section {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.dashboard-upcoming-snapshot-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.dashboard-upcoming-card {
+  border: 1px solid #f2dcc8;
+  border-left: 6px solid #f59e0b;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 11px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.10);
+}
+
+.dashboard-upcoming-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  margin-bottom: 7px;
+}
+
+.dashboard-upcoming-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #9a3412;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.dashboard-upcoming-card h4 {
+  margin: 0 0 8px;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.dashboard-upcoming-meta {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.3;
+}
+
+.dashboard-upcoming-meta strong {
+  color: #111827;
+}
+
+@media (max-width: 520px) {
+  .dashboard-upcoming-snapshot-list {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-upcoming-topline {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* =========================================================
+   BATCH 6P - DASHBOARD METALLIC GOLD PERFECT BADGE
+   100% = metallic gold medal style
+   85% to 99% = green
+   71% to 84% = yellow/watch
+   70% or lower = red
+   ========================================================= */
+
+.dashboard-percent-perfect {
+  background:
+    linear-gradient(
+      135deg,
+      #7c4a03 0%,
+      #b7791f 14%,
+      #facc15 31%,
+      #fff7c2 45%,
+      #f59e0b 58%,
+      #b45309 78%,
+      #fff0a3 100%
+    ) !important;
+  border-color: #92400e !important;
+  color: #3b2300 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 0 rgba(120, 53, 15, 0.35),
+    0 2px 8px rgba(245, 158, 11, 0.32);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-percent-perfect::after {
+  content: "";
+  position: absolute;
+  top: -45%;
+  left: -30%;
+  width: 38%;
+  height: 190%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  transform: rotate(24deg);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.dashboard-percent-good {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+  color: #166534 !important;
+}
+
+.dashboard-percent-watch {
+  background: #fef9c3 !important;
+  border-color: #eab308 !important;
+  color: #713f12 !important;
+}
+
+.dashboard-percent-low {
+  background: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  color: #991b1b !important;
+}
+
+.dashboard-percent-none {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+/* =========================================================
+   BATCH 6Q - DASHBOARD SNAPSHOT SCROLL FIX
+   Shows more games/team events without taking over dashboard.
+   ========================================================= */
+
+.dashboard-upcoming-snapshot-list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dashboard-upcoming-snapshot-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.dashboard-upcoming-card {
+  margin-bottom: 10px;
+}
+
+.dashboard-upcoming-card:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 520px) {
+  .dashboard-upcoming-snapshot-list {
+    max-height: 330px;
+  }
+}
+
+
+
+/* =========================================================
+   FINAL FIX - PERFECT ATTENDANCE GOLD FALLBACK
+   Keeps 100% / Perfect Attendance percentages gold even if
+   dashboard JS uses a slightly different class name.
+   ========================================================= */
+
+#dashboardSection .dashboard-percent-perfect,
+#dashboardSection .dashboard-perfect-badge,
+#dashboardSection .dashboard-alert-badge.dashboard-percent-perfect,
+#dashboardSection .dashboard-category-btn .dashboard-percent-perfect,
+#dashboardSection .dashboard-perfect-card .dashboard-alert-badge,
+#dashboardSection .dashboard-perfect-list .dashboard-alert-badge,
+#dashboardSection .perfect-attendance-badge,
+#dashboardSection .perfect-attendance-percent,
+#dashboardSection .percent-perfect,
+#dashboardSection .attendance-perfect,
+.dashboard-percent-perfect,
+.dashboard-perfect-badge,
+.dashboard-alert-badge.dashboard-percent-perfect,
+.dashboard-perfect-list .dashboard-alert-badge,
+.perfect-attendance-badge,
+.perfect-attendance-percent,
+.percent-perfect,
+.attendance-perfect {
+  background:
+    linear-gradient(
+      135deg,
+      #7c4a03 0%,
+      #b7791f 14%,
+      #facc15 31%,
+      #fff7c2 45%,
+      #f59e0b 58%,
+      #b45309 78%,
+      #fff0a3 100%
+    ) !important;
+  border-color: #92400e !important;
+  color: #3b2300 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 0 rgba(120, 53, 15, 0.35),
+    0 2px 8px rgba(245, 158, 11, 0.32) !important;
+}

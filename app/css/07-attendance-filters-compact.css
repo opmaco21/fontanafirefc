@@ -1,0 +1,41 @@
+/* Fontana Fire FC Attendance App - 07-attendance-filters-compact.css
+   Split from stable style.css. Load order matters. */
+
+/* =========================================================
+   COLLAPSIBLE ATTENDANCE FILTERS
+   Keeps Search + Gender visible and moves extra filters into
+   a More filters dropdown.
+   ========================================================= */
+
+.attendance-advanced-filters {
+  margin-top: 10px;
+  border-top: 1px solid #e1e5ea;
+  padding-top: 10px;
+}
+
+.attendance-advanced-filters summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #333;
+  list-style-position: inside;
+}
+
+.attendance-advanced-filters summary::marker {
+  color: #f57c00;
+}
+
+.attendance-advanced-filters .attendance-filter-row {
+  margin-top: 12px;
+}
+
+/* =========================================================
+   FIX - ATTENDANCE FILTER HIDDEN CARDS
+   Makes filtered-out attendance cards actually disappear.
+   ========================================================= */
+
+#playerList .player-row.hidden,
+#completedPlayerList .player-row.hidden,
+#playerList .attendance-player-card.hidden,
+#completedPlayerList .attendance-player-card.hidden {
+  display: none !important;
+}

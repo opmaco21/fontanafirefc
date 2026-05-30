@@ -8,11 +8,24 @@
   <!-- PAGE TITLE -->
   <title>Fontana Fire FC Attendance App</title>
 
-  <!-- CSS FILE
-       appLoader below updates this href with the current
-       automatic web build version before app.js is loaded.
+  <!-- CSS FILES
+       Split from the stable 72 KB style.css.
+       appLoader below updates each href with the current
+       automatic web build version before app JS is loaded.
+       Load order matters.
   -->
-  <link id="appStylesheet" rel="stylesheet" href="style.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/01-base-layout.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/02-buttons-tabs-events.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/03-attendance.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/04-event-roster.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/05-player-management.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/06-team-event-player-selectors.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/07-attendance-filters-compact.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/08-dashboard-core.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/09-login-fire-animation.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/10-dashboard-birthday-overrides.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/11-event-roster-filters.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/12-dashboard-final-badges-snapshot.css" />
 </head>
 
 <body>
@@ -539,10 +552,13 @@
         versionInfo.webVersion || String(Date.now())
       );
 
-      const stylesheet = document.getElementById("appStylesheet");
-      if (stylesheet) {
-        stylesheet.href = "style.css?v=" + assetVersion;
-      }
+      const stylesheets = document.querySelectorAll("link.appStylesheet");
+      stylesheets.forEach((stylesheet) => {
+        const baseHref = stylesheet.getAttribute("href");
+        if (baseHref) {
+          stylesheet.href = baseHref + "?v=" + assetVersion;
+        }
+      });
 
       const scripts = [
         "split/app.01.core.js",
