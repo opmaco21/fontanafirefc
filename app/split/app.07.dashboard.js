@@ -103,7 +103,17 @@ function formatDashboardBirthday(value) {
 function getDashboardPercentClass(value, counted) {
   const percent = Number(value);
   const total = Number(counted || 0);
+
   if (!total) return "dashboard-percent-none";
+
+  /*
+    Excel-compatible attendance rule:
+    100% should stay metallic gold.
+    Percentages are calculated by the backend as:
+    Present / (Present + Absent)
+    Excused and Cancelled do not count against percentage.
+  */
+  if (percent === 100) return "dashboard-percent-perfect";
   if (percent >= 85) return "dashboard-percent-good";
   if (percent > 70) return "dashboard-percent-watch";
   return "dashboard-percent-low";
@@ -302,7 +312,7 @@ function renderPracticeSummary(summary) {
   const practice = summary || {};
   dashboardPracticeSummary.innerHTML = [
     renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month"),
-    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Cancelled does not count"),
+    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count"),
     renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention"),
     renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance")
   ].join("");
@@ -313,7 +323,7 @@ function renderGameSummary(summary) {
   const game = summary || {};
   dashboardGameSummary.innerHTML = [
     renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month"),
-    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Cancelled does not count"),
+    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count"),
     renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention"),
     renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance")
   ].join("");
@@ -324,7 +334,7 @@ function renderEventSummary(summary) {
   const event = summary || {};
   dashboardEventSummary.innerHTML = [
     renderDashboardCard("Total Events", event.TotalEvents || 0, "Team events / scrimmages"),
-    renderDashboardCard("Event Att %", formatDashboardPercent(event.EventAttendancePercent), "Cancelled does not count"),
+    renderDashboardCard("Event Att %", formatDashboardPercent(event.EventAttendancePercent), "Excused and cancelled do not count"),
     renderDashboardCard("70% or Lower", event.LowEventPlayers || 0, "Players needing attention"),
     renderDashboardCard("85% or Higher", event.HighEventPlayers || 0, "Strong attendance"),
     renderDashboardCard("Cancelled Events", event.CancelledEvents || 0, "Selected month")
