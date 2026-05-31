@@ -406,6 +406,7 @@ function ensurePlayerManagementFilters() {
           Birth Year
           <select id="pmFilterBirthYear">
             <option value="">All Birth Years</option>
+            <option value="2011">2011</option>
             <option value="2012">2012</option>
             <option value="2013">2013</option>
             <option value="2014">2014</option>
@@ -717,6 +718,7 @@ function ensurePlayerManagementForm() {
             Birth Year
             <select id="pmBirthYear">
               <option value="">Select birth year</option>
+              <option value="2011">2011</option>
               <option value="2012">2012</option>
               <option value="2013">2013</option>
               <option value="2014">2014</option>
@@ -1047,9 +1049,6 @@ function validatePlayerPayload(payload) {
     return "First name, last name, and birth year are required.";
   }
 
-  if (payload.birthYear < 2012 || payload.birthYear > 2021) {
-    return "Birth year must be between 2012 and 2021.";
-  }
 
   return "";
 }
