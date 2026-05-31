@@ -39,15 +39,12 @@ function safeValue(value) {
   return value === null || value === undefined ? "" : String(value);
 }
 
-function formatPlayerNumberDisplay(player, includeTempNumber = false) {
+function formatPlayerNumberDisplay(player) {
   const number = Number(player && player.PlayerNumber);
 
   if (!Number.isFinite(number) || number <= 0) return "No #";
 
-  if (number >= 9000) {
-    return includeTempNumber ? `Temp # (${number})` : "Temp #";
-  }
-
+  // Keep temporary 9000+ values visible so they can be updated later.
   return `#${number}`;
 }
 
@@ -110,7 +107,7 @@ function formatGenderShort(value) {
 }
 
 function formatDisplayDate(value) {
-  if (!value) return "-";
+  if (!value) return "Not entered";
 
   const raw = String(value);
   const dateOnly = raw.includes("T") ? raw.split("T")[0] : raw.substring(0, 10);
@@ -126,7 +123,7 @@ function formatYesNo(value) {
 }
 
 function detailLine(label, value) {
-  const displayValue = value === null || value === undefined || value === "" ? "-" : value;
+  const displayValue = value === null || value === undefined || value === "" || value === "-" ? "Not entered" : value;
 
   return `
     <div class="player-detail-line">
@@ -200,7 +197,9 @@ function showPlayerDetails(playerId) {
         <h4>Player Info</h4>
         ${detailLine("Player #", playerNumber)}
         ${isTemporaryPlayerNumber(player) ? detailLine("Jersey Status", "Temporary number - update when real jersey number is assigned") : ""}
+        ${detailLine("Full Name", player.FullName || fullName)}
         ${detailLine("Group", groupLabel)}
+        ${detailLine("Group ID", player.GroupID)}
         ${detailLine("First Name", player.FirstName)}
         ${detailLine("Last Name", player.LastName)}
         ${detailLine("Birth Year", player.BirthYear || player.GroupCode)}
@@ -1317,9 +1316,9 @@ function renderPlayerManagementList(players) {
     const statusLabel = getPlayerStatusLabel(player);
     const canToggle = canManagePlayers();
     const genderLabel = formatGenderShort(player.Gender);
-    const parent1Name = player.ParentName || "No parent name entered";
-    const parent1Phone = player.ParentPhone || "No phone entered";
-    const parentEmail = player.ParentEmail || "No email entered";
+    const parent1Name = player.ParentName || "Not entered";
+    const parent1Phone = player.ParentPhone || "Not entered";
+    const parentEmail = player.ParentEmail || "Not entered";
     const parent2Name = player.Parent2Name || "";
     const parent2Phone = player.Parent2Phone || "";
 
