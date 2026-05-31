@@ -39,20 +39,6 @@ function safeValue(value) {
   return value === null || value === undefined ? "" : String(value);
 }
 
-function formatPlayerNumberDisplay(player) {
-  const number = Number(player && player.PlayerNumber);
-
-  if (!Number.isFinite(number) || number <= 0) return "No #";
-
-  // Keep temporary 9000+ values visible so they can be updated later.
-  return `#${number}`;
-}
-
-function isTemporaryPlayerNumber(player) {
-  const number = Number(player && player.PlayerNumber);
-  return Number.isFinite(number) && number >= 9000;
-}
-
 function getPhotoReleaseLabel(player) {
   return player.PhotoReleaseStatus || "Not Received";
 }
@@ -107,7 +93,7 @@ function formatGenderShort(value) {
 }
 
 function formatDisplayDate(value) {
-  if (!value) return "Not entered";
+  if (!value) return "-";
 
   const raw = String(value);
   const dateOnly = raw.includes("T") ? raw.split("T")[0] : raw.substring(0, 10);
@@ -122,8 +108,119 @@ function formatYesNo(value) {
   return value ? "Yes" : "No";
 }
 
+
+function formatPhoneNumberForDisplay(value) {
+  const raw = safeValue(value).trim();
+  if (!raw) return "";
+
+  const digits = raw.replace(/\D/g, "");
+
+  if (digits.length === 10) {
+    return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6)}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `(${digits.substring(1, 4)}) ${digits.substring(4, 7)}-${digits.substring(7)}`;
+  }
+
+  return raw;
+}
+
+function formatPhoneInputById(id) {
+  const input = document.getElementById(id);
+  if (!input) return;
+
+  input.value = formatPhoneNumberForDisplay(input.value);
+}
+
+function setupPlayerPhoneFormatting() {
+  [
+    "pmParentPhone",
+    "pmParent2Phone",
+    "pmEmergencyContactPhone",
+    "pmEmergencyContactAltPhone"
+  ].forEach(id => {
+    const input = document.getElementById(id);
+    if (!input || input.dataset.phoneFormatterAttached) return;
+
+    input.dataset.phoneFormatterAttached = "1";
+    input.addEventListener("blur", () => formatPhoneInputById(id));
+  });
+}
+
+const PLAYER_MANAGEMENT_ZIP_LOOKUP = {
+  "92335": { city: "Fontana", state: "CA" },
+  "92336": { city: "Fontana", state: "CA" },
+  "92337": { city: "Fontana", state: "CA" },
+  "92316": { city: "Bloomington", state: "CA" },
+  "92376": { city: "Rialto", state: "CA" },
+  "91739": { city: "Rancho Cucamonga", state: "CA" },
+  "91730": { city: "Rancho Cucamonga", state: "CA" },
+  "91761": { city: "Ontario", state: "CA" },
+  "91762": { city: "Ontario", state: "CA" },
+  "91764": { city: "Ontario", state: "CA" }
+};
+
+function getZipCityState(zipValue) {
+  const zip = safeValue(zipValue).trim().substring(0, 5);
+  return PLAYER_MANAGEMENT_ZIP_LOOKUP[zip] || null;
+}
+
+function applyPlayerAddressDefaults(forceCityFromZip = false) {
+  const cityInput = document.getElementById("pmCity");
+  const stateInput = document.getElementById("pmState");
+  const zipInput = document.getElementById("pmZipCode");
+
+  if (stateInput && !stateInput.value.trim()) {
+    stateInput.value = "CA";
+  }
+
+  const match = zipInput ? getZipCityState(zipInput.value) : null;
+
+  if (!match) return;
+
+  if (stateInput && (!stateInput.value.trim() || forceCityFromZip)) {
+    stateInput.value = match.state;
+  }
+
+  if (cityInput && (!cityInput.value.trim() || forceCityFromZip)) {
+    cityInput.value = match.city;
+  }
+}
+
+function setupPlayerAddressAutoFill() {
+  const zipInput = document.getElementById("pmZipCode");
+  const stateInput = document.getElementById("pmState");
+
+  applyPlayerAddressDefaults(false);
+
+  if (stateInput && !stateInput.dataset.defaultAttached) {
+    stateInput.dataset.defaultAttached = "1";
+
+    stateInput.addEventListener("blur", () => {
+      if (!stateInput.value.trim()) {
+        stateInput.value = "CA";
+      }
+    });
+  }
+
+  if (zipInput && !zipInput.dataset.cityStateAttached) {
+    zipInput.dataset.cityStateAttached = "1";
+
+    zipInput.addEventListener("input", () => {
+      if (zipInput.value.trim().length >= 5) {
+        applyPlayerAddressDefaults(false);
+      }
+    });
+
+    zipInput.addEventListener("blur", () => {
+      applyPlayerAddressDefaults(false);
+    });
+  }
+}
+
 function detailLine(label, value) {
-  const displayValue = value === null || value === undefined || value === "" || value === "-" ? "Not entered" : value;
+  const displayValue = value === null || value === undefined || value === "" ? "-" : value;
 
   return `
     <div class="player-detail-line">
@@ -172,7 +269,7 @@ function showPlayerDetails(playerId) {
 
   const fullName = `${player.FirstName || ""} ${player.LastName || ""}`.trim();
   const groupLabel = player.GroupName || player.GroupCode || "-";
-  const playerNumber = formatPlayerNumberDisplay(player, true);
+  const playerNumber = player.PlayerNumber === 0 || player.PlayerNumber ? `#${player.PlayerNumber}` : "-";
   const fullAddress = [player.StreetAddress, player.City, player.State, player.ZipCode]
     .filter(Boolean)
     .join(", ");
@@ -196,10 +293,6 @@ function showPlayerDetails(playerId) {
       <section class="player-details-section">
         <h4>Player Info</h4>
         ${detailLine("Player #", playerNumber)}
-        ${isTemporaryPlayerNumber(player) ? detailLine("Jersey Status", "Temporary number - update when real jersey number is assigned") : ""}
-        ${detailLine("Full Name", player.FullName || fullName)}
-        ${detailLine("Group", groupLabel)}
-        ${detailLine("Group ID", player.GroupID)}
         ${detailLine("First Name", player.FirstName)}
         ${detailLine("Last Name", player.LastName)}
         ${detailLine("Birth Year", player.BirthYear || player.GroupCode)}
@@ -213,10 +306,10 @@ function showPlayerDetails(playerId) {
       <section class="player-details-section">
         <h4>Parent Info</h4>
         ${detailLine("Parent 1 Name", player.ParentName)}
-        ${detailLine("Parent 1 Phone", player.ParentPhone)}
+        ${detailLine("Parent 1 Phone", formatPhoneNumberForDisplay(player.ParentPhone))}
         ${detailLine("Parent Email", player.ParentEmail)}
         ${detailLine("Parent 2 Name", player.Parent2Name)}
-        ${detailLine("Parent 2 Phone", player.Parent2Phone)}
+        ${detailLine("Parent 2 Phone", formatPhoneNumberForDisplay(player.Parent2Phone))}
       </section>
 
       <section class="player-details-section">
@@ -232,8 +325,7 @@ function showPlayerDetails(playerId) {
         <h4>Emergency Contact</h4>
         ${detailLine("Name", player.EmergencyContactName)}
         ${detailLine("Relationship", player.EmergencyContactRelationship)}
-        ${detailLine("Phone", player.EmergencyContactPhone)}
-        ${detailLine("Alt Phone", player.EmergencyContactAltPhone)}
+        ${detailLine("Phone", formatPhoneNumberForDisplay(player.EmergencyContactPhone))}
         ${detailLine("Notes", player.EmergencyNotes)}
       </section>
 
@@ -243,7 +335,6 @@ function showPlayerDetails(playerId) {
         ${detailLine("Paperwork", player.PaperworkStatus || "Not Received")}
         ${detailLine("Photo Release", getPhotoReleaseLabel(player))}
         ${detailLine("Photo Form Received", formatYesNo(player.PhotoReleaseFormReceived))}
-        ${detailLine("Created", formatPlayerUpdatedAt(player.CreatedAt))}
         ${detailLine("Last Updated", formatPlayerUpdatedAt(player.UpdatedAt))}
       </section>
     </div>
@@ -316,7 +407,6 @@ function ensurePlayerManagementFilters() {
           Birth Year
           <select id="pmFilterBirthYear">
             <option value="">All Birth Years</option>
-            <option value="2011">2011</option>
             <option value="2012">2012</option>
             <option value="2013">2013</option>
             <option value="2014">2014</option>
@@ -628,7 +718,6 @@ function ensurePlayerManagementForm() {
             Birth Year
             <select id="pmBirthYear">
               <option value="">Select birth year</option>
-              <option value="2011">2011</option>
               <option value="2012">2012</option>
               <option value="2013">2013</option>
               <option value="2014">2014</option>
@@ -705,7 +794,7 @@ function ensurePlayerManagementForm() {
 
       <div class="player-form-section player-private-section">
         <h4>Address</h4>
-        <p class="player-form-note">Address information stays inside Edit Player and View Details.</p>
+        <p class="player-form-note">Enter street/ZIP. State defaults to CA, and common local ZIP codes can fill City/State automatically.</p>
 
         <div class="player-form-grid">
           <label>
@@ -854,6 +943,9 @@ function ensurePlayerManagementForm() {
     });
   }
 
+  setupPlayerAddressAutoFill();
+  setupPlayerPhoneFormatting();
+
   if (playerManagementMode !== "edit") {
   resetPlayerManagementForm(false);
 }
@@ -924,10 +1016,10 @@ function getPlayerFormPayload() {
     gender: genderInput ? genderInput.value : "",
 
     parentName: parentNameInput ? parentNameInput.value.trim() : "",
-    parentPhone: parentPhoneInput ? parentPhoneInput.value.trim() : "",
+    parentPhone: parentPhoneInput ? formatPhoneNumberForDisplay(parentPhoneInput.value) : "",
     parentEmail: parentEmailInput ? parentEmailInput.value.trim() : "",
     parent2Name: parent2NameInput ? parent2NameInput.value.trim() : "",
-    parent2Phone: parent2PhoneInput ? parent2PhoneInput.value.trim() : "",
+    parent2Phone: parent2PhoneInput ? formatPhoneNumberForDisplay(parent2PhoneInput.value) : "",
 
     streetAddress: streetAddressInput ? streetAddressInput.value.trim() : "",
     city: cityInput ? cityInput.value.trim() : "",
@@ -935,8 +1027,8 @@ function getPlayerFormPayload() {
     zipCode: zipCodeInput ? zipCodeInput.value.trim() : "",
     emergencyContactName: emergencyContactNameInput ? emergencyContactNameInput.value.trim() : "",
     emergencyContactRelationship: emergencyContactRelationshipInput ? emergencyContactRelationshipInput.value.trim() : "",
-    emergencyContactPhone: emergencyContactPhoneInput ? emergencyContactPhoneInput.value.trim() : "",
-    emergencyContactAltPhone: emergencyContactAltPhoneInput ? emergencyContactAltPhoneInput.value.trim() : "",
+    emergencyContactPhone: emergencyContactPhoneInput ? formatPhoneNumberForDisplay(emergencyContactPhoneInput.value) : "",
+    emergencyContactAltPhone: emergencyContactAltPhoneInput ? formatPhoneNumberForDisplay(emergencyContactAltPhoneInput.value) : "",
     emergencyNotes: emergencyNotesInput ? emergencyNotesInput.value.trim() : "",
 
     snackPreference: snackPreferenceInput ? snackPreferenceInput.value : "Bring Snack",
@@ -955,6 +1047,11 @@ function validatePlayerPayload(payload) {
   if (!payload.firstName || !payload.lastName || !payload.birthYear) {
     return "First name, last name, and birth year are required.";
   }
+
+  if (payload.birthYear < 2012 || payload.birthYear > 2021) {
+    return "Birth year must be between 2012 and 2021.";
+  }
+
   return "";
 }
 
@@ -1064,7 +1161,7 @@ function resetPlayerManagementForm(clearMessage = true) {
     pmParent2Phone: "",
     pmStreetAddress: "",
     pmCity: "",
-    pmState: "",
+    pmState: "CA",
     pmZipCode: "",
     pmEmergencyContactName: "",
     pmEmergencyContactRelationship: "",
@@ -1134,18 +1231,18 @@ editingPlayerId = player.PlayerID;
     pmDateOfBirth: formatDateForInput(player.DateOfBirth),
     pmStartDate: formatDateForInput(player.StartDate),
     pmParentName: safeValue(player.ParentName),
-    pmParentPhone: safeValue(player.ParentPhone),
+    pmParentPhone: formatPhoneNumberForDisplay(player.ParentPhone),
     pmParentEmail: safeValue(player.ParentEmail),
     pmParent2Name: safeValue(player.Parent2Name),
-    pmParent2Phone: safeValue(player.Parent2Phone),
+    pmParent2Phone: formatPhoneNumberForDisplay(player.Parent2Phone),
     pmStreetAddress: safeValue(player.StreetAddress),
     pmCity: safeValue(player.City),
-    pmState: safeValue(player.State),
+    pmState: safeValue(player.State) || "CA",
     pmZipCode: safeValue(player.ZipCode),
     pmEmergencyContactName: safeValue(player.EmergencyContactName),
     pmEmergencyContactRelationship: safeValue(player.EmergencyContactRelationship),
-    pmEmergencyContactPhone: safeValue(player.EmergencyContactPhone),
-    pmEmergencyContactAltPhone: safeValue(player.EmergencyContactAltPhone),
+    pmEmergencyContactPhone: formatPhoneNumberForDisplay(player.EmergencyContactPhone),
+    pmEmergencyContactAltPhone: formatPhoneNumberForDisplay(player.EmergencyContactAltPhone),
     pmEmergencyNotes: safeValue(player.EmergencyNotes),
     pmSnackPreference: player.SnackPreference === "Paid Out" ? "Paid Out" : "Bring Snack",
     pmPaperworkStatus:
@@ -1172,6 +1269,10 @@ editingPlayerId = player.PlayerID;
       element.value = value;
     }
   });
+
+  setupPlayerAddressAutoFill();
+  setupPlayerPhoneFormatting();
+  applyPlayerAddressDefaults(false);
 
   setPlayerManagementMessage(
     "Editing player. Make changes, then click Save Changes.",
@@ -1310,17 +1411,19 @@ function renderPlayerManagementList(players) {
 
     const groupLabel = player.GroupName || player.GroupCode || "No Group";
 
-    const playerNumber = formatPlayerNumberDisplay(player, false);
-    const playerNumberDetail = formatPlayerNumberDisplay(player, true);
+    const playerNumber =
+      player.PlayerNumber === 0 || player.PlayerNumber
+        ? `#${player.PlayerNumber}`
+        : "No #";
 
     const statusLabel = getPlayerStatusLabel(player);
     const canToggle = canManagePlayers();
     const genderLabel = formatGenderShort(player.Gender);
-    const parent1Name = player.ParentName || "Not entered";
-    const parent1Phone = player.ParentPhone || "Not entered";
-    const parentEmail = player.ParentEmail || "Not entered";
+    const parent1Name = player.ParentName || "No parent name entered";
+    const parent1Phone = formatPhoneNumberForDisplay(player.ParentPhone) || "No phone entered";
+    const parentEmail = player.ParentEmail || "No email entered";
     const parent2Name = player.Parent2Name || "";
-    const parent2Phone = player.Parent2Phone || "";
+    const parent2Phone = formatPhoneNumberForDisplay(player.Parent2Phone) || "";
 
     card.dataset.playerId = player.PlayerID;
     card.tabIndex = 0;
@@ -1342,21 +1445,12 @@ function renderPlayerManagementList(players) {
         </div>
 
         <div class="player-card-contact-block">
-          <div class="player-management-card-line"><span>Group:</span> <strong>${groupLabel}</strong></div>
-          <div class="player-management-card-line"><span>DOB:</span> <strong>${formatDisplayDate(player.DateOfBirth)}</strong></div>
-          ${isTemporaryPlayerNumber(player)
-            ? `<div class="player-management-card-line"><span>Jersey:</span> <strong>${playerNumberDetail}</strong></div>`
-            : ""}
           <div class="player-management-card-line"><span>Parent 1:</span> <strong>${parent1Name}</strong></div>
           <div class="player-management-card-line"><span>Phone:</span> <strong>${parent1Phone}</strong></div>
           <div class="player-management-card-line"><span>Email:</span> <strong>${parentEmail}</strong></div>
           ${parent2Name || parent2Phone
             ? `<div class="player-management-card-line"><span>Parent 2:</span> <strong>${parent2Name || "-"}${parent2Phone ? ` | ${parent2Phone}` : ""}</strong></div>`
             : ""}
-          <div class="player-management-card-line"><span>Snack:</span> <strong>${player.SnackPreference || "Bring Snack"}</strong></div>
-          <div class="player-management-card-line"><span>Paperwork:</span> <strong>${player.PaperworkStatus || "Not Received"}</strong></div>
-          <div class="player-management-card-line"><span>Photo:</span> <strong>${getPhotoReleaseLabel(player)}</strong></div>
-          <div class="player-management-card-line"><span>Updated:</span> <strong>${formatPlayerUpdatedAt(player.UpdatedAt)}</strong></div>
         </div>
       </div>
 
