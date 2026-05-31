@@ -318,7 +318,6 @@ function showPlayerDetails(playerId) {
         ${detailLine("City", player.City)}
         ${detailLine("State", player.State)}
         ${detailLine("ZIP Code", player.ZipCode)}
-        ${detailLine("Full Address", fullAddress)}
       </section>
 
       <section class="player-details-section">
