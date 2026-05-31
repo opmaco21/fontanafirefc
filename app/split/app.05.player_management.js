@@ -39,6 +39,23 @@ function safeValue(value) {
   return value === null || value === undefined ? "" : String(value);
 }
 
+function formatPlayerNumberDisplay(player, includeTempNumber = false) {
+  const number = Number(player && player.PlayerNumber);
+
+  if (!Number.isFinite(number) || number <= 0) return "No #";
+
+  if (number >= 9000) {
+    return includeTempNumber ? `Temp # (${number})` : "Temp #";
+  }
+
+  return `#${number}`;
+}
+
+function isTemporaryPlayerNumber(player) {
+  const number = Number(player && player.PlayerNumber);
+  return Number.isFinite(number) && number >= 9000;
+}
+
 function getPhotoReleaseLabel(player) {
   return player.PhotoReleaseStatus || "Not Received";
 }
@@ -158,7 +175,7 @@ function showPlayerDetails(playerId) {
 
   const fullName = `${player.FirstName || ""} ${player.LastName || ""}`.trim();
   const groupLabel = player.GroupName || player.GroupCode || "-";
-  const playerNumber = player.PlayerNumber === 0 || player.PlayerNumber ? `#${player.PlayerNumber}` : "-";
+  const playerNumber = formatPlayerNumberDisplay(player, true);
   const fullAddress = [player.StreetAddress, player.City, player.State, player.ZipCode]
     .filter(Boolean)
     .join(", ");
@@ -182,6 +199,8 @@ function showPlayerDetails(playerId) {
       <section class="player-details-section">
         <h4>Player Info</h4>
         ${detailLine("Player #", playerNumber)}
+        ${isTemporaryPlayerNumber(player) ? detailLine("Jersey Status", "Temporary number - update when real jersey number is assigned") : ""}
+        ${detailLine("Group", groupLabel)}
         ${detailLine("First Name", player.FirstName)}
         ${detailLine("Last Name", player.LastName)}
         ${detailLine("Birth Year", player.BirthYear || player.GroupCode)}
@@ -215,6 +234,7 @@ function showPlayerDetails(playerId) {
         ${detailLine("Name", player.EmergencyContactName)}
         ${detailLine("Relationship", player.EmergencyContactRelationship)}
         ${detailLine("Phone", player.EmergencyContactPhone)}
+        ${detailLine("Alt Phone", player.EmergencyContactAltPhone)}
         ${detailLine("Notes", player.EmergencyNotes)}
       </section>
 
@@ -224,6 +244,7 @@ function showPlayerDetails(playerId) {
         ${detailLine("Paperwork", player.PaperworkStatus || "Not Received")}
         ${detailLine("Photo Release", getPhotoReleaseLabel(player))}
         ${detailLine("Photo Form Received", formatYesNo(player.PhotoReleaseFormReceived))}
+        ${detailLine("Created", formatPlayerUpdatedAt(player.CreatedAt))}
         ${detailLine("Last Updated", formatPlayerUpdatedAt(player.UpdatedAt))}
       </section>
     </div>
@@ -296,6 +317,7 @@ function ensurePlayerManagementFilters() {
           Birth Year
           <select id="pmFilterBirthYear">
             <option value="">All Birth Years</option>
+            <option value="2011">2011</option>
             <option value="2012">2012</option>
             <option value="2013">2013</option>
             <option value="2014">2014</option>
@@ -607,6 +629,7 @@ function ensurePlayerManagementForm() {
             Birth Year
             <select id="pmBirthYear">
               <option value="">Select birth year</option>
+              <option value="2011">2011</option>
               <option value="2012">2012</option>
               <option value="2013">2013</option>
               <option value="2014">2014</option>
@@ -933,11 +956,6 @@ function validatePlayerPayload(payload) {
   if (!payload.firstName || !payload.lastName || !payload.birthYear) {
     return "First name, last name, and birth year are required.";
   }
-
-  if (payload.birthYear < 2012 || payload.birthYear > 2021) {
-    return "Birth year must be between 2012 and 2021.";
-  }
-
   return "";
 }
 
@@ -1293,10 +1311,8 @@ function renderPlayerManagementList(players) {
 
     const groupLabel = player.GroupName || player.GroupCode || "No Group";
 
-    const playerNumber =
-      player.PlayerNumber === 0 || player.PlayerNumber
-        ? `#${player.PlayerNumber}`
-        : "No #";
+    const playerNumber = formatPlayerNumberDisplay(player, false);
+    const playerNumberDetail = formatPlayerNumberDisplay(player, true);
 
     const statusLabel = getPlayerStatusLabel(player);
     const canToggle = canManagePlayers();
@@ -1327,12 +1343,21 @@ function renderPlayerManagementList(players) {
         </div>
 
         <div class="player-card-contact-block">
+          <div class="player-management-card-line"><span>Group:</span> <strong>${groupLabel}</strong></div>
+          <div class="player-management-card-line"><span>DOB:</span> <strong>${formatDisplayDate(player.DateOfBirth)}</strong></div>
+          ${isTemporaryPlayerNumber(player)
+            ? `<div class="player-management-card-line"><span>Jersey:</span> <strong>${playerNumberDetail}</strong></div>`
+            : ""}
           <div class="player-management-card-line"><span>Parent 1:</span> <strong>${parent1Name}</strong></div>
           <div class="player-management-card-line"><span>Phone:</span> <strong>${parent1Phone}</strong></div>
           <div class="player-management-card-line"><span>Email:</span> <strong>${parentEmail}</strong></div>
           ${parent2Name || parent2Phone
             ? `<div class="player-management-card-line"><span>Parent 2:</span> <strong>${parent2Name || "-"}${parent2Phone ? ` | ${parent2Phone}` : ""}</strong></div>`
             : ""}
+          <div class="player-management-card-line"><span>Snack:</span> <strong>${player.SnackPreference || "Bring Snack"}</strong></div>
+          <div class="player-management-card-line"><span>Paperwork:</span> <strong>${player.PaperworkStatus || "Not Received"}</strong></div>
+          <div class="player-management-card-line"><span>Photo:</span> <strong>${getPhotoReleaseLabel(player)}</strong></div>
+          <div class="player-management-card-line"><span>Updated:</span> <strong>${formatPlayerUpdatedAt(player.UpdatedAt)}</strong></div>
         </div>
       </div>
 

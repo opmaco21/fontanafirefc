@@ -103,17 +103,7 @@ function formatDashboardBirthday(value) {
 function getDashboardPercentClass(value, counted) {
   const percent = Number(value);
   const total = Number(counted || 0);
-
   if (!total) return "dashboard-percent-none";
-
-  /*
-    Dashboard QOL:
-    100% attendance should use the metallic gold perfect badge.
-    This is month-aware because the backend filters percentages by
-    dashboardSelectedMonth before sending these values.
-  */
-  if (percent === 100) return "dashboard-percent-perfect";
-
   if (percent >= 85) return "dashboard-percent-good";
   if (percent > 70) return "dashboard-percent-watch";
   return "dashboard-percent-low";
@@ -499,7 +489,7 @@ function renderPerfectPlayers(rows) {
     dashboardPerfectPlayersCount,
     rows,
     "perfect",
-    "No players have 100% counted attendance for the selected month yet."
+    "No players have 100% attendance for both practices and games in the selected month yet."
   );
 }
 
@@ -509,7 +499,7 @@ function renderExceptionalPlayers(rows) {
     dashboardExceptionalPlayersCount,
     rows,
     "exceptional",
-    "No players have outstanding attendance at 85% or higher for practices or games in the selected month yet."
+    "No players have outstanding attendance at 85% or higher for both practices and games in the selected month yet."
   );
 }
 
