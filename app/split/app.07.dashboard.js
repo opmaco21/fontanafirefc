@@ -219,6 +219,17 @@ function renderBirthdays(data) {
     ? formatDashboardMonthLabel(nextBirthdayMonth)
     : "Next Month";
 
+  // Update the section heading to show player counts for each month
+  const birthdayHeading = dashboardBirthdays.previousElementSibling;
+  if (birthdayHeading && birthdayHeading.tagName === "H3") {
+    const thisCount = thisMonth.length;
+    const nextCount = nextMonth.length;
+    const thisLabel = thisCount === 1 ? "1 player" : `${thisCount} players`;
+    const nextLabel = nextCount === 1 ? "1 player" : `${nextCount} players`;
+    birthdayHeading.textContent =
+      `Birthdays — ${thisLabel} in ${selectedBirthdayLabel}, ${nextLabel} in ${nextBirthdayLabel}`;
+  }
+
   dashboardBirthdays.innerHTML = `
     <div class="dashboard-mini-card dashboard-birthday-current">
       <h4>${escapeDashboardHtml(selectedBirthdayLabel)}</h4>
