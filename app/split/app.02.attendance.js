@@ -63,18 +63,8 @@ function ensureAttendanceFilterControls() {
 
         <div class="attendance-filter-row">
           <div class="attendance-filter-label">Birth Year</div>
-          <div class="attendance-birth-year-filter-buttons">
+          <div id="attendanceBirthYearFilterButtons" class="attendance-birth-year-filter-buttons">
             <button type="button" class="attendance-filter-btn active-filter" data-birth-year-filter="">All</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2012">2012</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2013">2013</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2014">2014</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2015">2015</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2016">2016</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2017">2017</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2018">2018</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2019">2019</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2020">2020</button>
-            <button type="button" class="attendance-filter-btn" data-birth-year-filter="2021">2021</button>
           </div>
         </div>
       </details>
@@ -281,6 +271,7 @@ async function loadPlayers() {
       playerList.appendChild(createAttendancePlayerRow(player));
     });
 
+    updateAttendanceBirthYearButtons(players);
     updateAttendanceDisplay();
 
     updateEventActionButtons();
@@ -295,6 +286,49 @@ async function loadPlayers() {
 /* =========================
    CLEAR ATTENDANCE SELECTIONS
    ========================= */
+/* =========================
+   DYNAMIC BIRTH YEAR FILTER BUTTONS
+   Generates buttons from the actual players loaded for this event.
+   Adding a 2022 player automatically adds the 2022 button —
+   no code changes needed.
+   ========================= */
+function updateAttendanceBirthYearButtons(players) {
+  const container = document.getElementById("attendanceBirthYearFilterButtons");
+  if (!container) return;
+
+  // Collect distinct birth years from loaded players, sorted numerically.
+  const years = [...new Set(
+    players
+      .map(p => String(p.BirthYear || p.GroupCode || "").trim())
+      .filter(y => /^\d{4}$/.test(y))
+  )].sort((a, b) => Number(a) - Number(b));
+
+  // Rebuild buttons: All + one per year.
+  container.innerHTML = `
+    <button type="button" class="attendance-filter-btn active-filter" data-birth-year-filter="">All</button>
+    ${years.map(y => `
+      <button type="button" class="attendance-filter-btn" data-birth-year-filter="${y}">${y}</button>
+    `).join("")}
+  `;
+
+  // Reset filter if previously selected year is no longer in the list.
+  if (attendanceBirthYearFilter && !years.includes(attendanceBirthYearFilter)) {
+    attendanceBirthYearFilter = "";
+  }
+
+  // Re-attach click listeners.
+  container.querySelectorAll(".attendance-filter-btn[data-birth-year-filter]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      attendanceBirthYearFilter = btn.dataset.birthYearFilter || "";
+      container.querySelectorAll(".attendance-filter-btn").forEach(b =>
+        b.classList.toggle("active-filter",
+          (b.dataset.birthYearFilter || "") === attendanceBirthYearFilter)
+      );
+      updateAttendanceDisplay();
+    });
+  });
+}
+
 function clearPlayerAttendanceSelections() {
   const rows = getAllAttendanceRows();
 
