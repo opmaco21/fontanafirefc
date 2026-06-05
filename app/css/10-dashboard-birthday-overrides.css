@@ -93,3 +93,52 @@
 .next-month h3 {
   color: #2563eb !important;
 }
+
+/* =========================================================
+   BIRTHDAY PLAYER LIST - NAME ON ONE LINE, DATE BELOW
+   ========================================================= */
+
+.birthday-player-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.birthday-player-item {
+  display: flex;
+  flex-direction: column;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+}
+
+.birthday-player-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.birthday-player-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.birthday-player-date {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.birthday-count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0,0,0,0.08);
+  color: inherit;
+  margin-left: 6px;
+  vertical-align: middle;
+}

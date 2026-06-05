@@ -203,12 +203,11 @@ function renderBirthdays(data) {
   function list(items, emptyText) {
     if (!items.length) return `<p class="subtext">${escapeDashboardHtml(emptyText)}</p>`;
     return `
-      <ul>
+      <ul class="birthday-player-list">
         ${items.map(player => `
-          <li>
-            <strong>${escapeDashboardHtml(player.FirstName)} ${escapeDashboardHtml(player.LastName)}</strong>
-            — ${formatDashboardBirthday(player.DateOfBirth)}
-            ${player.BirthYear ? ` | ${escapeDashboardHtml(player.BirthYear)}` : ""}
+          <li class="birthday-player-item">
+            <strong class="birthday-player-name">${escapeDashboardHtml(player.FirstName)} ${escapeDashboardHtml(player.LastName)}</strong>
+            <span class="birthday-player-date">${formatDashboardBirthday(player.DateOfBirth)}${player.BirthYear ? ` &nbsp;|&nbsp; ${escapeDashboardHtml(player.BirthYear)}` : ""}</span>
           </li>
         `).join("")}
       </ul>
@@ -227,24 +226,24 @@ function renderBirthdays(data) {
     ? formatDashboardMonthLabel(nextBirthdayMonth)
     : "Next Month";
 
-  // Update section heading with player counts
+  // Heading is just "Birthdays" - counts go inside each card
   const birthdayHeading = document.getElementById("dashboardBirthdaysHeading");
   if (birthdayHeading) {
-    const thisCount = thisMonth.length;
-    const nextCount = nextMonth.length;
-    const thisLabel = thisCount === 1 ? "1 player" : `${thisCount} players`;
-    const nextLabel = nextCount === 1 ? "1 player" : `${nextCount} players`;
-    birthdayHeading.textContent =
-      `Birthdays — ${thisLabel} in ${selectedBirthdayLabel}, ${nextLabel} in ${nextBirthdayLabel}`;
+    birthdayHeading.textContent = "Birthdays";
   }
+
+  const thisCount = thisMonth.length;
+  const nextCount = nextMonth.length;
+  const thisCountLabel = thisCount === 1 ? "1 player" : `${thisCount} players`;
+  const nextCountLabel = nextCount === 1 ? "1 player" : `${nextCount} players`;
 
   dashboardBirthdays.innerHTML = `
     <div class="dashboard-mini-card dashboard-birthday-current">
-      <h4>${escapeDashboardHtml(selectedBirthdayLabel)}</h4>
+      <h4>${escapeDashboardHtml(selectedBirthdayLabel)} <span class="birthday-count-badge">${thisCountLabel}</span></h4>
       ${list(thisMonth, `No birthdays for ${selectedBirthdayLabel}.`)}
     </div>
     <div class="dashboard-mini-card dashboard-birthday-next">
-      <h4>${escapeDashboardHtml(nextBirthdayLabel)}</h4>
+      <h4>${escapeDashboardHtml(nextBirthdayLabel)} <span class="birthday-count-badge">${nextCountLabel}</span></h4>
       ${list(nextMonth, `No birthdays for ${nextBirthdayLabel}.`)}
     </div>
   `;

@@ -62,8 +62,9 @@
 
 .heat-haze-v5 {
   position: absolute;
-  left: 16px;
-  top: 23px;
+  right: 56px;
+  top: 50%;
+  translate: 0 -46%;
   width: 96px;
   height: 44px;
   border-radius: 999px;
@@ -78,8 +79,9 @@
 
 .smoke-v5 {
   position: absolute;
-  left: 0;
-  top: 25px;
+  right: 68px;
+  top: 50%;
+  translate: 0 -46%;
   width: 78px;
   height: 42px;
   z-index: 0;
@@ -129,8 +131,9 @@
 
 .flame-engine-v5 {
   position: absolute;
-  left: 8px;
-  top: 27px;
+  right: 60px;
+  top: 50%;
+  translate: 0 -50%;
   width: 106px;
   height: 38px;
   transform-origin: right center;
@@ -226,8 +229,9 @@
 
 .sparks-v5 {
   position: absolute;
-  left: 0;
-  top: 14px;
+  right: 52px;
+  top: 50%;
+  translate: 0 -50%;
   width: 116px;
   height: 62px;
   z-index: 2;
@@ -284,9 +288,11 @@
 }
 
 .soccer-shell-v5 {
-  position: relative;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 4;
-  transform: translateY(0);
 }
 
 .soccer-ball-v5 {
@@ -465,7 +471,7 @@
   }
 
   .flame-engine-v5 {
-    left: 5px;
+    right: 54px;
     width: 94px;
   }
 
@@ -478,7 +484,7 @@
   }
 
   .heat-haze-v5 {
-    left: 14px;
+    right: 50px;
     width: 82px;
   }
 
