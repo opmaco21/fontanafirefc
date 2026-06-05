@@ -69,40 +69,157 @@
 
         <!-- LOGIN LOADING CUE -->
         <div id="loginLoading" class="login-loading fire-loader-v5 hidden" aria-live="polite">
-          <div class="fire-scene-v5">
-            <div class="heat-haze-v5" aria-hidden="true"></div>
+          <div class="fire-scene-v5" aria-hidden="true">
 
-            <div class="smoke-v5" aria-hidden="true">
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-            </div>
+            <svg class="flame-svg" viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Main trail gradient left to right -->
+        <radialGradient id="trail" cx="100%" cy="50%" r="100%" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stop-color="#ffffff"  stop-opacity="1"/>
+          <stop offset="10%"  stop-color="#fef3c7"  stop-opacity="1"/>
+          <stop offset="28%"  stop-color="#fbbf24"  stop-opacity="0.95"/>
+          <stop offset="52%"  stop-color="#ea580c"  stop-opacity="0.82"/>
+          <stop offset="76%"  stop-color="#991b1b"  stop-opacity="0.42"/>
+          <stop offset="100%" stop-color="#450a0a"  stop-opacity="0"/>
+        </radialGradient>
+        <!-- Ring glow around ball -->
+        <radialGradient id="ring" cx="50%" cy="50%" r="50%">
+          <stop offset="55%"  stop-color="#f97316"  stop-opacity="0"/>
+          <stop offset="72%"  stop-color="#f97316"  stop-opacity="0.55"/>
+          <stop offset="82%"  stop-color="#fbbf24"  stop-opacity="0.8"/>
+          <stop offset="90%"  stop-color="#ffffff"  stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#f97316"  stop-opacity="0"/>
+        </radialGradient>
+        <!-- Wrap arc gradient -->
+        <linearGradient id="arcTop" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%"   stop-color="#fbbf24"  stop-opacity="0.9"/>
+          <stop offset="50%"  stop-color="#f97316"  stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#dc2626"  stop-opacity="0.2"/>
+        </linearGradient>
+        <linearGradient id="arcBot" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stop-color="#fbbf24"  stop-opacity="0.9"/>
+          <stop offset="50%"  stop-color="#f97316"  stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#dc2626"  stop-opacity="0.2"/>
+        </linearGradient>
+        <filter id="glow1"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="glow2"><feGaussianBlur stdDeviation="7"/></filter>
+        <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+      </defs>
 
-            <div class="flame-engine-v5" aria-hidden="true">
-              <span class="flame-outer-v5"></span>
-              <span class="flame-mid-v5"></span>
-              <span class="flame-core-v5"></span>
-              <span class="flame-tongue-v5 t1"></span>
-              <span class="flame-tongue-v5 t2"></span>
-              <span class="flame-tongue-v5 t3"></span>
-              <span class="flame-tongue-v5 t4"></span>
-            </div>
+      <!-- Ball center = x:242, y:55 (right:2px in 300px scene, 56px ball = center at 272-28=244) -->
 
-            <div class="sparks-v5" aria-hidden="true">
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-            </div>
+      <!-- ── BIG BACKGROUND GLOW ── -->
+      <ellipse cx="268" cy="55" rx="62" ry="52" fill="#f97316" opacity="0.15" filter="url(#glow2)"/>
+      <ellipse cx="244" cy="55" rx="75" ry="32" fill="#f97316" opacity="0.12" filter="url(#glow2)"/>
 
-            <div class="soccer-shell-v5" aria-hidden="true">
+      <!-- ── MAIN JET TRAIL ── -->
+      <!-- Outer blast cone -->
+      <ellipse cx="190" cy="55" rx="95" ry="32" fill="url(#trail)" opacity="0.4" filter="url(#soft)">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.04 0.93;0.96 1.07;1 1" dur="0.52s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Mid blast -->
+      <ellipse cx="200" cy="55" rx="80" ry="22" fill="url(#trail)" opacity="0.65">
+        <animateTransform attributeName="transform" type="scale" values="1 1;0.97 1.07;1.04 0.92;1 1" dur="0.40s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Inner hot core -->
+      <ellipse cx="216" cy="55" rx="62" ry="14" fill="url(#trail)" opacity="0.88">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.06 0.88;0.94 1.1;1 1" dur="0.28s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Bright streak -->
+      <ellipse cx="228" cy="55" rx="46" ry="7" fill="url(#trail)" opacity="0.96">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.09 0.84;0.91 1.14;1 1" dur="0.2s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+
+      <!-- ── SPEED LINES ── -->
+      <line x1="12" y1="55" x2="215" y2="55" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.35">
+        <animate attributeName="x1" values="12;45;12" dur="0.33s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.35;0.75;0.35" dur="0.33s" repeatCount="indefinite"/>
+      </line>
+      <line x1="25" y1="47" x2="218" y2="47" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.3">
+        <animate attributeName="x1" values="25;52;25" dur="0.4s" repeatCount="indefinite"/>
+      </line>
+      <line x1="25" y1="63" x2="218" y2="63" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.3">
+        <animate attributeName="x1" values="25;48;25" dur="0.37s" repeatCount="indefinite"/>
+      </line>
+
+      <!-- ── RING OF FIRE AROUND BALL ── -->
+      <!-- Glowing ring halo -->
+      <circle cx="268" cy="55" r="36" fill="url(#ring)" filter="url(#glow1)">
+        <animate attributeName="r" values="36;38;35;37;36" dur="0.45s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0.85;1;0.9;1" dur="0.45s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Top wrap arc - fire curling over the top of the ball -->
+      <path d="M 240,26 C 248,18 262,14 276,16 C 288,18 298,26 302,36 C 296,28 284,22 272,22 C 260,22 248,28 240,36 Z"
+        fill="url(#arcTop)" opacity="0.85">
+        <animateTransform attributeName="transform" type="rotate" values="0 268 55;4 268 55;-4 268 55;0 268 55" dur="0.48s" repeatCount="indefinite" additive="sum"/>
+        <animate attributeName="opacity" values="0.85;0.6;0.9;0.75;0.85" dur="0.48s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- Bottom wrap arc - fire curling under the ball -->
+      <path d="M 240,84 C 248,92 262,96 276,94 C 288,92 298,84 302,74 C 296,82 284,88 272,88 C 260,88 248,82 240,74 Z"
+        fill="url(#arcBot)" opacity="0.8">
+        <animateTransform attributeName="transform" type="rotate" values="0 244 55;-4 268 55;4 268 55;0 268 55" dur="0.52s" repeatCount="indefinite" additive="sum"/>
+        <animate attributeName="opacity" values="0.8;0.95;0.65;0.85;0.8" dur="0.52s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- Left-side flame tongues connecting trail to ring -->
+      <path d="M 229,38 C 236,32 244,28 252,30 C 244,34 240,40 238,48 C 234,42 230,38 229,38 Z"
+        fill="#fbbf24" opacity="0.7">
+        <animate attributeName="opacity" values="0.7;0.4;0.8;0.55;0.7" dur="0.38s" repeatCount="indefinite"/>
+      </path>
+      <path d="M 229,72 C 236,78 244,82 252,80 C 244,76 240,70 238,62 C 234,68 230,72 229,72 Z"
+        fill="#f97316" opacity="0.65">
+        <animate attributeName="opacity" values="0.65;0.9;0.45;0.75;0.65" dur="0.42s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- ── PARTICLES ── -->
+      <circle cx="160" cy="52" r="2.2" fill="#fde68a" opacity="0.85">
+        <animate attributeName="cx" values="160;120;160" dur="1.0s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.85;0.1;0.85" dur="1.0s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="185" cy="57" r="1.8" fill="#fb923c" opacity="0.8">
+        <animate attributeName="cx" values="185;145;185" dur="0.88s" begin="0.22s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0.1;0.8" dur="0.88s" begin="0.22s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="175" cy="48" r="1.5" fill="#fbbf24" opacity="0.75">
+        <animate attributeName="cx" values="175;138;175" dur="0.95s" begin="0.44s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.75;0.1;0.75" dur="0.95s" begin="0.44s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="200" cy="53" r="1.3" fill="#ffffff" opacity="0.9">
+        <animate attributeName="cx" values="200;166;200" dur="0.75s" begin="0.1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.9;0.1;0.9" dur="0.75s" begin="0.1s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Sparks flying off the ring -->
+      <circle cx="268" cy="20" r="1.8" fill="#fde68a">
+        <animateMotion dur="0.9s" repeatCount="indefinite" path="M0,0 C2,-10 0,-20 4,-28"/>
+        <animate attributeName="opacity" values="0;1;0.8;0" dur="0.9s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="292" cy="28" r="1.4" fill="#fb923c">
+        <animateMotion dur="0.72s" begin="0.25s" repeatCount="indefinite" path="M0,0 C8,-6 14,-10 18,-16"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.72s" begin="0.25s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="268" cy="90" r="1.6" fill="#facc15">
+        <animateMotion dur="0.82s" begin="0.5s" repeatCount="indefinite" path="M0,0 C2,10 0,20 4,28"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.82s" begin="0.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="294" cy="80" r="1.2" fill="#f97316">
+        <animateMotion dur="0.68s" begin="0.15s" repeatCount="indefinite" path="M0,0 C8,6 14,10 18,16"/>
+        <animate attributeName="opacity" values="0;0.9;0" dur="0.68s" begin="0.15s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="300" cy="55" r="1.5" fill="#fbbf24">
+        <animateMotion dur="0.78s" begin="0.35s" repeatCount="indefinite" path="M0,0 C12,0 20,2 28,0"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.78s" begin="0.35s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+
+            <!-- Soccer ball -->
+            <div class="soccer-shell-v5">
               <span class="ball-aura-v5"></span>
               <span class="soccer-ball-v5">&#9917;</span>
             </div>
 
-            <div class="ground-shadow-v5" aria-hidden="true"></div>
           </div>
 
           <div class="loader-text">Connecting to Attendance App...</div>
