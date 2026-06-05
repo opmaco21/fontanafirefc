@@ -265,7 +265,11 @@ function handleAuthExpired(message = "Session expired. Please log in again.") {
     const response = await originalFetch(input, init);
 
     if (response && response.status === 401 && !isLoginRequest(input)) {
-      handleAuthExpired();
+      // Suppress "Session expired" during the initial restoreSession startup check.
+      // restoreSession handles that case with its own friendly message.
+      if (!String(input).includes("/auth/me") || currentUser !== null) {
+        handleAuthExpired();
+      }
     }
 
     return response;
