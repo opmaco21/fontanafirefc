@@ -46,7 +46,6 @@
 /* Fixed scene — everything positions inside it */
 .fire-scene-v5 {
   position: relative;
-<<<<<<< HEAD
   width: 300px;
   height: 110px;
   margin: 0 auto;
@@ -60,228 +59,18 @@
   top: 0;
   width: 300px;
   height: 110px;
-=======
-  width: 220px;
-  height: 96px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  isolation: isolate;
-  overflow: visible;
-}
-
-.flame-svg {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-52%);
-  width: 140px;
-  height: 80px;
-  z-index: 1;
-  transform-origin: right center;
-  animation: flamePush 0.3s infinite alternate ease-in-out;
-}
-
-@keyframes flamePush {
-  from { transform: translateY(-52%) scaleX(0.92) scaleY(0.96); }
-  to   { transform: translateY(-52%) scaleX(1.08) scaleY(1.04); }
-}
-
-.heat-haze-v5 {
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  translate: 0 -46%;
-  width: 96px;
-  height: 44px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 84% 50%, rgba(255, 255, 255, 0.48), transparent 15%),
-    radial-gradient(circle at 58% 50%, rgba(253, 186, 116, 0.52), transparent 40%),
-    radial-gradient(circle at 28% 50%, rgba(239, 68, 68, 0.34), transparent 64%);
-  filter: blur(8px);
-  animation: heatPulseV5 0.35s infinite alternate ease-in-out;
-  z-index: 0;
-}
-
-.smoke-v5 {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  translate: 0 -46%;
-  width: 78px;
-  height: 42px;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.smoke-v5 i {
-  position: absolute;
-  display: block;
-  width: 17px;
-  height: 17px;
-  border-radius: 999px;
-  background: rgba(75, 85, 99, 0.20);
-  filter: blur(1.2px);
-  animation: smokeFloatV5 1.4s infinite ease-out;
-}
-
-.smoke-v5 i:nth-child(1) {
-  left: 8px;
-  top: 16px;
-  animation-delay: 0s;
-}
-
-.smoke-v5 i:nth-child(2) {
-  left: 26px;
-  top: 6px;
-  width: 14px;
-  height: 14px;
-  animation-delay: 0.18s;
-}
-
-.smoke-v5 i:nth-child(3) {
-  left: 42px;
-  top: 24px;
-  width: 12px;
-  height: 12px;
-  animation-delay: 0.34s;
-}
-
-.smoke-v5 i:nth-child(4) {
-  left: 56px;
-  top: 12px;
-  width: 10px;
-  height: 10px;
-  animation-delay: 0.52s;
-}
-
-.flame-engine-v5 {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  translate: 0 -50%;
-  width: 110px;
-  height: 38px;
-  transform-origin: right center;
-  animation: engineKickV5 0.25s infinite alternate ease-in-out;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.flame-core-v5,
-.flame-mid-v5,
-.flame-outer-v5 {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  border-radius: 70% 8% 8% 70% / 60% 35% 35% 60%;
-  transform-origin: right center;
-  translate: 0 -50%;
-}
-
-.flame-outer-v5 {
-  width: 102px;
-  height: 32px;
-  background:
-    radial-gradient(circle at 96% 50%, #fff7ed 0 8%, #facc15 11%, transparent 20%),
-    linear-gradient(90deg, rgba(127, 29, 29, 0), #b91c1c 22%, #dc2626 45%, #f97316 76%, #facc15 100%);
-  filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.85));
-  animation: outerFlickerV5 0.28s infinite alternate ease-in-out;
-  opacity: 0.95;
-}
-
-.flame-mid-v5 {
-  width: 82px;
-  height: 22px;
-  background:
-    radial-gradient(circle at 98% 50%, #fff 0 7%, #fde68a 12%, transparent 22%),
-    linear-gradient(90deg, rgba(234, 88, 12, 0), #ea580c 28%, #fb923c 68%, #fef3c7 100%);
-  filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.75));
-  animation: midFlickerV5 0.20s infinite alternate-reverse ease-in-out;
-}
-
-.flame-core-v5 {
-  width: 52px;
-  height: 12px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fef3c7 34%, #ffffff 100%);
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
-  animation: coreFlashV5 0.16s infinite alternate ease-in-out;
-}
-
-.flame-tongue-v5 {
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  border-radius: 85% 20% 85% 20%;
-  transform: rotate(45deg);
-  background: #f97316;
-  filter: drop-shadow(0 0 7px rgba(249, 115, 22, 0.8));
-  animation: tongueFlickerV5 0.24s infinite alternate ease-in-out;
-}
-
-.flame-tongue-v5.t1 {
-  left: 2px;
-  top: 3px;
-  background: #dc2626;
-  animation-delay: 0s;
-}
-
-.flame-tongue-v5.t2 {
-  left: 24px;
-  top: 21px;
-  width: 17px;
-  height: 17px;
-  background: #fb923c;
-  animation-delay: 0.07s;
-}
-
-.flame-tongue-v5.t3 {
-  left: 43px;
-  top: 2px;
-  width: 15px;
-  height: 15px;
-  background: #facc15;
-  animation-delay: 0.13s;
-}
-
-.flame-tongue-v5.t4 {
-  left: 61px;
-  top: 23px;
-  width: 10px;
-  height: 10px;
-  background: #fff7ed;
-  animation-delay: 0.19s;
-}
-
-.sparks-v5 {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  translate: 0 -50%;
-  width: 116px;
-  height: 62px;
->>>>>>> 20786daae0fea87fd25781bd04c9b14e19d9e7fb
   z-index: 2;
   overflow: visible;
 }
 
 /* Ball sits at right edge, vertically centered, on top of flame */
 .soccer-shell-v5 {
-<<<<<<< HEAD
   position: absolute;
   right: 2px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
   display: inline-block;
-=======
-  position: relative;
-  z-index: 4;
-  flex-shrink: 0;
-  margin-right: 4px;
->>>>>>> 20786daae0fea87fd25781bd04c9b14e19d9e7fb
 }
 
 .soccer-ball-v5 {
@@ -305,21 +94,9 @@
   z-index: -1;
 }
 
-<<<<<<< HEAD
 @keyframes auraPulseV5 {
   from { transform: scale(0.9);  opacity: 0.4; }
   to   { transform: scale(1.15); opacity: 0.8; }
-=======
-.ground-shadow-v5 {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  width: 56px;
-  height: 9px;
-  border-radius: 999px;
-  background: rgba(17, 24, 39, 0.14);
-  z-index: 0;
->>>>>>> 20786daae0fea87fd25781bd04c9b14e19d9e7fb
 }
 
 .loader-text {
@@ -342,38 +119,6 @@
     transform-origin: center center;
   }
 
-<<<<<<< HEAD
   .loader-text { font-size: 14px; }
   .loader-subtext { font-size: 12px; }
-=======
-  .soccer-ball-v5 {
-    font-size: 44px;
-  }
-
-  .flame-engine-v5 {
-    left: 12px;
-    width: 94px;
-  }
-
-  .flame-outer-v5 {
-    width: 92px;
-  }
-
-  .flame-mid-v5 {
-    width: 74px;
-  }
-
-  .heat-haze-v5 {
-    left: 6px;
-    width: 82px;
-  }
-
-  .loader-text {
-    font-size: 14px;
-  }
-
-  .loader-subtext {
-    font-size: 12px;
-  }
->>>>>>> 20786daae0fea87fd25781bd04c9b14e19d9e7fb
 }
