@@ -40,7 +40,12 @@ function safeValue(value) {
 }
 
 function getPhotoReleaseLabel(player) {
-  return player.PhotoReleaseStatus || "Not Received";
+  const status = player.PhotoReleaseStatus || "";
+  // Normalize legacy and current values to display label
+  if (status === "Yes" || status === "Opt In" || status === "Received" || status === "Signed") return "Yes";
+  if (status === "No"  || status === "Opt Out" || status === "Declined")                      return "No";
+  if (status === "Not Received" || status === "")                                              return "Not Received";
+  return status;
 }
 
 function isPaperworkMissing(player) {
@@ -50,7 +55,8 @@ function isPaperworkMissing(player) {
 
 function isPhotoReleaseMissing(player) {
   const status = getPhotoReleaseLabel(player);
-  return status === "Not Received" || !player.PhotoReleaseFormReceived;
+  // Missing = not received yet. "No"/"Opt Out" = deliberately opted out (not missing).
+  return status === "Not Received" || status === "";
 }
 
 function hasEmergencyInfo(player) {
@@ -442,8 +448,8 @@ function ensurePlayerManagementFilters() {
             Photo Release
             <select id="pmFilterPhotoRelease">
               <option value="">All Photo Releases</option>
-              <option value="Opt In">Opt In</option>
-              <option value="Opt Out">Opt Out</option>
+              <option value="Yes">Yes (Signed)</option>
+              <option value="No">No (Opted Out)</option>
               <option value="Not Received">Not Received</option>
             </select>
           </label>
@@ -624,6 +630,8 @@ function getFilteredManagedPlayers(players) {
 
     const photoReleaseMatches = !playerManagementPhotoReleaseFilter ||
       getPhotoReleaseLabel(player) === playerManagementPhotoReleaseFilter;
+    // getPhotoReleaseLabel already normalizes Yes/Opt In -> "Yes" and No/Opt Out -> "No"
+    // so the filter comparison works regardless of which value is stored in SQL
 
     const paperworkStatus = player.PaperworkStatus || "Not Received";
     const paperworkMatches = !playerManagementPaperworkFilter ||
@@ -667,41 +675,6 @@ function getPlayerManagementFilterDescription() {
   }
 
   return parts.length ? ` | Filters: ${parts.join(", ")}` : "";
-}
-
-/* =========================
-   POPULATE BIRTH YEAR DROPDOWN
-   Loads active groups from the API and populates any birth year
-   <select> with the real group list. No hardcoded years needed.
-   ========================= */
-async function populatePlayerBirthYearDropdown(selectEl, selectedValue) {
-  if (!selectEl) return;
-
-  try {
-    const res = await fetch(`${API_BASE}/groups`, { credentials: "include" });
-    if (!res.ok) return;
-
-    const groups = await res.json();
-
-    const currentVal = selectedValue !== undefined
-      ? selectedValue
-      : selectEl.value;
-
-    selectEl.innerHTML = `<option value="">Select birth year</option>`;
-
-    groups.forEach(group => {
-      const year = group.GroupCode || group.GroupName || "";
-      if (!year) return;
-      const opt = document.createElement("option");
-      opt.value = year;
-      opt.textContent = year;
-      if (year === String(currentVal)) opt.selected = true;
-      selectEl.appendChild(opt);
-    });
-
-  } catch (err) {
-    console.error("Could not populate birth year dropdown:", err);
-  }
 }
 
 function ensurePlayerManagementForm() {
@@ -753,6 +726,17 @@ function ensurePlayerManagementForm() {
             Birth Year
             <select id="pmBirthYear">
               <option value="">Select birth year</option>
+              <option value="2011">2011</option>
+              <option value="2012">2012</option>
+              <option value="2013">2013</option>
+              <option value="2014">2014</option>
+              <option value="2015">2015</option>
+              <option value="2016">2016</option>
+              <option value="2017">2017</option>
+              <option value="2018">2018</option>
+              <option value="2019">2019</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
             </select>
           </label>
 
@@ -900,8 +884,8 @@ function ensurePlayerManagementForm() {
             Photo Release Status
             <select id="pmPhotoReleaseStatus">
               <option value="Not Received">Not Received</option>
-              <option value="Opt In">Opt In</option>
-              <option value="Opt Out">Opt Out</option>
+              <option value="Yes">Yes (Signed)</option>
+              <option value="No">No (Opted Out)</option>
             </select>
           </label>
 
@@ -951,10 +935,6 @@ function ensurePlayerManagementForm() {
   const cancelBtn = document.getElementById("pmCancelEditBtn");
   const birthYearInput = document.getElementById("pmBirthYear");
   const dobInput = document.getElementById("pmDateOfBirth");
-
-  // Populate birth year dropdown from active groups so adding 2022+
-  // players works without any code changes.
-  populatePlayerBirthYearDropdown(birthYearInput);
 
   if (saveBtn) {
     saveBtn.addEventListener("click", savePlayerManagementForm);
@@ -1280,7 +1260,9 @@ editingPlayerId = player.PlayerID;
     pmPhotoReleaseStatus:
       player.PhotoReleaseStatus === "Opt In" ||
       player.PhotoReleaseStatus === "Opt Out" ||
-      player.PhotoReleaseStatus === "Not Received"
+      player.PhotoReleaseStatus === "Not Received" ||
+      player.PhotoReleaseStatus === "Yes" ||
+      player.PhotoReleaseStatus === "No"
         ? player.PhotoReleaseStatus
         : "Not Received",
     pmPhotoReleaseFormReceived: player.PhotoReleaseFormReceived ? "1" : "0",
@@ -1295,14 +1277,6 @@ editingPlayerId = player.PlayerID;
       element.value = value;
     }
   });
-
-  // Re-populate birth year dropdown with the player's year pre-selected.
-  // populatePlayerBirthYearDropdown is async so we must re-run it after
-  // values are applied to ensure the correct option is selected.
-  const birthYearSelectForEdit = document.getElementById("pmBirthYear");
-  if (birthYearSelectForEdit) {
-    populatePlayerBirthYearDropdown(birthYearSelectForEdit, values.pmBirthYear || "");
-  }
 
   setupPlayerAddressAutoFill();
   setupPlayerPhoneFormatting();
