@@ -46,20 +46,12 @@ function ensureDashboardMonthFilterOptions() {
   if (!dashboardMonthFilter || dashboardMonthFilterReady) return;
 
   const currentMonth = getDashboardCurrentMonthValue();
-
-  // Generate the last 6 months dynamically so the list never goes stale.
-  const pastMonths = [];
-  const now = new Date();
-  for (let i = 1; i <= 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    pastMonths.push({ value, label: formatDashboardMonthLabel(value) });
-  }
-
   const options = [
     { value: "", label: "All Months" },
     { value: currentMonth, label: `Current Month (${formatDashboardMonthLabel(currentMonth)})` },
-    ...pastMonths
+    { value: "2026-04", label: "April 2026" },
+    { value: "2026-05", label: "May 2026" },
+    { value: "2026-06", label: "June 2026" }
   ];
 
   const seen = new Set();
@@ -226,6 +218,17 @@ function renderBirthdays(data) {
   const nextBirthdayLabel = nextBirthdayMonth
     ? formatDashboardMonthLabel(nextBirthdayMonth)
     : "Next Month";
+
+  // Update section heading with player counts using a stable ID
+  const birthdayHeading = document.getElementById("dashboardBirthdaysHeading");
+  if (birthdayHeading) {
+    const thisCount = thisMonth.length;
+    const nextCount = nextMonth.length;
+    const thisLabel = thisCount === 1 ? "1 player" : `${thisCount} players`;
+    const nextLabel = nextCount === 1 ? "1 player" : `${nextCount} players`;
+    birthdayHeading.textContent =
+      `Birthdays — ${thisLabel} in ${selectedBirthdayLabel}, ${nextLabel} in ${nextBirthdayLabel}`;
+  }
 
   dashboardBirthdays.innerHTML = `
     <div class="dashboard-mini-card dashboard-birthday-current">
