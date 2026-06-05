@@ -51,18 +51,36 @@
 
 .fire-scene-v5 {
   position: relative;
-  width: 190px;
+  width: 220px;
   height: 96px;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   isolation: isolate;
   overflow: visible;
 }
 
+.flame-svg {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-52%);
+  width: 140px;
+  height: 80px;
+  z-index: 1;
+  transform-origin: right center;
+  animation: flamePush 0.3s infinite alternate ease-in-out;
+}
+
+@keyframes flamePush {
+  from { transform: translateY(-52%) scaleX(0.92) scaleY(0.96); }
+  to   { transform: translateY(-52%) scaleX(1.08) scaleY(1.04); }
+}
+
 .heat-haze-v5 {
   position: absolute;
-  right: 56px;
+  left: 8px;
   top: 50%;
   translate: 0 -46%;
   width: 96px;
@@ -79,7 +97,7 @@
 
 .smoke-v5 {
   position: absolute;
-  right: 68px;
+  left: 0;
   top: 50%;
   translate: 0 -46%;
   width: 78px;
@@ -131,10 +149,10 @@
 
 .flame-engine-v5 {
   position: absolute;
-  right: 60px;
+  left: 16px;
   top: 50%;
   translate: 0 -50%;
-  width: 106px;
+  width: 110px;
   height: 38px;
   transform-origin: right center;
   animation: engineKickV5 0.25s infinite alternate ease-in-out;
@@ -229,7 +247,7 @@
 
 .sparks-v5 {
   position: absolute;
-  right: 52px;
+  left: 0;
   top: 50%;
   translate: 0 -50%;
   width: 116px;
@@ -288,11 +306,10 @@
 }
 
 .soccer-shell-v5 {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
   z-index: 4;
+  flex-shrink: 0;
+  margin-right: 4px;
 }
 
 .soccer-ball-v5 {
@@ -316,9 +333,10 @@
 
 .ground-shadow-v5 {
   position: absolute;
-  bottom: 7px;
-  width: 66px;
-  height: 11px;
+  bottom: 4px;
+  right: 4px;
+  width: 56px;
+  height: 9px;
   border-radius: 999px;
   background: rgba(17, 24, 39, 0.14);
   z-index: 0;
@@ -471,7 +489,7 @@
   }
 
   .flame-engine-v5 {
-    right: 54px;
+    left: 12px;
     width: 94px;
   }
 
@@ -484,7 +502,7 @@
   }
 
   .heat-haze-v5 {
-    right: 50px;
+    left: 6px;
     width: 82px;
   }
 
