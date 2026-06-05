@@ -126,3 +126,50 @@
     align-items: stretch;
   }
 }
+
+/* =========================================================
+   GAME ROSTER STATUS PILLS
+   Shows roster groups or "No roster yet" inline
+   ========================================================= */
+
+.game-roster-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.game-roster-pill.has-roster {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.game-roster-pill.no-roster {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+.game-roster-pill.roster-count {
+  background: #e6f4ea;
+  color: #2e7d32;
+  border: 1px solid #a8d5b4;
+}
+
+/* Event roster section left border */
+#eventRosterSection {
+  border-left: 4px solid #f57c00;
+  padding-left: 12px;
+  border-radius: 0;
+}
+
+/* Save Roster button spacing */
+.roster-footer-actions {
+  margin-top: 12px;
+}

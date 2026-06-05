@@ -493,3 +493,90 @@
     padding: 12px;
   }
 }
+
+/* =========================================================
+   DASHBOARD SECTION COLOR ACCENTS
+   Left border color reflects section meaning
+   ========================================================= */
+
+.dashboard-report-section {
+  border-left: 4px solid #f57c00 !important;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+.dashboard-birthday-section {
+  border-left: 4px solid #7c3aed !important;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+.dashboard-perfect-card,
+#dashboardPerfectPlayers .dashboard-report-section {
+  border-left: 4px solid #d97706 !important;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+.dashboard-exceptional-card {
+  border-left: 4px solid #16a34a !important;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+.dashboard-collapsible-report {
+  border-left: 4px solid #f57c00;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+/* Attention section - red accent */
+#dashboardAlertPlayers .dashboard-report-section {
+  border-left: 4px solid #c62828 !important;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+/* Upcoming snapshot - amber */
+.dashboard-upcoming-snapshot-section {
+  border-left: 4px solid #f59e0b !important;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+/* =========================================================
+   DASHBOARD STAT CARDS - SUBTLE IMPROVEMENT
+   ========================================================= */
+
+.dashboard-stat-card {
+  border-left: 3px solid #f57c00;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+/* =========================================================
+   GAME ROSTER PILLS IN UPCOMING SNAPSHOT
+   ========================================================= */
+
+.dashboard-upcoming-card {
+  border-left: 4px solid #f59e0b !important;
+  border-radius: 0 14px 14px 0 !important;
+}
+
+.dashboard-upcoming-no-roster {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+.dashboard-upcoming-roster-groups {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}

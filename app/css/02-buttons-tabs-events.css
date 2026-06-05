@@ -59,21 +59,34 @@
    ========================================================= */
 
 .tabs {
-  display: flex;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
   margin-bottom: 16px;
 }
 
 .tab {
   flex: 1;
-  padding: 13px;
+  padding: 10px 4px;
   border: none;
   border-radius: 12px;
   background: #e5e7eb;
-  color: #333;
-  font-size: 16px;
+  color: #444;
+  font-size: 11px;
   font-weight: bold;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 56px;
+  line-height: 1.2;
+}
+
+.tab i {
+  font-size: 20px;
+  line-height: 1;
 }
 
 .tab.active {
@@ -476,12 +489,18 @@
 
 @media (max-width: 700px) {
   .tabs {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
   }
 
   .tab {
-    min-height: 58px;
+    min-height: 52px;
+    font-size: 10px;
+    padding: 8px 2px;
+  }
+
+  .tab i {
+    font-size: 18px;
   }
 
   .attendance-status-filter-buttons,

@@ -159,3 +159,77 @@
   background: #eef2f7;
   border-left: 5px solid #6b7280;
 }
+
+/* =========================================================
+   ATTENDANCE FILTER CHIPS
+   Replaces button rows with compact pill chips
+   ========================================================= */
+
+.attendance-filter-btn {
+  border: 1px solid #d1d5db;
+  border-radius: 999px !important;
+  padding: 6px 12px !important;
+  background: #f9fafb;
+  color: #374151;
+  font-weight: 700;
+  font-size: 12px !important;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s;
+}
+
+.attendance-filter-btn.active-filter {
+  background: #f57c00 !important;
+  border-color: #f57c00 !important;
+  color: #ffffff !important;
+}
+
+/* Status-specific active chip colors */
+.attendance-filter-btn[data-status-filter="Present"].active-filter {
+  background: #2e7d32 !important;
+  border-color: #2e7d32 !important;
+}
+
+.attendance-filter-btn[data-status-filter="Absent"].active-filter {
+  background: #c62828 !important;
+  border-color: #c62828 !important;
+}
+
+.attendance-filter-btn[data-status-filter="Excused"].active-filter {
+  background: #f9a825 !important;
+  border-color: #f9a825 !important;
+  color: #111827 !important;
+}
+
+/* =========================================================
+   ATTENDANCE CARD LEFT BORDER ACCENT
+   Color reflects current status at a glance
+   ========================================================= */
+
+.player-row.attendance-player-card {
+  border-left: 4px solid #e1e5ea !important;
+  transition: border-left-color 0.15s;
+}
+
+.player-row.attendance-player-card.status-present {
+  border-left-color: #2e7d32 !important;
+}
+
+.player-row.attendance-player-card.status-absent {
+  border-left-color: #c62828 !important;
+}
+
+.player-row.attendance-player-card.status-excused {
+  border-left-color: #f9a825 !important;
+}
+
+.player-row.attendance-player-card.status-cancelled {
+  border-left-color: #9ca3af !important;
+}
+
+/* Slightly taller status buttons for better tap targets */
+.attendance-status-btn {
+  min-height: 36px !important;
+  padding: 8px 5px !important;
+}

@@ -14,6 +14,7 @@
        automatic web build version before app JS is loaded.
        Load order matters.
   -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/01-base-layout.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/02-buttons-tabs-events.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/03-attendance.css" />
@@ -128,11 +129,11 @@
 
         <!-- DASHBOARD / PRACTICE / GAME / TEAM EVENT TABS -->
         <div class="tabs">
-          <button id="dashboardTab" class="tab active">Dashboard</button>
-          <button id="practiceTab" class="tab">Practice</button>
-          <button id="gamesTab" class="tab">Games</button>
-          <button id="teamEventsTab" class="tab">Team Events</button>
-          <button id="playerManagementTab" class="tab">Players</button>
+          <button id="dashboardTab" class="tab active"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dash</button>
+          <button id="practiceTab" class="tab"><i class="ti ti-run" aria-hidden="true"></i>Practice</button>
+          <button id="gamesTab" class="tab"><i class="ti ti-ball-football" aria-hidden="true"></i>Games</button>
+          <button id="teamEventsTab" class="tab"><i class="ti ti-calendar-event" aria-hidden="true"></i>Events</button>
+          <button id="playerManagementTab" class="tab"><i class="ti ti-users" aria-hidden="true"></i>Players</button>
         </div>
 
         <!-- DASHBOARD / REPORTS SECTION

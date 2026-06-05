@@ -672,3 +672,69 @@
     max-width: none;
   }
 }
+
+/* =========================================================
+   PLAYER CARD LEFT BORDER — STATUS COLOR
+   Green = active, amber = missing info, gray = inactive
+   ========================================================= */
+
+.player-management-card-scroll-item {
+  border-left: 4px solid #2e7d32 !important;
+  transition: border-left-color 0.15s;
+}
+
+.player-management-card-scroll-item.inactive-player {
+  border-left-color: #9ca3af !important;
+}
+
+.player-management-card-scroll-item.player-card-has-warnings {
+  border-left-color: #f59e0b !important;
+}
+
+/* =========================================================
+   WARNING BADGES ON PLAYER CARDS
+   Surface missing info without opening detail view
+   ========================================================= */
+
+.player-card-warning-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  margin-right: 4px;
+  margin-top: 4px;
+}
+
+/* =========================================================
+   BUTTON STYLE IMPROVEMENTS
+   View = neutral, Edit = blue outline, Deactivate = subtle
+   ========================================================= */
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary:nth-child(1) {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary:nth-child(2) {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+.player-management-card-scroll-item .player-management-actions .btn-secondary:nth-child(2):hover {
+  background: #dbeafe !important;
+}
+
+/* Restore button for inactive players */
+.player-card-restore-btn {
+  background: #e6f4ea !important;
+  color: #2e7d32 !important;
+  border: 1px solid #a8d5b4 !important;
+}

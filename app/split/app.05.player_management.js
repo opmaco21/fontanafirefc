@@ -459,7 +459,7 @@ function ensurePlayerManagementFilters() {
             <select id="pmFilterPaperwork">
               <option value="">All Paperwork</option>
               <option value="Complete">Complete</option>
-              <option value="Missing">Missing</option>
+              <option value="Missing">Not Complete</option>
               <option value="Not Received">Not Received</option>
             </select>
           </label>
@@ -635,7 +635,9 @@ function getFilteredManagedPlayers(players) {
 
     const paperworkStatus = player.PaperworkStatus || "Not Received";
     const paperworkMatches = !playerManagementPaperworkFilter ||
-      paperworkStatus === playerManagementPaperworkFilter;
+      (playerManagementPaperworkFilter === "Missing"
+        ? paperworkStatus !== "Complete"
+        : paperworkStatus === playerManagementPaperworkFilter);
 
     const quickFilterMatches =
       !playerManagementQuickFilter ||
@@ -1414,8 +1416,16 @@ function renderPlayerManagementList(players) {
   visiblePlayers.forEach(player => {
     const card = document.createElement("div");
 
+    // Determine if this player has missing critical info
+    const hasWarnings = player.IsActive && (
+      !player.ParentName ||
+      !player.ParentPhone ||
+      !player.ParentEmail ||
+      isPaperworkMissing(player)
+    );
+
     card.className =
-      `player-management-row player-management-card-scroll-item ${player.IsActive ? "" : "inactive-player"}`;
+      `player-management-row player-management-card-scroll-item ${player.IsActive ? "" : "inactive-player"} ${hasWarnings ? "player-card-has-warnings" : ""}`.trim();
 
     const groupLabel = player.GroupName || player.GroupCode || "No Group";
 
@@ -1448,6 +1458,10 @@ function renderPlayerManagementList(players) {
               <span class="player-card-badge">${player.BirthYear || "-"}</span>
               <span class="player-card-badge">${genderLabel}</span>
             </div>
+            ${hasWarnings ? `<div class="player-card-warning-row" style="margin-top:4px;">
+              ${!player.ParentName || !player.ParentPhone || !player.ParentEmail ? '<span class="player-card-warning-badge">⚠ No contact</span>' : ""}
+              ${isPaperworkMissing(player) ? '<span class="player-card-warning-badge">⚠ Paperwork</span>' : ""}
+            </div>` : ""}
           </div>
           <div class="player-management-status ${player.IsActive ? "active-status" : "inactive-status"}">${statusLabel}</div>
         </div>
