@@ -679,6 +679,33 @@ function getPlayerManagementFilterDescription() {
   return parts.length ? ` | Filters: ${parts.join(", ")}` : "";
 }
 
+/* =========================
+   POPULATE BIRTH YEAR DROPDOWN
+   Loads active groups from the API so birth year dropdowns
+   stay current without any hardcoded values.
+   ========================= */
+async function populatePlayerBirthYearDropdown(selectEl, selectedValue) {
+  if (!selectEl) return;
+  try {
+    const res = await fetch(`${API_BASE}/groups`, { credentials: "include" });
+    if (!res.ok) return;
+    const groups = await res.json();
+    const currentVal = selectedValue !== undefined ? selectedValue : selectEl.value;
+    selectEl.innerHTML = `<option value="">Select birth year</option>`;
+    groups.forEach(group => {
+      const year = group.GroupCode || group.GroupName || "";
+      if (!year) return;
+      const opt = document.createElement("option");
+      opt.value = year;
+      opt.textContent = year;
+      if (year === String(currentVal)) opt.selected = true;
+      selectEl.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Could not populate birth year dropdown:", err);
+  }
+}
+
 function ensurePlayerManagementForm() {
   if (!addPlayerSection) return;
 
@@ -728,17 +755,6 @@ function ensurePlayerManagementForm() {
             Birth Year
             <select id="pmBirthYear">
               <option value="">Select birth year</option>
-              <option value="2011">2011</option>
-              <option value="2012">2012</option>
-              <option value="2013">2013</option>
-              <option value="2014">2014</option>
-              <option value="2015">2015</option>
-              <option value="2016">2016</option>
-              <option value="2017">2017</option>
-              <option value="2018">2018</option>
-              <option value="2019">2019</option>
-              <option value="2020">2020</option>
-              <option value="2021">2021</option>
             </select>
           </label>
 
@@ -937,6 +953,9 @@ function ensurePlayerManagementForm() {
   const cancelBtn = document.getElementById("pmCancelEditBtn");
   const birthYearInput = document.getElementById("pmBirthYear");
   const dobInput = document.getElementById("pmDateOfBirth");
+
+  // Populate birth year dropdown from live groups API
+  populatePlayerBirthYearDropdown(birthYearInput);
 
   if (saveBtn) {
     saveBtn.addEventListener("click", savePlayerManagementForm);
@@ -1279,6 +1298,12 @@ editingPlayerId = player.PlayerID;
       element.value = value;
     }
   });
+
+  // Re-populate birth year with player's year pre-selected (async safe)
+  const birthYearSelectForEdit = document.getElementById("pmBirthYear");
+  if (birthYearSelectForEdit) {
+    populatePlayerBirthYearDropdown(birthYearSelectForEdit, values.pmBirthYear || "");
+  }
 
   setupPlayerAddressAutoFill();
   setupPlayerPhoneFormatting();
