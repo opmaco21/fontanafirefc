@@ -63,10 +63,10 @@
   overflow: visible;
 }
 
-/* Ball sits at right edge, vertically centered, on top of flame */
+/* Ball sits right of center, vertically centered, on top of flame */
 .soccer-shell-v5 {
   position: absolute;
-  right: 2px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
@@ -75,7 +75,7 @@
 
 .soccer-ball-v5 {
   display: block;
-  font-size: 56px;
+  font-size: 52px;
   line-height: 1;
   animation: ballSpinV5 0.52s linear infinite;
 }
@@ -113,10 +113,14 @@
 
 @media (max-width: 520px) {
   .fire-scene-v5 {
-    width: 260px;
-    height: 96px;
-    transform: scale(0.88);
+    width: 280px;
+    height: 100px;
+    transform: scale(0.82);
     transform-origin: center center;
+  }
+
+  .soccer-ball-v5 {
+    font-size: 46px;
   }
 
   .loader-text { font-size: 14px; }

@@ -109,8 +109,8 @@
       <!-- Ball center = x:242, y:55 (right:2px in 300px scene, 56px ball = center at 272-28=244) -->
 
       <!-- ── BIG BACKGROUND GLOW ── -->
-      <ellipse cx="268" cy="55" rx="62" ry="52" fill="#f97316" opacity="0.15" filter="url(#glow2)"/>
-      <ellipse cx="244" cy="55" rx="75" ry="32" fill="#f97316" opacity="0.12" filter="url(#glow2)"/>
+      <ellipse cx="264" cy="55" rx="62" ry="52" fill="#f97316" opacity="0.15" filter="url(#glow2)"/>
+      <ellipse cx="240" cy="55" rx="75" ry="32" fill="#f97316" opacity="0.12" filter="url(#glow2)"/>
 
       <!-- ── MAIN JET TRAIL ── -->
       <!-- Outer blast cone -->
@@ -144,31 +144,31 @@
 
       <!-- ── RING OF FIRE AROUND BALL ── -->
       <!-- Glowing ring halo -->
-      <circle cx="268" cy="55" r="36" fill="url(#ring)" filter="url(#glow1)">
+      <circle cx="264" cy="55" r="36" fill="url(#ring)" filter="url(#glow1)">
         <animate attributeName="r" values="36;38;35;37;36" dur="0.45s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="1;0.85;1;0.9;1" dur="0.45s" repeatCount="indefinite"/>
       </circle>
 
       <!-- Top wrap arc - fire curling over the top of the ball -->
-      <path d="M 240,26 C 248,18 262,14 276,16 C 288,18 298,26 302,36 C 296,28 284,22 272,22 C 260,22 248,28 240,36 Z"
+      <path d="M 236,26 C 244,18 258,14 272,16 C 284,18 294,26 298,36 C 292,28 280,22 268,22 C 256,22 244,28 236,36 Z"
         fill="url(#arcTop)" opacity="0.85">
-        <animateTransform attributeName="transform" type="rotate" values="0 268 55;4 268 55;-4 268 55;0 268 55" dur="0.48s" repeatCount="indefinite" additive="sum"/>
+        <animateTransform attributeName="transform" type="rotate" values="0 264 55;4 264 55;-4 264 55;0 264 55" dur="0.48s" repeatCount="indefinite" additive="sum"/>
         <animate attributeName="opacity" values="0.85;0.6;0.9;0.75;0.85" dur="0.48s" repeatCount="indefinite"/>
       </path>
 
       <!-- Bottom wrap arc - fire curling under the ball -->
-      <path d="M 240,84 C 248,92 262,96 276,94 C 288,92 298,84 302,74 C 296,82 284,88 272,88 C 260,88 248,82 240,74 Z"
+      <path d="M 236,84 C 244,92 258,96 272,94 C 284,92 294,84 298,74 C 292,82 280,88 268,88 C 256,88 244,82 236,74 Z"
         fill="url(#arcBot)" opacity="0.8">
-        <animateTransform attributeName="transform" type="rotate" values="0 244 55;-4 268 55;4 268 55;0 268 55" dur="0.52s" repeatCount="indefinite" additive="sum"/>
+        <animateTransform attributeName="transform" type="rotate" values="0 244 55;-4 264 55;4 264 55;0 264 55" dur="0.52s" repeatCount="indefinite" additive="sum"/>
         <animate attributeName="opacity" values="0.8;0.95;0.65;0.85;0.8" dur="0.52s" repeatCount="indefinite"/>
       </path>
 
       <!-- Left-side flame tongues connecting trail to ring -->
-      <path d="M 229,38 C 236,32 244,28 252,30 C 244,34 240,40 238,48 C 234,42 230,38 229,38 Z"
+      <path d="M 225,38 C 232,32 240,28 248,30 C 240,34 236,40 234,48 C 230,42 226,38 225,38 Z"
         fill="#fbbf24" opacity="0.7">
         <animate attributeName="opacity" values="0.7;0.4;0.8;0.55;0.7" dur="0.38s" repeatCount="indefinite"/>
       </path>
-      <path d="M 229,72 C 236,78 244,82 252,80 C 244,76 240,70 238,62 C 234,68 230,72 229,72 Z"
+      <path d="M 225,72 C 232,78 240,82 248,80 C 240,76 236,70 234,62 C 230,68 226,72 225,72 Z"
         fill="#f97316" opacity="0.65">
         <animate attributeName="opacity" values="0.65;0.9;0.45;0.75;0.65" dur="0.42s" repeatCount="indefinite"/>
       </path>
@@ -192,23 +192,23 @@
       </circle>
 
       <!-- Sparks flying off the ring -->
-      <circle cx="268" cy="20" r="1.8" fill="#fde68a">
+      <circle cx="264" cy="20" r="1.8" fill="#fde68a">
         <animateMotion dur="0.9s" repeatCount="indefinite" path="M0,0 C2,-10 0,-20 4,-28"/>
         <animate attributeName="opacity" values="0;1;0.8;0" dur="0.9s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="292" cy="28" r="1.4" fill="#fb923c">
+      <circle cx="288" cy="28" r="1.4" fill="#fb923c">
         <animateMotion dur="0.72s" begin="0.25s" repeatCount="indefinite" path="M0,0 C8,-6 14,-10 18,-16"/>
         <animate attributeName="opacity" values="0;1;0" dur="0.72s" begin="0.25s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="268" cy="90" r="1.6" fill="#facc15">
+      <circle cx="264" cy="90" r="1.6" fill="#facc15">
         <animateMotion dur="0.82s" begin="0.5s" repeatCount="indefinite" path="M0,0 C2,10 0,20 4,28"/>
         <animate attributeName="opacity" values="0;1;0" dur="0.82s" begin="0.5s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="294" cy="80" r="1.2" fill="#f97316">
+      <circle cx="290" cy="80" r="1.2" fill="#f97316">
         <animateMotion dur="0.68s" begin="0.15s" repeatCount="indefinite" path="M0,0 C8,6 14,10 18,16"/>
         <animate attributeName="opacity" values="0;0.9;0" dur="0.68s" begin="0.15s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="300" cy="55" r="1.5" fill="#fbbf24">
+      <circle cx="296" cy="55" r="1.5" fill="#fbbf24">
         <animateMotion dur="0.78s" begin="0.35s" repeatCount="indefinite" path="M0,0 C12,0 20,2 28,0"/>
         <animate attributeName="opacity" values="0;1;0" dur="0.78s" begin="0.35s" repeatCount="indefinite"/>
       </circle>
