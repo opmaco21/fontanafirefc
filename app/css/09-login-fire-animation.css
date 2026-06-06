@@ -50,6 +50,9 @@
   height: 110px;
   margin: 0 auto;
   overflow: visible;
+  /* Scale down on narrow screens while keeping internal layout intact */
+  max-width: 100%;
+  transform-origin: center center;
 }
 
 /* SVG flame fills the whole scene */
@@ -57,16 +60,17 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 300px;
-  height: 110px;
+  width: 100%;
+  height: 100%;
   z-index: 2;
   overflow: visible;
 }
 
-/* Ball sits right of center, vertically centered, on top of flame */
+/* Ball is positioned to match SVG ring center at x=264, y=55
+   In a 300px scene: left = 264 - 26 = 238px (half of 52px ball) */
 .soccer-shell-v5 {
   position: absolute;
-  right: 10px;
+  left: 238px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
@@ -111,18 +115,17 @@
   color: #6b7280;
 }
 
-@media (max-width: 520px) {
+@media (max-width: 420px) {
   .fire-scene-v5 {
-    width: 280px;
-    height: 100px;
-    transform: scale(0.82);
+    transform: scale(0.78);
     transform-origin: center center;
   }
+  /* Ball and SVG scale together — no separate repositioning needed */
+}
 
-  .soccer-ball-v5 {
-    font-size: 46px;
+@media (max-width: 520px) and (min-width: 421px) {
+  .fire-scene-v5 {
+    transform: scale(0.88);
+    transform-origin: center center;
   }
-
-  .loader-text { font-size: 14px; }
-  .loader-subtext { font-size: 12px; }
 }
