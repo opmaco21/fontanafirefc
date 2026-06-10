@@ -1,0 +1,429 @@
+/* Fontana Fire FC Attendance App - 13-user-management.css
+   Styles for User Management page (Batch 7)
+   Load order matters - load after 12-dashboard-final-badges-snapshot.css */
+
+/* =========================================================
+   USER MANAGEMENT PAGE
+   Admin-only page for managing users, passwords, and access.
+   ========================================================= */
+
+.user-mgmt-container {
+  padding: 0;
+}
+
+.user-mgmt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.user-mgmt-header h3 {
+  margin: 0;
+  color: #111827;
+}
+
+/* =========================================================
+   USER TABLE
+   ========================================================= */
+
+.user-mgmt-table-wrap {
+  background: #ffffff;
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.user-mgmt-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 540px;
+  font-size: 14px;
+}
+
+.user-mgmt-table th {
+  background: #111827;
+  color: #ffffff;
+  padding: 12px 10px;
+  text-align: left;
+  font-weight: 800;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.user-mgmt-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.user-mgmt-table tr:last-child td {
+  border-bottom: none;
+}
+
+.user-mgmt-table tr:hover td {
+  background: #fafafa;
+}
+
+/* =========================================================
+   ROLE BADGES
+   ========================================================= */
+
+.user-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.user-role-admin {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.user-role-teammom {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.user-role-maincoach {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+.user-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.user-status-active {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.user-status-inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.user-must-change {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #fef9c3;
+  color: #92400e;
+  border: 1px solid #fde047;
+  margin-left: 5px;
+}
+
+/* =========================================================
+   ACTION BUTTONS IN TABLE
+   ========================================================= */
+
+.user-action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.user-action-btn {
+  padding: 6px 11px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.user-action-reset {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+.user-action-reset:hover {
+  background: #ffedd5;
+}
+
+.user-action-deactivate {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.user-action-deactivate:hover {
+  background: #fecaca;
+}
+
+.user-action-activate {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.user-action-activate:hover {
+  background: #bbf7d0;
+}
+
+/* =========================================================
+   MODALS
+   ========================================================= */
+
+.user-mgmt-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.user-mgmt-modal {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 28px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.user-mgmt-modal h3 {
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.user-mgmt-modal p {
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.user-mgmt-modal .form-row {
+  margin-bottom: 14px;
+}
+
+.user-mgmt-modal label {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.user-mgmt-modal input,
+.user-mgmt-modal select {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+.user-mgmt-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.user-mgmt-modal-actions .btn {
+  margin-top: 0;
+  width: auto;
+}
+
+/* Temp password display */
+.temp-password-box {
+  background: #f8fafc;
+  border: 1px solid #e1e5ea;
+  border-radius: 10px;
+  padding: 14px;
+  margin: 16px 0;
+}
+
+.temp-password-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.temp-password-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.temp-password-value {
+  flex: 1;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  word-break: break-all;
+}
+
+.temp-password-copy-btn {
+  padding: 10px 14px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.temp-password-copy-btn:hover {
+  background: #1565c0;
+}
+
+.temp-password-warning {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #92400e;
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: 8px;
+  padding: 8px 10px;
+  line-height: 1.4;
+}
+
+/* Password strength meter */
+.password-strength-text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.3;
+}
+
+.password-strength-ok {
+  color: #166534;
+  font-weight: 700;
+}
+
+/* =========================================================
+   FORCED PASSWORD CHANGE MODAL
+   Covers entire screen, no escape
+   ========================================================= */
+
+.forced-password-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+
+.forced-password-modal {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  padding: 28px;
+  width: 100%;
+  max-width: 460px;
+  text-align: center;
+}
+
+.forced-password-modal h2 {
+  color: #d32f2f;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.forced-password-modal p {
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.forced-password-modal .form-row {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.forced-password-modal label {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.forced-password-modal input {
+  padding: 10px 12px;
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+/* =========================================================
+   USER MANAGEMENT BUTTON IN FOOTER
+   ========================================================= */
+
+#userManagementBtn {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+#userManagementBtn:hover {
+  background: #1f2937 !important;
+}
+
+@media (max-width: 520px) {
+  .user-mgmt-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-action-buttons {
+    flex-direction: column;
+  }
+
+  .user-action-btn {
+    width: 100%;
+  }
+
+  .user-mgmt-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .user-mgmt-modal-actions .btn {
+    width: 100%;
+  }
+}

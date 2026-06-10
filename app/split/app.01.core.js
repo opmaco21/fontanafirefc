@@ -309,6 +309,31 @@ function applyRolePermissions() {
     }
   }
 
+  // Show User Management button for Admins only
+  let userMgmtBtn = document.getElementById("userManagementBtn");
+  if (currentUser.RoleName === "Admin") {
+    if (!userMgmtBtn) {
+      userMgmtBtn = document.createElement("button");
+      userMgmtBtn.id = "userManagementBtn";
+      userMgmtBtn.type = "button";
+      userMgmtBtn.className = "btn btn-secondary";
+      userMgmtBtn.textContent = "User Management";
+      userMgmtBtn.addEventListener("click", () => {
+        if (typeof showUserManagement === "function") {
+          showUserManagement();
+        }
+      });
+
+      const footerActions = document.querySelector(".app-footer-actions");
+      if (footerActions) {
+        footerActions.insertBefore(userMgmtBtn, footerActions.firstChild);
+      }
+    }
+    userMgmtBtn.style.display = "";
+  } else {
+    if (userMgmtBtn) userMgmtBtn.style.display = "none";
+  }
+
   updateTeamEventSection();
 }
 
@@ -354,7 +379,12 @@ async function login() {
     currentUser = data.user;
     localStorage.setItem("attendanceUser", JSON.stringify(currentUser));
 
-    await showApp();
+    if (data.mustChangePassword) {
+      setLoginLoading(false);
+      await showForcedPasswordChangeModal(currentUser.FullName);
+    } else {
+      await showApp();
+    }
 
   } catch (err) {
     console.error("Login error:", err);
