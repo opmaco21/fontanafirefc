@@ -172,6 +172,16 @@
   white-space: nowrap;
 }
 
+.user-action-edit {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.user-action-edit:hover {
+  background: #dbeafe;
+}
+
 .user-action-reset {
   background: #fff7ed;
   color: #c2410c;

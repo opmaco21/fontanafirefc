@@ -370,6 +370,90 @@ async function toggleUserActive(userID, userName, isCurrentlyActive) {
 }
 
 /* =========================
+   EDIT USER MODAL
+   ========================= */
+function showEditUserModal(userID, fullName, email, roleName) {
+  const modal = buildModal("editUserModal", `
+    <h3 style="color:#1976d2;">Edit User</h3>
+    <p style="color:#666; margin-bottom:16px;">Update details for <strong>${fullName}</strong></p>
+
+    <div class="form-row">
+      <label>Full Name</label>
+      <input type="text" id="editUserFullName" value="${fullName}" />
+    </div>
+    <div class="form-row">
+      <label>Email</label>
+      <input type="email" id="editUserEmail" value="${email}" />
+    </div>
+    <div class="form-row">
+      <label>Role</label>
+      <select id="editUserRole">
+        <option value="TeamMom" ${roleName === "TeamMom" ? "selected" : ""}>Team Mom</option>
+        <option value="HeadCoach" ${roleName === "HeadCoach" ? "selected" : ""}>Head Coach</option>
+        <option value="Coaches" ${roleName === "Coaches" ? "selected" : ""}>Coach</option>
+        <option value="Admin" ${roleName === "Admin" ? "selected" : ""}>Admin</option>
+      </select>
+    </div>
+
+    <div id="editUserError" style="color:#c62828; font-size:12px; display:none; margin-bottom:10px;"></div>
+
+    <div class="user-mgmt-modal-actions">
+      <button class="btn btn-secondary" id="cancelEditBtn" style="margin-top:0;">Cancel</button>
+      <button class="btn btn-primary" id="confirmEditBtn" style="margin-top:0;">Save Changes</button>
+    </div>
+  `);
+
+  document.getElementById("cancelEditBtn").addEventListener("click", () => modal.remove());
+  document.getElementById("confirmEditBtn").addEventListener("click", () => submitEditUser(userID, modal));
+  document.getElementById("editUserFullName").focus();
+}
+
+async function submitEditUser(userID, modal) {
+  const fullName = document.getElementById("editUserFullName").value.trim();
+  const email = document.getElementById("editUserEmail").value.trim();
+  const roleName = document.getElementById("editUserRole").value;
+  const errorDiv = document.getElementById("editUserError");
+  const btn = document.getElementById("confirmEditBtn");
+
+  if (!fullName || !email || !roleName) {
+    errorDiv.textContent = "All fields are required";
+    errorDiv.style.display = "block";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Saving...";
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/users/${userID}/edit`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ fullName, email, roleName })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      errorDiv.textContent = data.message || "Failed to update user";
+      errorDiv.style.display = "block";
+      btn.disabled = false;
+      btn.textContent = "Save Changes";
+      return;
+    }
+
+    modal.remove();
+    await loadUsers();
+
+  } catch (err) {
+    errorDiv.textContent = "Network error. Please try again.";
+    errorDiv.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Save Changes";
+  }
+}
+
+/* =========================
    MODAL BUILDER HELPER
    ========================= */
 function buildModal(id, innerHtml) {
