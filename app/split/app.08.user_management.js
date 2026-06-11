@@ -9,6 +9,12 @@ async function showUserManagement() {
   const appScreen = document.getElementById("appScreen");
   if (!appScreen) return;
 
+  // Only Admin and TeamMom can access User Management
+  if (!currentUser || (!["Admin", "TeamMom"].includes(currentUser.RoleName))) {
+    alert("Access denied. Admin or Team Mom role required.");
+    return;
+  }
+
   // Hide all other sections
   appScreen.querySelectorAll("section, hr").forEach(el => el.classList.add("hidden"));
 
@@ -20,11 +26,12 @@ async function showUserManagement() {
   const section = document.createElement("section");
   section.id = "userMgmtSection";
   section.className = "user-mgmt-container";
+  const isAdmin = currentUser && currentUser.RoleName === 'Admin';
   section.innerHTML = `
     <div class="user-mgmt-header">
       <h3>User Management</h3>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button id="createUserBtn" class="btn btn-primary" style="margin-top:0;">+ Create New User</button>
+        ${currentUser && currentUser.RoleName === "Admin" ? `<button id="createUserBtn" class="btn btn-primary" style="margin-top:0;">+ Create New User</button>` : ""}
         <button id="backFromUserMgmtBtn" class="btn btn-secondary" style="margin-top:0;">← Back to App</button>
       </div>
     </div>
@@ -50,7 +57,8 @@ async function showUserManagement() {
 
   appScreen.appendChild(section);
 
-  document.getElementById("createUserBtn").addEventListener("click", showCreateUserModal);
+  const createUserBtn = document.getElementById("createUserBtn");
+  if (createUserBtn) createUserBtn.addEventListener("click", showCreateUserModal);
   document.getElementById("backFromUserMgmtBtn").addEventListener("click", () => {
     section.remove();
     appScreen.querySelectorAll("section, hr").forEach(el => el.classList.remove("hidden"));
@@ -62,7 +70,7 @@ async function showUserManagement() {
 
 async function loadUsers() {
   try {
-    const res = await fetch(`${API_BASE}/users`, { credentials: "include" });
+    const res = await fetch(`${API_BASE}/auth/users`, { credentials: "include" });
     const data = await res.json();
 
     if (!res.ok || !data.success) {
@@ -90,15 +98,17 @@ function renderUsersTable() {
 
   tbody.innerHTML = allUsers.map(u => {
     const roleClass = {
-      Admin: "user-role-admin",
-      TeamMom: "user-role-teammom",
-      MainCoach: "user-role-maincoach"
+      Admin:     "user-role-admin",
+      TeamMom:   "user-role-teammom",
+      HeadCoach: "user-role-headcoach",
+      Coaches:   "user-role-coaches"
     }[u.RoleName] || "";
 
     const roleLabel = {
-      Admin: "Admin",
-      TeamMom: "Team Mom",
-      MainCoach: "Main Coach"
+      Admin:     "Admin",
+      TeamMom:   "Team Mom",
+      HeadCoach: "Head Coach",
+      Coaches:   "Coaches"
     }[u.RoleName] || u.RoleName;
 
     const lastLogin = u.LastLoginAt
@@ -124,6 +134,7 @@ function renderUsersTable() {
         <td style="color:#666; font-size:12px;">${lastLogin}</td>
         <td>
           <div class="user-action-buttons">
+            ${currentUser && currentUser.RoleName === "Admin" ? `
             <button class="user-action-btn user-action-reset"
               onclick="showResetPasswordModal(${u.UserID}, '${u.FullName.replace(/'/g, "\\'")}')">
               Reset Password
@@ -133,6 +144,7 @@ function renderUsersTable() {
               onclick="toggleUserActive(${u.UserID}, '${u.FullName.replace(/'/g, "\\'")}', ${u.IsActive})">
               ${u.IsActive ? 'Deactivate' : 'Activate'}
             </button>` : ''}
+            ` : '<span style="color:#999; font-size:12px;">View only</span>'}
           </div>
         </td>
       </tr>
@@ -165,8 +177,9 @@ function showCreateUserModal() {
       <label>Role</label>
       <select id="newUserRole">
         <option value="">-- Select Role --</option>
+        <option value="Coaches">Coaches</option>
+        <option value="HeadCoach">Head Coach</option>
         <option value="TeamMom">Team Mom</option>
-        <option value="MainCoach">Main Coach</option>
         <option value="Admin">Admin</option>
       </select>
     </div>
@@ -201,7 +214,7 @@ async function submitCreateUser(modal) {
   btn.textContent = "Creating...";
 
   try {
-    const res = await fetch(`${API_BASE}/users/create`, {
+    const res = await fetch(`${API_BASE}/auth/users/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -335,7 +348,7 @@ async function toggleUserActive(userID, userName, isCurrentlyActive) {
   if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${userName}?`)) return;
 
   try {
-    const res = await fetch(`${API_BASE}/users/${userID}/toggle-active`, {
+    const res = await fetch(`${API_BASE}/auth/users/${userID}/toggle-active`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include"

@@ -296,22 +296,46 @@ function setLoginLoading(isLoading) {
 /* =========================
    ROLE PERMISSIONS
    ========================= */
+/* =========================
+   ROLE PERMISSION HELPERS
+   Roles: Admin, TeamMom, HeadCoach, Coaches
+   ========================= */
+function hasRole(...roles) {
+  return currentUser && roles.includes(currentUser.RoleName);
+}
+
+function canManagePlayers() {
+  return hasRole("Admin", "TeamMom");
+}
+
+function canManageEvents() {
+  return hasRole("Admin", "TeamMom", "HeadCoach");
+}
+
+function canManageUsers() {
+  return hasRole("Admin", "TeamMom");
+}
+
+function canCreateResetUsers() {
+  return hasRole("Admin");
+}
+
 function applyRolePermissions() {
   if (!currentUser) return;
 
-  if (currentUser.RoleName === "MainCoach") {
-    if (addPlayerSection) {
-      addPlayerSection.style.display = "none";
-    }
-  } else {
-    if (addPlayerSection) {
-      addPlayerSection.style.display = "block";
-    }
+  // Player Management — Admin and TeamMom only
+  if (addPlayerSection) {
+    addPlayerSection.style.display = canManagePlayers() ? "block" : "none";
   }
 
-  // Show User Management button for Admins only
+  // Player Management tab — Admin and TeamMom only
+  if (playerManagementTab) {
+    playerManagementTab.style.display = canManagePlayers() ? "" : "none";
+  }
+
+  // User Management button — Admin and TeamMom only
   let userMgmtBtn = document.getElementById("userManagementBtn");
-  if (currentUser.RoleName === "Admin") {
+  if (canManageUsers()) {
     if (!userMgmtBtn) {
       userMgmtBtn = document.createElement("button");
       userMgmtBtn.id = "userManagementBtn";
@@ -323,7 +347,6 @@ function applyRolePermissions() {
           showUserManagement();
         }
       });
-
       const footerActions = document.querySelector(".app-footer-actions");
       if (footerActions) {
         footerActions.insertBefore(userMgmtBtn, footerActions.firstChild);
@@ -334,7 +357,19 @@ function applyRolePermissions() {
     if (userMgmtBtn) userMgmtBtn.style.display = "none";
   }
 
+  // Role label display
+  const roleLabels = {
+    Admin: "Admin",
+    TeamMom: "Team Mom",
+    HeadCoach: "Head Coach",
+    Coaches: "Coach"
+  };
+  if (roleText) {
+    roleText.textContent = roleLabels[currentUser.RoleName] || currentUser.RoleName;
+  }
+
   updateTeamEventSection();
+  updateGameSection();
 }
 
 /* =========================
@@ -438,9 +473,6 @@ async function showApp() {
     welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
   }
 
-  if (roleText) {
-    roleText.textContent = `${currentUser.RoleName}`;
-  }
 
   if (loginScreen) {
     loginScreen.classList.add("hidden");
@@ -851,7 +883,7 @@ function updateTeamEventSection() {
 
   const canAddTeamEvents =
     currentUser &&
-    currentUser.RoleName !== "MainCoach";
+    canManageEvents();
 
   const hasSelectedTeamEvent =
     currentTab === "Team Event" &&
@@ -879,7 +911,7 @@ function updateGameSection() {
 
   const canAddGames =
     currentUser &&
-    currentUser.RoleName !== "MainCoach";
+    canManageEvents();
 
   if (currentTab !== "Game" || !canAddGames) {
     gameSection.classList.add("hidden");
@@ -1814,7 +1846,7 @@ function updateEventActionButtons() {
   const eventStatus = selectedOption ? selectedOption.dataset.eventStatus : "";
   const canDeleteEvents =
     currentUser &&
-    currentUser.RoleName !== "MainCoach";
+    canManageEvents();
 
   if (eventActionButtons) {
     eventActionButtons.classList.add("hidden");

@@ -8,7 +8,7 @@
    ========================================================= */
 
 .user-mgmt-container {
-  padding: 0;
+  padding: 4px 0 20px;
 }
 
 .user-mgmt-header {
@@ -16,8 +16,11 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  margin-top: 8px;
   flex-wrap: wrap;
   gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #f3f4f6;
 }
 
 .user-mgmt-header h3 {
@@ -48,7 +51,7 @@
 .user-mgmt-table th {
   background: #111827;
   color: #ffffff;
-  padding: 12px 10px;
+  padding: 14px 12px;
   text-align: left;
   font-weight: 800;
   font-size: 12px;
@@ -58,9 +61,10 @@
 }
 
 .user-mgmt-table td {
-  padding: 12px 10px;
+  padding: 14px 12px;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
+  font-size: 14px;
 }
 
 .user-mgmt-table tr:last-child td {
@@ -97,10 +101,16 @@
   border: 1px solid #bfdbfe;
 }
 
-.user-role-maincoach {
+.user-role-headcoach {
   background: #fff7ed;
   color: #c2410c;
   border: 1px solid #fdba74;
+}
+
+.user-role-coaches {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #86efac;
 }
 
 /* =========================================================
@@ -402,7 +412,18 @@
 }
 
 #userManagementBtn:hover {
-  background: #1f2937 !important;
+  background: #374151 !important;
+}
+
+/* Separator between User Mgmt and other footer buttons */
+#userManagementBtn + .btn {
+  margin-left: 4px;
+}
+
+/* App footer spacing */
+.app-footer-actions {
+  gap: 8px !important;
+  flex-wrap: wrap !important;
 }
 
 @media (max-width: 520px) {
