@@ -167,9 +167,13 @@ function renderUsersTable() {
         <td>
           <div class="user-action-buttons">
             ${currentUser && currentUser.RoleName === "Admin" ? `
+            <button class="user-action-btn user-action-edit"
+              onclick="showEditUserModal(${u.UserID}, '${u.FullName.replace(/'/g, "\\'")}', '${u.Email.replace(/'/g, "\\'")}', '${u.RoleName}')">
+              Edit
+            </button>
             <button class="user-action-btn user-action-reset"
               onclick="showResetPasswordModal(${u.UserID}, '${u.FullName.replace(/'/g, "\\'")}')">
-              Reset Password
+              Reset
             </button>
             ${!isSelf ? `
             <button class="user-action-btn ${u.IsActive ? 'user-action-deactivate' : 'user-action-activate'}"

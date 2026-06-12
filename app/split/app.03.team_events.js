@@ -263,7 +263,7 @@ async function addTeamEvent() {
     teamEventMessage.textContent = "";
   }
 
-  if (currentUser && currentUser.RoleName === "MainCoach") {
+  if (!canManageEvents()) {
     setMessage(
       teamEventMessage,
       "Access denied. Only Admin and Team Mom can add team events.",

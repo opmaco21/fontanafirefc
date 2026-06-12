@@ -204,7 +204,7 @@ async function addGame() {
     gameMessage.textContent = "";
   }
 
-  if (currentUser && currentUser.RoleName === "MainCoach") {
+  if (!canManageEvents()) {
     setMessage(
       gameMessage,
       "Access denied. Only Admin and Team Mom can add games.",
