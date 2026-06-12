@@ -5,6 +5,40 @@
 
 let allUsers = [];
 
+function closeUserManagement() {
+  const section = document.getElementById("userMgmtSection");
+  if (!section) return;
+  section.remove();
+
+  const appScreen = document.getElementById("appScreen");
+  if (appScreen) {
+    appScreen.querySelectorAll("section, hr").forEach(el => el.classList.remove("hidden"));
+  }
+
+  if (typeof updateMainModeVisibility === "function") {
+    updateMainModeVisibility();
+  }
+  if (typeof applyRolePermissions === "function") {
+    applyRolePermissions();
+  }
+}
+
+// Close User Management whenever a main nav tab is clicked
+function attachUserMgmtTabCloseListeners() {
+  const tabIds = ["dashboardTab", "practiceTab", "gamesTab", "teamEventsTab", "playerManagementTab"];
+  tabIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.userMgmtListenerAttached) {
+      el.addEventListener("click", () => {
+        if (document.getElementById("userMgmtSection")) {
+          closeUserManagement();
+        }
+      });
+      el.dataset.userMgmtListenerAttached = "true";
+    }
+  });
+}
+
 async function showUserManagement() {
   const appScreen = document.getElementById("appScreen");
   if (!appScreen) return;
@@ -14,6 +48,8 @@ async function showUserManagement() {
     alert("Access denied. Admin or Team Mom role required.");
     return;
   }
+
+  attachUserMgmtTabCloseListeners();
 
   // Hide all other sections
   appScreen.querySelectorAll("section, hr").forEach(el => el.classList.add("hidden"));
@@ -59,11 +95,7 @@ async function showUserManagement() {
 
   const createUserBtn = document.getElementById("createUserBtn");
   if (createUserBtn) createUserBtn.addEventListener("click", showCreateUserModal);
-  document.getElementById("backFromUserMgmtBtn").addEventListener("click", () => {
-    section.remove();
-    appScreen.querySelectorAll("section, hr").forEach(el => el.classList.remove("hidden"));
-    if (typeof applyRolePermissions === "function") applyRolePermissions();
-  });
+  document.getElementById("backFromUserMgmtBtn").addEventListener("click", closeUserManagement);
 
   await loadUsers();
 }
