@@ -324,7 +324,7 @@ async function submitResetPassword(userID, userName, modal) {
     }
 
     modal.remove();
-    showTempPasswordModal(userName, "", data.tempPassword);
+    showTempPasswordModal(userName, "", data.tempPassword, true);
     await loadUsers();
 
   } catch (err) {
@@ -338,7 +338,7 @@ async function submitResetPassword(userID, userName, modal) {
 /* =========================
    TEMP PASSWORD DISPLAY
    ========================= */
-function showTempPasswordModal(userName, email, tempPassword) {
+function showTempPasswordModal(userName, email, tempPassword, isReset = false) {
   const modal = buildModal("tempPasswordModal", `
     <h3 style="color:#166534; text-align:center;">✓ Password ${email ? 'Created' : 'Reset'}</h3>
     <p style="text-align:center;">
@@ -353,6 +353,12 @@ function showTempPasswordModal(userName, email, tempPassword) {
         <button class="temp-password-copy-btn" id="copyTempPasswordBtn">Copy</button>
       </div>
     </div>
+
+    ${isReset ? `
+    <div class="temp-password-warning" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b;">
+      🔒 ${userName}'s old password no longer works. They must log in with this temporary password above, then set a new one.
+    </div>
+    ` : ''}
 
     <div class="temp-password-warning">
       ⚠️ Share this password securely. It will not be shown again.
