@@ -15,10 +15,6 @@ let playerManagementQuickFilter = "";
 let isPlayerManagementFormExpanded = false;
 let isPlayerManagementSaving = false;
 
-function canManagePlayers() {
-  return currentUser && currentUser.RoleName !== "MainCoach";
-}
-
 function getPlayerStatusLabel(player) {
   return player.IsActive ? "Active" : "Inactive";
 }
