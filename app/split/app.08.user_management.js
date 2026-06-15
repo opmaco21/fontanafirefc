@@ -5,6 +5,15 @@
 
 let allUsers = [];
 
+function escapeUserMgmtHtml(value) {
+  return String(value === null || value === undefined ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function closeUserManagement() {
   const section = document.getElementById("userMgmtSection");
   if (!section) return;
@@ -68,7 +77,7 @@ async function showUserManagement() {
       <h3>User Management</h3>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         ${currentUser && currentUser.RoleName === "Admin" ? `<button id="createUserBtn" class="btn btn-primary" style="margin-top:0;">+ Create New User</button>` : ""}
-        <button id="backFromUserMgmtBtn" class="btn btn-secondary" style="margin-top:0;">← Back to App</button>
+        <button id="backFromUserMgmtBtn" class="btn btn-secondary" style="margin-top:0;">? Back to App</button>
       </div>
     </div>
 
@@ -148,16 +157,16 @@ function renderUsersTable() {
       : "Never";
 
     const mustChangeBadge = (u.MustChangePassword === true || u.MustChangePassword === 1)
-      ? `<span class="user-must-change">⚠ Must change</span>`
+      ? `<span class="user-must-change">? Must change</span>`
       : "";
 
     const isSelf = currentUser && u.UserID === currentUser.UserID;
 
     return `
       <tr>
-        <td><strong>${u.FullName}</strong>${mustChangeBadge}</td>
-        <td style="color:#555; font-size:13px;">${u.Email}</td>
-        <td><span class="user-role-badge ${roleClass}">${roleLabel}</span></td>
+        <td><strong>${escapeUserMgmtHtml(u.FullName)}</strong>${mustChangeBadge}</td>
+        <td style="color:#555; font-size:13px;">${escapeUserMgmtHtml(u.Email)}</td>
+        <td><span class="user-role-badge ${roleClass}">${escapeUserMgmtHtml(roleLabel)}</span></td>
         <td>
           <span class="user-status-badge ${u.IsActive ? 'user-status-active' : 'user-status-inactive'}">
             ${u.IsActive ? 'Active' : 'Inactive'}
@@ -168,16 +177,16 @@ function renderUsersTable() {
           <div class="user-action-buttons">
             ${currentUser && currentUser.RoleName === "Admin" ? `
             <button class="user-action-btn user-action-edit"
-              onclick="showEditUserModal(${u.UserID}, '${u.FullName.replace(/'/g, "\\'")}', '${u.Email.replace(/'/g, "\\'")}', '${u.RoleName}')">
+              data-action="edit" data-user-id="${u.UserID}" data-user-name="${escapeUserMgmtHtml(u.FullName)}" data-user-email="${escapeUserMgmtHtml(u.Email)}" data-user-role="${escapeUserMgmtHtml(u.RoleName)}">
               Edit
             </button>
             <button class="user-action-btn user-action-reset"
-              onclick="showResetPasswordModal(${u.UserID}, '${u.FullName.replace(/'/g, "\\'")}')">
+              data-action="reset" data-user-id="${u.UserID}" data-user-name="${escapeUserMgmtHtml(u.FullName)}">
               Reset
             </button>
             ${!isSelf ? `
             <button class="user-action-btn ${u.IsActive ? 'user-action-deactivate' : 'user-action-activate'}"
-              onclick="toggleUserActive(${u.UserID}, '${u.FullName.replace(/'/g, "\\'")}', ${u.IsActive})">
+              data-action="toggle-active" data-user-id="${u.UserID}" data-user-name="${escapeUserMgmtHtml(u.FullName)}" data-is-active="${u.IsActive ? '1' : '0'}">
               ${u.IsActive ? 'Deactivate' : 'Activate'}
             </button>` : ''}
             ` : '<span style="color:#999; font-size:12px;">View only</span>'}
@@ -186,6 +195,40 @@ function renderUsersTable() {
       </tr>
     `;
   }).join("");
+
+  attachUserMgmtRowActionListener();
+}
+
+/* =========================
+   ROW ACTION DELEGATION
+   Reads data-* attributes (already HTML-decoded by the browser),
+   so user-entered names/emails can never break out of an
+   attribute or be executed as HTML/JS.
+   ========================= */
+function attachUserMgmtRowActionListener() {
+  const tbody = document.getElementById("userMgmtTableBody");
+  if (!tbody || tbody.dataset.actionListenerAttached) return;
+  tbody.dataset.actionListenerAttached = "1";
+
+  tbody.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+
+    const userID = Number(btn.dataset.userId);
+    const userName = btn.dataset.userName || "";
+
+    switch (btn.dataset.action) {
+      case "edit":
+        showEditUserModal(userID, userName, btn.dataset.userEmail || "", btn.dataset.userRole || "");
+        break;
+      case "reset":
+        showResetPasswordModal(userID, userName);
+        break;
+      case "toggle-active":
+        toggleUserActive(userID, userName, btn.dataset.isActive === "1");
+        break;
+    }
+  });
 }
 
 function renderUserTableError(msg) {
@@ -283,9 +326,10 @@ async function submitCreateUser(modal) {
    RESET PASSWORD MODAL
    ========================= */
 function showResetPasswordModal(userID, userName) {
+  const safeUserName = escapeUserMgmtHtml(userName);
   const modal = buildModal("resetConfirmModal", `
     <h3 style="color:#c2410c;">Reset Password?</h3>
-    <p>A new temporary password will be generated for <strong>${userName}</strong>. They will be required to change it on next login.</p>
+    <p>A new temporary password will be generated for <strong>${safeUserName}</strong>. They will be required to change it on next login.</p>
 
     <div id="resetError" style="color:#c62828; font-size:12px; display:none; margin-bottom:10px;"></div>
 
@@ -339,29 +383,33 @@ async function submitResetPassword(userID, userName, modal) {
    TEMP PASSWORD DISPLAY
    ========================= */
 function showTempPasswordModal(userName, email, tempPassword, isReset = false) {
+  const safeUserName = escapeUserMgmtHtml(userName);
+  const safeEmail = escapeUserMgmtHtml(email);
+  const safeTempPassword = escapeUserMgmtHtml(tempPassword);
+
   const modal = buildModal("tempPasswordModal", `
-    <h3 style="color:#166534; text-align:center;">✓ Password ${email ? 'Created' : 'Reset'}</h3>
+    <h3 style="color:#166534; text-align:center;">? Password ${email ? 'Created' : 'Reset'}</h3>
     <p style="text-align:center;">
-      <strong>${userName}</strong>${email ? `<br><span style="font-size:13px; color:#666;">${email}</span>` : ''}<br>
+      <strong>${safeUserName}</strong>${email ? `<br><span style="font-size:13px; color:#666;">${safeEmail}</span>` : ''}<br>
       Must change password on next login.
     </p>
 
     <div class="temp-password-box">
       <div class="temp-password-label">Temporary Password</div>
       <div class="temp-password-row">
-        <div class="temp-password-value" id="tempPasswordValue">${tempPassword}</div>
+        <div class="temp-password-value" id="tempPasswordValue">${safeTempPassword}</div>
         <button class="temp-password-copy-btn" id="copyTempPasswordBtn">Copy</button>
       </div>
     </div>
 
     ${isReset ? `
     <div class="temp-password-warning" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b;">
-      🔒 ${userName}'s old password no longer works. They must log in with this temporary password above, then set a new one.
+      ?? ${safeUserName}'s old password no longer works. They must log in with this temporary password above, then set a new one.
     </div>
     ` : ''}
 
     <div class="temp-password-warning">
-      ⚠️ Share this password securely. It will not be shown again.
+      ?? Share this password securely. It will not be shown again.
     </div>
 
     <div class="user-mgmt-modal-actions" style="justify-content:center; margin-top:20px;">
@@ -415,17 +463,20 @@ async function toggleUserActive(userID, userName, isCurrentlyActive) {
    EDIT USER MODAL
    ========================= */
 function showEditUserModal(userID, fullName, email, roleName) {
+  const safeFullName = escapeUserMgmtHtml(fullName);
+  const safeEmail = escapeUserMgmtHtml(email);
+
   const modal = buildModal("editUserModal", `
     <h3 style="color:#1976d2;">Edit User</h3>
-    <p style="color:#666; margin-bottom:16px;">Update details for <strong>${fullName}</strong></p>
+    <p style="color:#666; margin-bottom:16px;">Update details for <strong>${safeFullName}</strong></p>
 
     <div class="form-row">
       <label>Full Name</label>
-      <input type="text" id="editUserFullName" value="${fullName}" />
+      <input type="text" id="editUserFullName" value="${safeFullName}" />
     </div>
     <div class="form-row">
       <label>Email</label>
-      <input type="email" id="editUserEmail" value="${email}" />
+      <input type="email" id="editUserEmail" value="${safeEmail}" />
     </div>
     <div class="form-row">
       <label>Role</label>

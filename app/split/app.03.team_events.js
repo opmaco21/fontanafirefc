@@ -90,7 +90,7 @@ function renderTeamEventPlayerOptions() {
         ${selectedIds.has(Number(player.PlayerID)) ? "checked" : ""}
       />
       <span class="team-event-player-info">
-        <span class="team-event-player-name">${player.FirstName} ${player.LastName}</span>
+        <span class="team-event-player-name">${escapeHtml(player.FirstName)} ${escapeHtml(player.LastName)}</span>
         <span class="team-event-player-meta">${playerNumber} | Group: ${groupLabel}${player.Gender ? ` | Gender: ${formatGenderShort(player.Gender)}` : ""}</span>
       </span>
     `;

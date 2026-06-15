@@ -6,6 +6,21 @@
 const API_BASE = "https://attendance-api-xb3v.onrender.com/api";
 
 /* =========================
+   SHARED HTML ESCAPE HELPER
+   Use whenever player/user/contact data is inserted into
+   innerHTML, to avoid stored-XSS from imported or
+   user-entered data (names, addresses, notes, etc.).
+   ========================= */
+function escapeHtml(value) {
+  return String(value === null || value === undefined ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/* =========================
    HTML ELEMENT REFERENCES
    ========================= */
 const loginBtn = document.getElementById("loginBtn");

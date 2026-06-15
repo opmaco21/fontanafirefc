@@ -696,13 +696,15 @@ function createAttendancePlayerRow(player) {
     groupLabel
   ].join(" "));
 
+  const playerNameHtml = escapeHtml(playerName);
+
   row.innerHTML = `
     <div class="attendance-player-info">
-      <div class="attendance-player-name">${playerName}</div>
+      <div class="attendance-player-name">${playerNameHtml}</div>
       <div class="attendance-player-meta">${playerNumber} ${birthYear ? `| Birth Year: ${birthYear}` : ""} ${gender ? `| Gender: ${formatGenderShort(gender)}` : ""}</div>
     </div>
 
-    <div class="attendance-status-buttons" role="group" aria-label="Attendance status for ${playerName}">
+    <div class="attendance-status-buttons" role="group" aria-label="Attendance status for ${playerNameHtml}">
       <button type="button" class="attendance-status-btn present-btn" data-status="Present">Present</button>
       <button type="button" class="attendance-status-btn absent-btn" data-status="Absent">Absent</button>
       <button type="button" class="attendance-status-btn excused-btn" data-status="Excused">Excused</button>
