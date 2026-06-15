@@ -1,195 +1,715 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- PAGE SETTINGS -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fontana Fire FC ‚Äì Attendance App Help Guide</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 24px 16px 48px;
-      color: #1a1a1a;
-      background: #fff;
-      line-height: 1.6;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid #e53935;
-    }
-    header .logo { font-size: 2rem; }
-    header h1 { margin: 0; font-size: 1.3rem; color: #b71c1c; }
-    header p  { margin: 2px 0 0; font-size: 0.85rem; color: #555; }
-    h2 {
-      font-size: 1.1rem;
-      color: #b71c1c;
-      margin: 28px 0 8px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #fcc;
-    }
-    ol, ul { padding-left: 1.4em; margin: 6px 0 12px; }
-    li { margin-bottom: 5px; }
-    strong { color: #111; }
-    .note {
-      background: #fff8e1;
-      border-left: 4px solid #f9a825;
-      padding: 8px 12px;
-      margin: 10px 0;
-      border-radius: 0 4px 4px 0;
-      font-size: 0.92rem;
-    }
-    .back-link {
-      display: inline-block;
-      margin-top: 32px;
-      padding: 10px 20px;
-      background: #e53935;
-      color: #fff;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .back-link:hover { background: #b71c1c; }
-  </style>
+
+  <!-- PAGE TITLE -->
+  <title>Fontana Fire FC Attendance App</title>
+
+  <!-- CSS FILES
+       Split from the stable 72 KB style.css.
+       appLoader below updates each href with the current
+       automatic web build version before app JS is loaded.
+       Load order matters.
+  -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/01-base-layout.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/02-buttons-tabs-events.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/03-attendance.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/04-event-roster.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/05-player-management.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/06-team-event-player-selectors.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/07-attendance-filters-compact.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/08-dashboard-core.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/09-login-fire-animation.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/10-dashboard-birthday-overrides.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/11-event-roster-filters.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/12-dashboard-final-badges-snapshot.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/13-user-management.css" />
 </head>
+
 <body>
+  <div class="app-shell">
 
-<header>
-  <div class="logo">üî•</div>
-  <div>
-    <h1>Fontana Fire FC</h1>
-    <p>Attendance App Help Guide</p>
+    <!-- TOP HEADER / BRANDING -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">&#128293;</div>
+        <div>
+          <h1>Fontana Fire FC</h1>
+          <p>Coach Attendance App</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN APP AREA -->
+    <main class="container">
+
+      <!-- LOGIN SCREEN -->
+      <section id="loginScreen" class="card">
+        <h2>Login</h2>
+
+        <!-- EMAIL INPUT -->
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="Email" />
+        </div>
+
+        <!-- PASSWORD INPUT -->
+        <div class="form-row">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="Password" />
+        </div>
+
+        <!-- LOGIN BUTTON / MESSAGE -->
+        <button id="loginBtn" class="btn btn-primary">
+          <span id="loginBtnText">Login</span>
+        </button>
+
+        <!-- LOGIN LOADING CUE -->
+        <div id="loginLoading" class="login-loading fire-loader-v5 hidden" aria-live="polite">
+          <div class="fire-scene-v5" aria-hidden="true">
+
+            <svg class="flame-svg" viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Main trail gradient left to right -->
+        <radialGradient id="trail" cx="100%" cy="50%" r="100%" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stop-color="#ffffff"  stop-opacity="1"/>
+          <stop offset="10%"  stop-color="#fef3c7"  stop-opacity="1"/>
+          <stop offset="28%"  stop-color="#fbbf24"  stop-opacity="0.95"/>
+          <stop offset="52%"  stop-color="#ea580c"  stop-opacity="0.82"/>
+          <stop offset="76%"  stop-color="#991b1b"  stop-opacity="0.42"/>
+          <stop offset="100%" stop-color="#450a0a"  stop-opacity="0"/>
+        </radialGradient>
+        <!-- Ring glow around ball -->
+        <radialGradient id="ring" cx="50%" cy="50%" r="50%">
+          <stop offset="55%"  stop-color="#f97316"  stop-opacity="0"/>
+          <stop offset="72%"  stop-color="#f97316"  stop-opacity="0.55"/>
+          <stop offset="82%"  stop-color="#fbbf24"  stop-opacity="0.8"/>
+          <stop offset="90%"  stop-color="#ffffff"  stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#f97316"  stop-opacity="0"/>
+        </radialGradient>
+        <!-- Wrap arc gradient -->
+        <linearGradient id="arcTop" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%"   stop-color="#fbbf24"  stop-opacity="0.9"/>
+          <stop offset="50%"  stop-color="#f97316"  stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#dc2626"  stop-opacity="0.2"/>
+        </linearGradient>
+        <linearGradient id="arcBot" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stop-color="#fbbf24"  stop-opacity="0.9"/>
+          <stop offset="50%"  stop-color="#f97316"  stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#dc2626"  stop-opacity="0.2"/>
+        </linearGradient>
+        <filter id="glow1"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="glow2"><feGaussianBlur stdDeviation="7"/></filter>
+        <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+      </defs>
+
+      <!-- Ball center = x:242, y:55 (right:2px in 300px scene, 56px ball = center at 272-28=244) -->
+
+      <!-- -- BIG BACKGROUND GLOW -- -->
+      <ellipse cx="264" cy="55" rx="62" ry="52" fill="#f97316" opacity="0.15" filter="url(#glow2)"/>
+      <ellipse cx="240" cy="55" rx="75" ry="32" fill="#f97316" opacity="0.12" filter="url(#glow2)"/>
+
+      <!-- -- MAIN JET TRAIL -- -->
+      <!-- Outer blast cone -->
+      <ellipse cx="190" cy="55" rx="95" ry="32" fill="url(#trail)" opacity="0.4" filter="url(#soft)">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.04 0.93;0.96 1.07;1 1" dur="0.52s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Mid blast -->
+      <ellipse cx="200" cy="55" rx="80" ry="22" fill="url(#trail)" opacity="0.65">
+        <animateTransform attributeName="transform" type="scale" values="1 1;0.97 1.07;1.04 0.92;1 1" dur="0.40s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Inner hot core -->
+      <ellipse cx="216" cy="55" rx="62" ry="14" fill="url(#trail)" opacity="0.88">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.06 0.88;0.94 1.1;1 1" dur="0.28s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Bright streak -->
+      <ellipse cx="228" cy="55" rx="46" ry="7" fill="url(#trail)" opacity="0.96">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.09 0.84;0.91 1.14;1 1" dur="0.2s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+
+      <!-- -- SPEED LINES -- -->
+      <line x1="12" y1="55" x2="215" y2="55" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.35">
+        <animate attributeName="x1" values="12;45;12" dur="0.33s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.35;0.75;0.35" dur="0.33s" repeatCount="indefinite"/>
+      </line>
+      <line x1="25" y1="47" x2="218" y2="47" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.3">
+        <animate attributeName="x1" values="25;52;25" dur="0.4s" repeatCount="indefinite"/>
+      </line>
+      <line x1="25" y1="63" x2="218" y2="63" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.3">
+        <animate attributeName="x1" values="25;48;25" dur="0.37s" repeatCount="indefinite"/>
+      </line>
+
+      <!-- -- RING OF FIRE AROUND BALL -- -->
+      <!-- Glowing ring halo -->
+      <circle cx="264" cy="55" r="36" fill="url(#ring)" filter="url(#glow1)">
+        <animate attributeName="r" values="36;38;35;37;36" dur="0.45s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0.85;1;0.9;1" dur="0.45s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Top wrap arc - fire curling over the top of the ball -->
+      <path d="M 236,26 C 244,18 258,14 272,16 C 284,18 294,26 298,36 C 292,28 280,22 268,22 C 256,22 244,28 236,36 Z"
+        fill="url(#arcTop)" opacity="0.85">
+        <animateTransform attributeName="transform" type="rotate" values="0 264 55;4 264 55;-4 264 55;0 264 55" dur="0.48s" repeatCount="indefinite" additive="sum"/>
+        <animate attributeName="opacity" values="0.85;0.6;0.9;0.75;0.85" dur="0.48s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- Bottom wrap arc - fire curling under the ball -->
+      <path d="M 236,84 C 244,92 258,96 272,94 C 284,92 294,84 298,74 C 292,82 280,88 268,88 C 256,88 244,82 236,74 Z"
+        fill="url(#arcBot)" opacity="0.8">
+        <animateTransform attributeName="transform" type="rotate" values="0 244 55;-4 264 55;4 264 55;0 264 55" dur="0.52s" repeatCount="indefinite" additive="sum"/>
+        <animate attributeName="opacity" values="0.8;0.95;0.65;0.85;0.8" dur="0.52s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- Left-side flame tongues connecting trail to ring -->
+      <path d="M 225,38 C 232,32 240,28 248,30 C 240,34 236,40 234,48 C 230,42 226,38 225,38 Z"
+        fill="#fbbf24" opacity="0.7">
+        <animate attributeName="opacity" values="0.7;0.4;0.8;0.55;0.7" dur="0.38s" repeatCount="indefinite"/>
+      </path>
+      <path d="M 225,72 C 232,78 240,82 248,80 C 240,76 236,70 234,62 C 230,68 226,72 225,72 Z"
+        fill="#f97316" opacity="0.65">
+        <animate attributeName="opacity" values="0.65;0.9;0.45;0.75;0.65" dur="0.42s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- -- PARTICLES -- -->
+      <circle cx="160" cy="52" r="2.2" fill="#fde68a" opacity="0.85">
+        <animate attributeName="cx" values="160;120;160" dur="1.0s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.85;0.1;0.85" dur="1.0s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="185" cy="57" r="1.8" fill="#fb923c" opacity="0.8">
+        <animate attributeName="cx" values="185;145;185" dur="0.88s" begin="0.22s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0.1;0.8" dur="0.88s" begin="0.22s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="175" cy="48" r="1.5" fill="#fbbf24" opacity="0.75">
+        <animate attributeName="cx" values="175;138;175" dur="0.95s" begin="0.44s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.75;0.1;0.75" dur="0.95s" begin="0.44s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="200" cy="53" r="1.3" fill="#ffffff" opacity="0.9">
+        <animate attributeName="cx" values="200;166;200" dur="0.75s" begin="0.1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.9;0.1;0.9" dur="0.75s" begin="0.1s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Sparks flying off the ring -->
+      <circle cx="264" cy="20" r="1.8" fill="#fde68a">
+        <animateMotion dur="0.9s" repeatCount="indefinite" path="M0,0 C2,-10 0,-20 4,-28"/>
+        <animate attributeName="opacity" values="0;1;0.8;0" dur="0.9s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="288" cy="28" r="1.4" fill="#fb923c">
+        <animateMotion dur="0.72s" begin="0.25s" repeatCount="indefinite" path="M0,0 C8,-6 14,-10 18,-16"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.72s" begin="0.25s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="264" cy="90" r="1.6" fill="#facc15">
+        <animateMotion dur="0.82s" begin="0.5s" repeatCount="indefinite" path="M0,0 C2,10 0,20 4,28"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.82s" begin="0.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="290" cy="80" r="1.2" fill="#f97316">
+        <animateMotion dur="0.68s" begin="0.15s" repeatCount="indefinite" path="M0,0 C8,6 14,10 18,16"/>
+        <animate attributeName="opacity" values="0;0.9;0" dur="0.68s" begin="0.15s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="296" cy="55" r="1.5" fill="#fbbf24">
+        <animateMotion dur="0.78s" begin="0.35s" repeatCount="indefinite" path="M0,0 C12,0 20,2 28,0"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.78s" begin="0.35s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+
+            <!-- Soccer ball -->
+            <div class="soccer-shell-v5">
+              <span class="ball-aura-v5"></span>
+              <span class="soccer-ball-v5">&#9917;</span>
+            </div>
+
+          </div>
+
+          <div class="loader-text">Connecting to Attendance App...</div>
+          <p class="loader-subtext">Please wait while we log you in.</p>
+        </div>
+
+        <p id="loginMessage" class="message"></p>
+      </section>
+
+      <!-- LOGGED-IN APP SCREEN -->
+      <section id="appScreen" class="card hidden">
+
+        <!-- USER WELCOME INFO -->
+        <h2 id="welcomeText">Welcome</h2>
+        <p id="roleText" class="subtext"></p>
+
+        <!-- GROUP FILTER -->
+        <div class="form-row">
+          <label for="groupSelect">Group</label>
+          <select id="groupSelect">
+            <option value="">All Groups</option>
+          </select>
+        </div>
+
+        <!-- DASHBOARD / PRACTICE / GAME / TEAM EVENT TABS -->
+        <div class="tabs">
+          <button id="dashboardTab" class="tab active"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dash</button>
+          <button id="practiceTab" class="tab"><i class="ti ti-run" aria-hidden="true"></i>Practice</button>
+          <button id="gamesTab" class="tab"><i class="ti ti-ball-football" aria-hidden="true"></i>Games</button>
+          <button id="teamEventsTab" class="tab"><i class="ti ti-calendar-event" aria-hidden="true"></i>Events</button>
+          <button id="playerManagementTab" class="tab"><i class="ti ti-users" aria-hidden="true"></i>Players</button>
+        </div>
+
+        <!-- DASHBOARD / REPORTS SECTION
+             Shows club totals, paperwork/snack counts, birthdays,
+             monthly attendance summaries, and player attendance reports.
+        -->
+        <section id="dashboardSection" class="dashboard-section">
+          <div class="dashboard-header">
+            <div>
+              <h3>Dashboard</h3>
+              <p class="subtext">Quick reports for attendance, roster status, paperwork, snacks, and birthdays.</p>
+            </div>
+
+            <div class="dashboard-header-actions">
+              <label class="dashboard-month-filter-label" for="dashboardMonthFilter">
+                Month
+                <select id="dashboardMonthFilter">
+                  <option value="">All Months</option>
+                </select>
+              </label>
+
+              <button id="refreshDashboardBtn" type="button" class="btn btn-secondary">
+                Refresh Dashboard
+              </button>
+            </div>
+          </div>
+
+          <p id="dashboardMessage" class="message"></p>
+          <p id="dashboardLastUpdated" class="dashboard-last-updated">Last updated: -</p>
+
+          <div id="dashboardSummaryCards" class="dashboard-card-grid"></div>
+
+          <div class="dashboard-report-section dashboard-birthday-section">
+            <h3 id="dashboardBirthdaysHeading">Birthdays</h3>
+            <div id="dashboardBirthdays" class="dashboard-mini-list"></div>
+          </div>
+
+          <div class="dashboard-report-section dashboard-upcoming-snapshot-section">
+            <h3>Upcoming Games / Snack Snapshot</h3>
+            <p class="subtext dashboard-section-note">Quick look at game and team-event dates, times, locations, and snack assignment status.</p>
+            <div id="dashboardUpcomingSnapshot" class="dashboard-upcoming-snapshot-list"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Monthly Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Shows total practices, games, team events, and attendance percentages for the selected month.</p>
+            <div id="dashboardMonthlySummary" class="dashboard-table-wrap"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Practice Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Quick practice-only view for the selected month.</p>
+            <div id="dashboardPracticeSummary" class="dashboard-card-grid"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Game Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Quick game-only view for the selected month.</p>
+            <div id="dashboardGameSummary" class="dashboard-card-grid"></div>
+          </div>
+
+          <div class="dashboard-report-section">
+            <h3>Event Summary</h3>
+            <p class="subtext dashboard-section-note">Quick team-event, scrimmage, and get-together view for the selected month.</p>
+            <div id="dashboardEventSummary" class="dashboard-card-grid"></div>
+          </div>
+
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardPlayerAlertsDetails">
+            <summary>Players Needing Attention ó <span id="dashboardPlayerAlertsCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows players at 70% or lower for practices or games. Click Practice, Game, or Team Event to view details.</p>
+            <div id="dashboardPlayerAlerts" class="dashboard-alert-list"></div>
+          </details>
+
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardPerfectPlayersDetails">
+            <summary>Perfect Attendance Club ó <span id="dashboardPerfectPlayersCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows players with 100% attendance for both practices and games in the selected month.</p>
+            <div id="dashboardPerfectPlayers" class="dashboard-alert-list dashboard-perfect-list"></div>
+          </details>
+
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardExceptionalPlayersDetails">
+            <summary>Outstanding Attendance ó <span id="dashboardExceptionalPlayersCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows outstanding players at 85% or higher for practices or games, excluding Perfect Attendance Club players.</p>
+            <div id="dashboardExceptionalPlayers" class="dashboard-alert-list dashboard-exceptional-list"></div>
+          </details>
+        </section>
+
+        <!-- EVENT SELECTOR -->
+        <div class="form-row">
+          <label for="eventSelect">Event</label>
+          <select id="eventSelect">
+            <option value="">Select event</option>
+          </select>
+
+          <!-- EVENT ACTION BUTTONS
+               - Scheduled events show Cancel Event.
+               - Cancelled events show Restore Event.
+               - Delete Event is for mistakes such as duplicates or
+                 events created accidentally, not normal rainouts.
+          -->
+          <div id="eventActionButtons" class="event-action-buttons hidden">
+            <button id="cancelEventBtn" type="button" class="btn btn-danger hidden">
+              Cancel Event
+            </button>
+
+            <button id="restoreEventBtn" type="button" class="btn btn-secondary hidden">
+              Restore Event
+            </button>
+
+            <button id="deleteEventBtn" type="button" class="btn btn-delete hidden">
+              Delete Event
+            </button>
+          </div>
+        </div>
+
+        <!-- SELECTED EVENT DETAILS -->
+        <div id="eventDetailsSection" class="event-details-card hidden">
+          <h3>Selected Event Details</h3>
+
+          <div class="event-details-grid">
+            <div>
+              <span class="event-detail-label">Date</span>
+              <span id="eventDetailDate" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">Type</span>
+              <span id="eventDetailType" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">Teams Included</span>
+              <span id="eventDetailTeams" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">Status</span>
+              <span id="eventDetailStatus" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">Start Time</span>
+              <span id="eventDetailStartTime" class="event-detail-value">-</span>
+            </div>
+            <div>
+              <span class="event-detail-label">End Time</span>
+              <span id="eventDetailEndTime" class="event-detail-value">-</span>
+            </div>
+            <div class="event-detail-wide">
+              <span class="event-detail-label">Location</span>
+              <span id="eventDetailLocation" class="event-detail-value">-</span>
+            </div>
+            <div class="event-detail-wide">
+              <span class="event-detail-label">Notes</span>
+              <span id="eventDetailNotes" class="event-detail-value">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEAM EVENT WORKFLOW BUTTON
+             Appears when an existing Team Event is selected so
+             creating a new event does not stay mixed with roster work.
+        -->
+        <div id="teamEventWorkflowBar" class="event-workflow-bar hidden">
+          <button id="showTeamEventFormBtn" type="button" class="btn btn-secondary">
+            + Add New Team Event
+          </button>
+        </div>
+
+        <!-- MANAGE EVENT ROSTER SECTION
+             Only shown for selected Games and Team Events.
+             Practices stay group-based and do not use custom rosters.
+        -->
+        <div id="eventRosterSection" class="form-row hidden">
+          <h3>Manage Event Roster</h3>
+
+          <p id="eventRosterHelp" class="subtext roster-help"></p>
+
+          <div class="roster-tools">
+            <div id="eventRosterSummary" class="roster-summary">
+              Selected Players: 0
+            </div>
+
+            <div class="roster-action-buttons">
+              <button id="selectAllRosterBtn" type="button" class="btn btn-secondary">
+                Select All
+              </button>
+              <button id="clearRosterBtn" type="button" class="btn btn-secondary">
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          <div id="eventRosterList" class="event-roster-list"></div>
+
+          <div class="roster-footer-actions">
+            <button id="saveRosterBtn" type="button" class="btn btn-primary">
+              Save Roster
+            </button>
+
+            <button id="continueToAttendanceBtn" type="button" class="btn btn-secondary hidden">
+              Continue to Attendance
+            </button>
+          </div>
+
+          <p id="eventRosterMessage" class="message"></p>
+        </div>
+
+        <!-- ADD TEAM EVENT SECTION
+             Only shown when the Team Events tab is selected.
+        -->
+        <div id="teamEventSection" class="form-row hidden">
+          <h3>Add Team Event</h3>
+
+          <!-- MULTI-GROUP SELECTOR -->
+          <label>Teams Included</label>
+          <div class="team-event-group-box">
+            <label class="team-event-group-option">
+              <input type="checkbox" id="teamEventAllGroups" />
+              All Groups
+            </label>
+
+            <div id="teamEventGroupCheckboxes"></div>
+          </div>
+
+          <label for="newTeamEventName">Event Name</label>
+          <input
+            id="newTeamEventName"
+            type="text"
+            placeholder="Event name, such as Scrimmage"
+          />
+
+          <label for="newTeamEventDate">Event Date</label>
+          <input id="newTeamEventDate" type="date" />
+
+          <label for="newTeamEventStartTime">Start Time</label>
+          <input id="newTeamEventStartTime" type="time" />
+
+          <label for="newTeamEventEndTime">End Time</label>
+          <input id="newTeamEventEndTime" type="time" />
+
+          <label for="newTeamEventLocation">Location</label>
+          <input
+            id="newTeamEventLocation"
+            type="text"
+            placeholder="Location"
+          />
+
+          <label for="newTeamEventNotes">Notes</label>
+          <textarea
+            id="newTeamEventNotes"
+            placeholder="Notes"
+          ></textarea>
+
+          <button id="addTeamEventBtn" type="button" class="btn btn-primary">
+            Add Team Event
+          </button>
+
+          <p id="teamEventMessage" class="message"></p>
+        </div>
+
+        <!-- ATTENDANCE SECTION
+             For Games and Team Events this stays hidden while
+             staff are still building the roster.
+        -->
+        <section id="attendanceSection">
+          <div class="attendance-mode-header">
+            <button id="editRosterBtn" type="button" class="btn btn-secondary hidden">
+              Edit Roster
+            </button>
+          </div>
+
+          <!-- PLAYER ATTENDANCE LIST -->
+          <div class="form-row">
+            <h3>Players</h3>
+
+            <!-- ATTENDANCE SUMMARY / HIDE COMPLETED TOOLS -->
+            <div class="attendance-tools">
+              <div id="attendanceSummary" class="attendance-summary">
+                Present: 0 | Absent: 0 | Excused: 0 | Cancelled: 0 | Remaining: 0
+              </div>
+
+              <label class="hide-marked-toggle">
+                <input type="checkbox" id="hideMarkedToggle" checked />
+                Hide marked players
+              </label>
+
+              <button id="showCompletedBtn" type="button" class="btn btn-secondary">
+                Show Completed Attendance (0)
+              </button>
+            </div>
+
+            <!-- PLAYERS STILL NEEDING ATTENDANCE -->
+            <div id="playerList"></div>
+
+            <!-- COMPLETED / MARKED PLAYERS -->
+            <div id="completedPlayerList" class="completed-player-list hidden"></div>
+          </div>
+
+          <!-- SUBMIT ATTENDANCE -->
+          <button id="saveAttendanceBtn" class="btn btn-primary">
+            Submit Attendance
+          </button>
+          <p id="attendanceMessage" class="message"></p>
+        </section>
+
+        <hr />
+
+        <!-- PLAYER MANAGEMENT SECTION
+             Player admin work lives here instead of always showing
+             under the attendance/event flow.
+        -->
+        <section id="playerManagementSection" class="hidden">
+          <h3>Player Management</h3>
+          <p class="subtext">Search players, review active/inactive status, and add new players.</p>
+
+          <div class="player-management-tools">
+            <label for="playerSearchInput">Search Players</label>
+            <input
+              id="playerSearchInput"
+              type="text"
+              placeholder="Search by name, group, or player number"
+            />
+
+            <label class="hide-marked-toggle player-management-toggle">
+              <input type="checkbox" id="showInactivePlayersToggle" />
+              Show inactive players
+            </label>
+
+            <button id="refreshPlayersBtn" type="button" class="btn btn-secondary">
+              Refresh Players
+            </button>
+          </div>
+
+          <div id="playerManagementSummary" class="attendance-summary">
+            Active: 0 | Inactive: 0
+          </div>
+
+          <div id="playerManagementList" class="player-management-list"></div>
+
+          <hr />
+
+          <!-- ADD PLAYER SECTION -->
+          <div id="addPlayerSection" class="form-row">
+            <h3>Add Player</h3>
+
+            <input id="newFirstName" type="text" placeholder="First name" />
+            <input id="newLastName" type="text" placeholder="Last name" />
+
+            <select id="newBirthYear">
+              <option value="">Select birth year</option>
+              <option value="2012">2012</option>
+              <option value="2013">2013</option>
+              <option value="2014">2014</option>
+              <option value="2015">2015</option>
+              <option value="2016">2016</option>
+              <option value="2017">2017</option>
+              <option value="2018">2018</option>
+              <option value="2019">2019</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+            </select>
+
+            <button id="addPlayerBtn" class="btn btn-primary">
+              Add Player
+            </button>
+
+            <p id="addPlayerMessage" class="message"></p>
+          </div>
+        </section>
+
+        <!-- APP VERSION -->
+        <div class="app-version">
+          <div>Web App: <span id="webVersionText">loading...</span></div>
+          <div>API: <span id="apiVersionText">loading...</span></div>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div class="app-footer-actions">
+          <button
+            id="helpBtn"
+            type="button"
+            class="btn btn-secondary"
+            onclick="window.open('help.html', '_blank')"
+          >
+            Help / Instructions
+          </button>
+
+          <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+        </div>
+      </section>
+    </main>
   </div>
-</header>
 
-<h2>Quick Start</h2>
-<ol>
-  <li>Log in with your assigned account.</li>
-  <li>Select <strong>Dashboard</strong>, <strong>Practice</strong>, <strong>Games</strong>, <strong>Team Events</strong>, or <strong>Players</strong>.</li>
-  <li>Select the event or open Player Management.</li>
-  <li>Save changes before leaving the page.</li>
-</ol>
+  <!-- AUTOMATIC VERSION LOADER
+       - Reads app/version.json created by push-website.bat.
+       - Adds that version to style.css and each split JS file.
+       - Loads split files in order so bootstrap runs last.
+  -->
+  <script>
+    (async function loadVersionedAssets() {
+      let versionInfo = {
+        webVersion: "web-dev",
+        buildDate: null
+      };
 
-<h2>Roles</h2>
-<ul>
-  <li><strong>Admin:</strong> full access. Can manage players, create and edit practices, games, and team events, manage rosters, take attendance, and manage user accounts (create users, edit roles, reset passwords, activate/deactivate accounts).</li>
-  <li><strong>Team Mom:</strong> can manage players, create and edit games and team events, manage rosters, and take attendance. Can view the User Management list but cannot create, edit, or reset other users.</li>
-  <li><strong>Head Coach:</strong> can create and edit practices, games, and team events, manage rosters, and take attendance. Cannot manage players (Players tab is hidden) and cannot access User Management.</li>
-  <li><strong>Coaches:</strong> can take attendance for practices, games, and team events. Cannot create or edit events/rosters, cannot manage players (Players tab is hidden), and cannot access User Management.</li>
-</ul>
-<div class="note">
-  If you're not sure which role you have, check the account info shown after logging in, or ask your Team Admin.
-</div>
+      try {
+        const response = await fetch("version.json?ts=" + Date.now(), {
+          cache: "no-store"
+        });
 
+        if (response.ok) {
+          versionInfo = await response.json();
+        }
+      } catch (err) {
+        console.warn("Could not load version.json. Using fallback version.", err);
+      }
 
-<h2>Dashboard</h2>
-<ul>
-  <li>The Dashboard is for quick reports, not player editing.</li>
-  <li>Use the month filter to review April, May, June, the current month, or all months.</li>
-  <li>Birthdays follow the selected month. If All Months is selected, birthdays show the current month and next month.</li>
-  <li>Monthly Attendance Summary shows total practices, games, team events, and attendance percentages.</li>
-  <li>Practice, Game, and Event summaries show totals, attendance percentage, players at 70% or lower, and players at 85% or higher.</li>
-  <li><strong>Players Needing Attention</strong>, <strong>Perfect Attendance Club</strong>, and <strong>Outstanding Attendance</strong> are collapsible sections.</li>
-  <li>Player cards have clickable Practice, Game, and Team Event buttons to show details only when needed.</li>
-</ul>
+      window.WEB_APP_VERSION = versionInfo;
 
-<h2>Practice Attendance</h2>
-<ol>
-  <li>Open the <strong>Practice</strong> tab.</li>
-  <li>Select the practice date from the dropdown.</li>
-  <li>Use search, birth year, gender, and status filters to narrow the list.</li>
-  <li>Tap <strong>Present</strong>, <strong>Absent</strong>, <strong>Excused</strong>, <strong>Cancelled</strong>, or <strong>Clear / Reset</strong> for each player.</li>
-  <li>Click <strong>Submit Attendance</strong>.</li>
-</ol>
+      const assetVersion = encodeURIComponent(
+        versionInfo.webVersion || String(Date.now())
+      );
 
-<h2>Game Attendance</h2>
-<div class="note">
-  Games use an exact player roster. You pick the specific players for each game when creating it, and the roster can be edited any time before or during the event.
-</div>
-<ol>
-  <li>Open the <strong>Games</strong> tab.</li>
-  <li>To create a new game: click <strong>+ Add New Game</strong>, fill in the name/opponent, date, start time, and location, then select the expected players and click <strong>Save Game</strong>.</li>
-  <li>To take attendance on an existing game: select the game from the dropdown. Only the rostered players will appear.</li>
-  <li>If the roster needs changes before taking attendance: click <strong>Edit Roster</strong>. All active players will appear with the current roster pre-checked.</li>
-  <li>Use the Edit Roster filters: search, birth year, gender, and roster view. Roster View can show all players, selected only, or not selected.</li>
-  <li>Use search, birth year, gender, and status filters during attendance as needed.</li>
-  <li>Mark each player and click <strong>Submit Attendance</strong>.</li>
-</ol>
+      const stylesheets = document.querySelectorAll("link.appStylesheet");
+      stylesheets.forEach((stylesheet) => {
+        const baseHref = stylesheet.getAttribute("href");
+        if (baseHref) {
+          stylesheet.href = baseHref + "?v=" + assetVersion;
+        }
+      });
 
-<h2>Team Events</h2>
-<ol>
-  <li>Open the <strong>Team Events</strong> tab.</li>
-  <li>Click <strong>+ Add New Team Event</strong>.</li>
-  <li>Enter the event name and date. Select the exact players for the event. Use the Gender filter for girls-only or boys-only events.</li>
-  <li>Click <strong>Add Team Event</strong>. The event is created and selected automatically.</li>
-  <li>Only selected roster players should appear in Team Event attendance.</li>
-  <li>Continue to attendance when ready.</li>
-  <li>To edit the roster later: select the event and click <strong>Edit Roster</strong>. Edit Roster should show eligible players with selected players checked.</li>
-</ol>
+      const scripts = [
+        "split/app.01.core.js",
+        "split/app.02.attendance.js",
+        "split/app.03.team_events.js",
+        "split/app.04.games.js",
+        "split/app.05.player_management.js",
+        "split/app.06.auth_and_misc.js",
+        "split/app.07.dashboard.js",
+        "split/app.08.user_management.js",
+        "split/app.99.bootstrap.js"
+      ];
 
-<h2>Player Management</h2>
-<ul>
-  <li>Click <strong>Add New Player</strong> to open the add form.</li>
-  <li>Player cards show player number, birth year, gender, status, Parent 1 name, phone, email, and Parent 2 contact if entered.</li>
-  <li>Click <strong>View Details</strong> or tap a player card to see the full read-only profile, including snack preference, paperwork status, photo release, address, emergency contact, and last updated date.</li>
-  <li>Address and Emergency Contact are shown as separate sections for easier reading. Alt emergency phone stays in Edit Player but is not shown on the quick details card.</li>
-  <li>Use <strong>Edit</strong> only when changing player information.</li>
-  <li>Use filters for birth year, gender, missing paperwork, missing photo release, and missing emergency info.</li>
-  <li>Use <strong>Make Inactive</strong> when a player should no longer appear in attendance lists. Use <strong>Show inactive players</strong> to view or restore them.</li>
-</ul>
+      for (const src of scripts) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src + "?v=" + assetVersion;
 
-<h2>User Management</h2>
-<div class="note">
-  This section is visible to Admin (full access) and Team Mom (view-only). Head Coach and Coaches will not see this option.
-</div>
-<ul>
-  <li>The User Management page lists every account, with role and active/inactive status.</li>
-  <li><strong>Admin</strong> can create new users, edit a user's name/email/role, reset a user's password, and activate or deactivate accounts.</li>
-  <li><strong>Team Mom</strong> can view the user list but cannot create, edit, or reset accounts.</li>
-  <li>When a new user is created or a password is reset, a temporary password is shown once. Share it with that person directly ‚Äî it cannot be viewed again.</li>
-  <li>A user with a temporary password will be required to set their own new password the next time they log in.</li>
-  <li>Deactivating an account prevents that person from logging in, but keeps their attendance history intact. You cannot deactivate your own account.</li>
-</ul>
+          script.onload = () => {
+            console.log("Loaded:", src);
+            resolve();
+          };
 
-<h2>Changing Your Password</h2>
-<ul>
-  <li>If you log in with a temporary password, you'll be asked to set a new password before you can use the app.</li>
-  <li>Passwords must be at least 8 characters and include letters, numbers, and at least one special character.</li>
-  <li>To change your password voluntarily, use the password change option from your account menu and enter your current password followed by your new one.</li>
-</ul>
-<ul>
-  <li>Gender options are <strong>Male</strong> and <strong>Female</strong>.</li>
-  <li>Player cards show gender as <strong>M</strong> or <strong>F</strong>.</li>
-  <li>Gender filters are available in Player Management, Practice attendance, Game attendance, and Team Event player selection.</li>
-</ul>
+          script.onerror = () => {
+            console.error("Failed to load:", src);
+            reject(new Error("Failed to load " + src));
+          };
 
-<h2>Event Actions</h2>
-<ul>
-  <li><strong>Cancel Event:</strong> use for rainouts or normal cancellations. Keeps event history and can be restored.</li>
-  <li><strong>Restore Event:</strong> reopens a cancelled event and removes cancelled attendance rows so attendance can be marked again.</li>
-  <li><strong>Delete Event:</strong> permanent. Use only for mistakes or duplicate events ‚Äî not for normal cancellations.</li>
-</ul>
-
-<h2>Snack Rules</h2>
-<ul>
-  <li><strong>Bring Snack:</strong> family can be assigned snack duty.</li>
-  <li><strong>Paid Out:</strong> player is tracked, but parent is skipped for snack duty and coach provides snacks.</li>
-</ul>
-
-<h2>Troubleshooting</h2>
-<ul>
-  <li>If the app looks old after an update, hard refresh with <strong>Ctrl + F5</strong>.</li>
-  <li>If players do not show for a game, confirm the game roster has been saved. Click <strong>Edit Roster</strong> to check.</li>
-  <li>If players do not show for a practice, confirm the correct practice date is selected.</li>
-  <li>If login fails, refresh and try again. If it continues, check that the backend API is online.</li>
-  <li>If your session expires, the app should automatically return to the login screen and ask you to log in again.</li>
-</ul>
-
-<a class="back-link" href="https://www.fontanafirefc.com/app/index.html">‚Üê Back to Attendance App</a>
-
+          document.body.appendChild(script);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
