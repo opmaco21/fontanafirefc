@@ -10,7 +10,7 @@
    - Player cards show details only after clicking Practice, Game, or Team Event.
    ========================================================= */
 
-let dashboardSelectedMonth = "";
+let dashboardSelectedMonth = new Date().toISOString().slice(0, 7); // default to current month (YYYY-MM)
 let dashboardMonthFilterReady = false;
 let dashboardOpenDetailKey = "";
 
