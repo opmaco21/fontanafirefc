@@ -306,6 +306,14 @@ if (refreshDashboardBtn) {
 loadVersionDisplay();
 restoreSession();
 
+if (reportsTab) {
+  reportsTab.addEventListener("click", () => {
+    currentTab = "Reports";
+    setActiveTab();
+    updateMainModeVisibility();
+  });
+}
+
 // Init schedule modal (defined in app.01.core.js)
 if (typeof initScheduleModal === "function") {
   initScheduleModal();

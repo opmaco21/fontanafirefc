@@ -43,6 +43,7 @@ const practiceTab = document.getElementById("practiceTab");
 const gamesTab = document.getElementById("gamesTab");
 const teamEventsTab = document.getElementById("teamEventsTab");
 const playerManagementTab = document.getElementById("playerManagementTab");
+const reportsTab = document.getElementById("reportsTab");
 const dashboardSection = document.getElementById("dashboardSection");
 const refreshDashboardBtn = document.getElementById("refreshDashboardBtn");
 const dashboardMonthFilter = document.getElementById("dashboardMonthFilter");
@@ -408,6 +409,11 @@ function applyRolePermissions() {
     if (userMgmtBtn) userMgmtBtn.style.display = "none";
   }
 
+  // Reports tab — Admin and TeamMom only
+  if (reportsTab) {
+    reportsTab.classList.toggle("hidden", !canManagePlayers());
+  }
+
   // Role label display
   const roleLabels = {
     Admin: "Admin",
@@ -632,6 +638,7 @@ function setActiveTab() {
   gamesTab.classList.remove("active");
   teamEventsTab.classList.remove("active");
   playerManagementTab.classList.remove("active");
+  if (reportsTab) reportsTab.classList.remove("active");
 
   if (currentTab === "Dashboard") {
     dashboardTab.classList.add("active");
@@ -643,6 +650,8 @@ function setActiveTab() {
     teamEventsTab.classList.add("active");
   } else if (currentTab === "Player Management") {
     playerManagementTab.classList.add("active");
+  } else if (currentTab === "Reports") {
+    if (reportsTab) reportsTab.classList.add("active");
   }
 
   // Practice tab header handled in updateMainModeVisibility
@@ -883,6 +892,14 @@ if (gameClearPlayersBtn && !gameClearPlayersBtn.dataset.listenerAttached) {
 function updateMainModeVisibility() {
   const isDashboard = currentTab === "Dashboard";
   const isPlayerManagement = currentTab === "Player Management";
+  const isReports = currentTab === "Reports";
+
+  // Show/hide Reports section
+  if (isReports) {
+    if (typeof showReportsTab === "function") showReportsTab();
+  } else {
+    if (typeof hideReportsTab === "function") hideReportsTab();
+  }
 
   const eventSelectorRow = document.querySelector(".event-selector-row");
   const eventDotsMenuEl = document.getElementById("eventDotsMenu");
@@ -905,7 +922,7 @@ function updateMainModeVisibility() {
   eventFlowElements.forEach(element => {
     if (!element) return;
 
-    if (isDashboard || isPlayerManagement) {
+    if (isDashboard || isPlayerManagement || isReports) {
       element.classList.add("hidden");
     } else if (
       element !== eventDetailsSection &&
@@ -925,14 +942,14 @@ function updateMainModeVisibility() {
   // practiceFilterBar: only on Practice tab, all roles
   const practiceFilterBar = document.getElementById("practiceFilterBar");
   if (practiceFilterBar) {
-    practiceFilterBar.classList.toggle("hidden", isDashboard || isPlayerManagement || currentTab !== "Practice");
-    if (!isDashboard && !isPlayerManagement && currentTab === "Practice") {
+    practiceFilterBar.classList.toggle("hidden", isDashboard || isPlayerManagement || isReports || currentTab !== "Practice");
+    if (!isDashboard && !isPlayerManagement && !isReports && currentTab === "Practice") {
       practiceFilterBar.style.display = "flex";
     }
   }
 
   // practiceTabHeader: only on Practice tab, for users who can generate schedule
-  if (practiceTabHeader && !isDashboard && !isPlayerManagement) {
+  if (practiceTabHeader && !isDashboard && !isPlayerManagement && !isReports) {
     const canSchedule = canGenerateSchedule();
     practiceTabHeader.classList.toggle("hidden", !(currentTab === "Practice" && canSchedule));
   }

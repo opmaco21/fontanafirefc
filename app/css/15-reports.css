@@ -1,0 +1,166 @@
+/* Fontana Fire FC - 15-reports.css
+   Reports tab styles */
+
+/* =========================
+   REPORTS TAB CONTAINER
+   ========================= */
+
+.reports-container {
+  padding: 4px 0 20px;
+}
+
+.reports-header {
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.reports-header h3 {
+  margin: 0 0 4px;
+  color: #111827;
+}
+
+.reports-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* =========================
+   MONTH FILTER
+   ========================= */
+
+.reports-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.reports-filter-row label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.reports-filter-row select {
+  flex: 1;
+  max-width: 220px;
+  padding: 9px 12px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+/* =========================
+   REPORT CARDS
+   ========================= */
+
+.reports-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-card {
+  background: #fff;
+  border: 1px solid #e1e5ea;
+  border-left: 4px solid #f57c00;
+  border-radius: 0 14px 14px 0;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.report-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.report-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 3px;
+}
+
+.report-card-desc {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.report-card-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  color: #9a3412;
+  margin-top: 4px;
+}
+
+.btn-download {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-download:hover {
+  background: #374151;
+}
+
+.btn-download:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn-download i {
+  font-size: 16px;
+}
+
+/* =========================
+   REPORT STATUS MESSAGE
+   ========================= */
+
+.reports-message {
+  margin-top: 12px;
+  font-size: 13px;
+  min-height: 18px;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .report-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-download {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .reports-filter-row select {
+    max-width: none;
+    flex: 1;
+  }
+}
