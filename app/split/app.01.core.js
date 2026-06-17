@@ -2110,8 +2110,9 @@ async function submitGenerateSchedule() {
   }
 }
 
-// Wire up schedule modal events after DOM ready
-document.addEventListener("DOMContentLoaded", function() {
+
+// Wire up schedule modal events — called by app.99.bootstrap.js after all scripts load
+function initScheduleModal() {
   if (generateScheduleBtn) {
     generateScheduleBtn.addEventListener("click", openGenerateScheduleModal);
   }
@@ -2147,4 +2148,4 @@ document.addEventListener("DOMContentLoaded", function() {
       if (typeof loadEvents === "function") loadEvents();
     });
   }
-});
+}

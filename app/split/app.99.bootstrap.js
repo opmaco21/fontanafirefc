@@ -305,3 +305,8 @@ if (refreshDashboardBtn) {
    ========================= */
 loadVersionDisplay();
 restoreSession();
+
+// Init schedule modal (defined in app.01.core.js)
+if (typeof initScheduleModal === "function") {
+  initScheduleModal();
+}
