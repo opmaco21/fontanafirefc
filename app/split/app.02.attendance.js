@@ -14,9 +14,28 @@ function normalizeAttendanceSearchText(value) {
   return String(value || "")
     .toLowerCase()
     .replace(/#/g, " ")
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/[^a-z0-9,]+/g, " ")  // preserve commas, strip other special chars
+    .replace(/\s*,\s*/g, ",")       // remove spaces around commas: "a , b" → "a,b"
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function parseAttendanceSearchTerms(searchText) {
+  if (!searchText) return [];
+  // Split on commas only — each comma-separated chunk is one term
+  // Spaces within a chunk are kept (e.g. "de la cruz" is one term)
+  return searchText
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
+}
+
+function termMatchesRow(term, rowSearchText) {
+  if (!term) return true;
+  // Try exact substring first (handles names and partial matches)
+  // Then try whole-word match to prevent "11" matching "2011"
+  const tokens = rowSearchText.split(" ");
+  return tokens.includes(term) || rowSearchText.includes(term);
 }
 
 function ensureAttendanceFilterControls() {
@@ -672,9 +691,10 @@ function rowMatchesAttendanceFilters(row) {
   const rowBirthYear = String(row.dataset.birthYear || "");
   const rowGender = String(row.dataset.gender || "");
 
+  const searchTerms = parseAttendanceSearchTerms(attendanceSearchText);
   const searchMatches =
-    !attendanceSearchText ||
-    rowSearchText.includes(attendanceSearchText);
+    searchTerms.length === 0 ||
+    searchTerms.some(term => termMatchesRow(term, rowSearchText));
 
   const birthYearMatches =
     !attendanceBirthYearFilter ||
