@@ -620,13 +620,7 @@ function setActiveTab() {
     playerManagementTab.classList.add("active");
   }
 
-  // Practice tab header (Schedule button) only visible on Practice tab for Admin
-  if (practiceTabHeader) {
-    const isPractice = currentTab === "Practice";
-    const isAdmin = currentUser && currentUser.RoleName === "Admin";
-    practiceTabHeader.classList.toggle("hidden", !(isPractice && isAdmin));
-  }
-
+  // Practice tab header handled in updateMainModeVisibility
   updateMainModeVisibility();
   updateTeamEventSection();
   updateGameSection();
@@ -865,9 +859,15 @@ function updateMainModeVisibility() {
   const isDashboard = currentTab === "Dashboard";
   const isPlayerManagement = currentTab === "Player Management";
 
+  const eventSelectorRow = document.querySelector(".event-selector-row");
+  const eventDotsMenuEl = document.getElementById("eventDotsMenu");
+
   const eventFlowElements = [
     null, // group dropdown hidden
-    eventSelect ? eventSelect.closest(".form-row") : null,
+    eventSelectorRow,
+    eventDotsMenuEl,
+    eventCompactBar,
+    practiceTabHeader,
     eventDetailsSection,
     gameWorkflowBar,
     gameSection,
@@ -884,15 +884,24 @@ function updateMainModeVisibility() {
       element.classList.add("hidden");
     } else if (
       element !== eventDetailsSection &&
+      element !== eventCompactBar &&
+      element !== eventDotsMenuEl &&
       element !== gameWorkflowBar &&
       element !== gameSection &&
       element !== teamEventWorkflowBar &&
       element !== eventRosterSection &&
-      element !== teamEventSection
+      element !== teamEventSection &&
+      element !== practiceTabHeader
     ) {
       element.classList.remove("hidden");
     }
   });
+
+  // practiceTabHeader: only on Practice tab, Admin only
+  if (practiceTabHeader && !isDashboard && !isPlayerManagement) {
+    const isAdmin = currentUser && currentUser.RoleName === "Admin";
+    practiceTabHeader.classList.toggle("hidden", !(currentTab === "Practice" && isAdmin));
+  }
 
   if (dashboardSection) {
     dashboardSection.classList.toggle("hidden", !isDashboard);
