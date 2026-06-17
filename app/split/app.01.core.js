@@ -333,7 +333,20 @@ function hasRole(...roles) {
 }
 
 function hasPerm(capability) {
-  return currentUser && currentPermissions[capability] === true;
+  // If permissions loaded from DB, use them
+  if (currentPermissions && Object.keys(currentPermissions).length > 0) {
+    return currentUser && currentPermissions[capability] === true;
+  }
+  // Fallback to hardcoded defaults if DB permissions haven't loaded yet
+  const defaults = {
+    canMarkAttendance:     ["Admin", "TeamMom", "HeadCoach", "Coaches"],
+    canManageEvents:       ["Admin", "TeamMom", "HeadCoach"],
+    canManagePlayers:      ["Admin", "TeamMom"],
+    canGenerateSchedule:   ["Admin"],
+    canViewDashboard:      ["Admin", "TeamMom", "HeadCoach", "Coaches"],
+    canViewUserManagement: ["Admin", "TeamMom"]
+  };
+  return currentUser && (defaults[capability] || []).includes(currentUser.RoleName);
 }
 
 function canManagePlayers() {
