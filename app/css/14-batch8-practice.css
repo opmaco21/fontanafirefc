@@ -1,0 +1,400 @@
+/* Fontana Fire FC - 14-batch8-practice.css
+   Batch 8: Practice tab declutter + Generate Schedule modal */
+
+/* =========================
+   COMPACT EVENT STATUS BAR
+   Replaces the 8-field event details card
+   ========================= */
+
+.event-compact-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  background: #fafafa;
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.event-compact-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #555;
+  min-width: 0;
+}
+
+.event-compact-time {
+  font-weight: 700;
+  color: #111827;
+}
+
+.event-compact-dot {
+  color: #d1d5db;
+}
+
+.event-compact-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.event-compact-status.status-scheduled {
+  background: #e6f4ea;
+  color: #2e7d32;
+  border: 1px solid #a8d5b4;
+}
+
+.event-compact-status.status-cancelled {
+  background: #e0e0e0;
+  color: #555;
+  border: 1px solid #bdbdbd;
+}
+
+.event-compact-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  color: #111827;
+  white-space: nowrap;
+}
+
+/* =========================
+   DOTS MENU (event actions)
+   ========================= */
+
+.event-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.event-selector-row select {
+  flex: 1;
+}
+
+.event-dots-btn {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  background: #fafafa;
+  color: #555;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-dots-btn:hover {
+  background: #f3f4f6;
+}
+
+.event-dots-menu {
+  background: #fff;
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.event-dots-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  color: #111827;
+}
+
+.event-dots-menu button:last-child {
+  border-bottom: none;
+}
+
+.event-dots-menu button:hover {
+  background: #f9fafb;
+}
+
+.event-dots-menu .dots-menu-danger {
+  color: #c62828;
+}
+
+.event-dots-menu .dots-menu-delete {
+  color: #7f1d1d;
+}
+
+/* =========================
+   COMPACT ATTENDANCE TOOLBAR
+   Search + summary + hide toggle in one bar
+   ========================= */
+
+.attendance-compact-toolbar {
+  border: 1px solid #e1e5ea;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.attendance-compact-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.attendance-compact-search-row input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  padding: 4px 0;
+  outline: none;
+  color: #111827;
+  min-width: 0;
+}
+
+.attendance-compact-search-row input::placeholder {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.attendance-filter-icon-btn {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #6b7280;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+}
+
+.attendance-filter-icon-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.attendance-filter-icon-btn.filters-active {
+  color: #f57c00;
+}
+
+.attendance-compact-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.attendance-compact-summary {
+  font-size: 12px;
+  color: #555;
+  font-weight: 700;
+  flex: 1;
+}
+
+.attendance-compact-hide-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #555;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.attendance-compact-hide-toggle input {
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================
+   GENERATE SCHEDULE MODAL
+   ========================= */
+
+.schedule-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.schedule-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 24px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.schedule-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.schedule-modal-header h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #111827;
+  flex: 1;
+}
+
+.schedule-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.schedule-modal-close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.schedule-day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin: 8px 0;
+}
+
+.schedule-day-btn {
+  padding: 8px 2px;
+  border: 1px solid #e1e5ea;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #555;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+.schedule-day-btn.day-selected {
+  background: #f57c00;
+  border-color: #f57c00;
+  color: #fff;
+}
+
+.schedule-preview-box {
+  background: #fffaf5;
+  border: 1px solid #f2dcc8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.schedule-preview-count {
+  font-size: 16px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.schedule-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.schedule-modal-actions .btn {
+  flex: 1;
+  margin-top: 0;
+}
+
+/* =========================
+   PRACTICE HEADER WITH SCHEDULE BTN
+   ========================= */
+
+.practice-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.practice-tab-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.btn-schedule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-schedule:hover {
+  background: #374151;
+}
+
+@media (max-width: 520px) {
+  .event-compact-info {
+    font-size: 12px;
+  }
+  .schedule-day-btn {
+    font-size: 10px;
+    padding: 7px 1px;
+  }
+}

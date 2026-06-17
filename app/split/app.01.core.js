@@ -79,6 +79,18 @@ const eventDetailEndTime = document.getElementById("eventDetailEndTime");
 const eventDetailLocation = document.getElementById("eventDetailLocation");
 const eventDetailNotes = document.getElementById("eventDetailNotes");
 
+const eventCompactBar = document.getElementById("eventCompactBar");
+const eventCompactDate = document.getElementById("eventCompactDate");
+const eventCompactTime = document.getElementById("eventCompactTime");
+const eventCompactStatus = document.getElementById("eventCompactStatus");
+const eventCompactCount = document.getElementById("eventCompactCount");
+const eventCompactLocation = document.getElementById("eventCompactLocation");
+const eventCompactLocationWrap = document.getElementById("eventCompactLocationWrap");
+const eventDotsBtn = document.getElementById("eventDotsBtn");
+const eventDotsMenu = document.getElementById("eventDotsMenu");
+const practiceTabHeader = document.getElementById("practiceTabHeader");
+const generateScheduleBtn = document.getElementById("generateScheduleBtn");
+
 const addPlayerBtn = document.getElementById("addPlayerBtn");
 const addPlayerMessage = document.getElementById("addPlayerMessage");
 const addPlayerSection = document.getElementById("addPlayerSection");
@@ -370,6 +382,11 @@ function applyRolePermissions() {
     userMgmtBtn.style.display = "";
   } else {
     if (userMgmtBtn) userMgmtBtn.style.display = "none";
+  }
+
+  // Practice tab header with Schedule button — Admin only
+  if (practiceTabHeader) {
+    practiceTabHeader.classList.toggle("hidden", currentUser.RoleName !== "Admin");
   }
 
   // Role label display
@@ -1746,6 +1763,10 @@ function clearSelectedEventDetails() {
     eventDetailsSection.classList.add("hidden");
   }
 
+  if (eventCompactBar) eventCompactBar.classList.add("hidden");
+  if (eventDotsBtn) eventDotsBtn.classList.add("hidden");
+  if (eventDotsMenu) eventDotsMenu.classList.add("hidden");
+
   const detailFields = [
     eventDetailDate,
     eventDetailType,
@@ -1838,6 +1859,27 @@ async function loadSelectedEventDetails() {
       eventDetailsSection.classList.remove("hidden");
     }
 
+    // Compact bar
+    if (eventCompactBar) {
+      const startFmt = formatEventTime(event.StartTime);
+      const endFmt = formatEventTime(event.EndTime);
+      const timeStr = (startFmt && startFmt !== "-") ? `${startFmt}${endFmt && endFmt !== "-" ? " – " + endFmt : ""}` : "";
+      if (eventCompactDate) eventCompactDate.textContent = dateInfo.localDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+      if (eventCompactTime) eventCompactTime.textContent = timeStr || "–";
+      if (eventCompactLocation && eventCompactLocationWrap) {
+        const loc = event.LocationName || "";
+        eventCompactLocation.textContent = loc;
+        eventCompactLocationWrap.classList.toggle("hidden", !loc);
+      }
+      if (eventCompactStatus) {
+        const st = event.EventStatus || "";
+        eventCompactStatus.textContent = st;
+        eventCompactStatus.className = "event-compact-status " + (st === "Cancelled" ? "status-cancelled" : "status-scheduled");
+      }
+      if (eventCompactCount) eventCompactCount.classList.add("hidden");
+      eventCompactBar.classList.remove("hidden");
+    }
+
   } catch (err) {
     console.error("Could not load selected event details:", err);
     clearSelectedEventDetails();
@@ -1859,45 +1901,201 @@ function updateEventActionButtons() {
 
   const selectedOption = eventSelect.options[eventSelect.selectedIndex];
   const eventStatus = selectedOption ? selectedOption.dataset.eventStatus : "";
-  const canDeleteEvents =
-    currentUser &&
-    canManageEvents();
+  const canDeleteEvents = currentUser && canManageEvents();
 
-  if (eventActionButtons) {
-    eventActionButtons.classList.add("hidden");
-  }
-
-  if (cancelEventBtn) {
-    cancelEventBtn.classList.add("hidden");
-  }
-
-  if (restoreEventBtn) {
-    restoreEventBtn.classList.add("hidden");
-  }
-
-  if (deleteEventBtn) {
-    deleteEventBtn.classList.add("hidden");
-  }
-
+  // Hide dots menu and all its buttons when nothing selected
   if (!eventSelect.value || !eventStatus) {
+    if (eventDotsBtn) eventDotsBtn.classList.add("hidden");
+    if (eventDotsMenu) eventDotsMenu.classList.add("hidden");
+    if (cancelEventBtn) cancelEventBtn.classList.add("hidden");
+    if (restoreEventBtn) restoreEventBtn.classList.add("hidden");
+    if (deleteEventBtn) deleteEventBtn.classList.add("hidden");
     return;
   }
 
-  if (eventActionButtons) {
-    eventActionButtons.classList.remove("hidden");
+  // Show dots button
+  if (eventDotsBtn && canManageEvents()) {
+    eventDotsBtn.classList.remove("hidden");
   }
+
+  // Cancel or Restore
+  if (cancelEventBtn) cancelEventBtn.classList.add("hidden");
+  if (restoreEventBtn) restoreEventBtn.classList.add("hidden");
 
   if (eventStatus === "Cancelled") {
-    if (restoreEventBtn) {
-      restoreEventBtn.classList.remove("hidden");
-    }
+    if (restoreEventBtn) restoreEventBtn.classList.remove("hidden");
   } else {
-    if (cancelEventBtn) {
-      cancelEventBtn.classList.remove("hidden");
-    }
+    if (cancelEventBtn) cancelEventBtn.classList.remove("hidden");
   }
 
-  if (deleteEventBtn && canDeleteEvents) {
-    deleteEventBtn.classList.remove("hidden");
+  if (deleteEventBtn) {
+    if (canDeleteEvents) {
+      deleteEventBtn.classList.remove("hidden");
+    } else {
+      deleteEventBtn.classList.add("hidden");
+    }
   }
 }
+
+/* =========================
+   DOTS MENU TOGGLE
+   ========================= */
+document.addEventListener("click", function(e) {
+  if (!eventDotsBtn || !eventDotsMenu) return;
+  if (eventDotsBtn.contains(e.target)) {
+    eventDotsMenu.classList.toggle("hidden");
+    return;
+  }
+  if (!eventDotsMenu.contains(e.target)) {
+    eventDotsMenu.classList.add("hidden");
+  }
+});
+
+/* =========================
+   GENERATE SCHEDULE MODAL
+   ========================= */
+function openGenerateScheduleModal() {
+  const modal = document.getElementById("generateScheduleModal");
+  if (!modal) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const endOfYear = new Date().getFullYear() + "-12-31";
+  const startEl = document.getElementById("scheduleStartDate");
+  const endEl = document.getElementById("scheduleEndDate");
+  if (startEl && !startEl.value) startEl.value = today;
+  if (endEl && !endEl.value) endEl.value = endOfYear;
+
+  document.getElementById("scheduleModalMessage").textContent = "";
+  document.getElementById("schedulePreviewBox").classList.add("hidden");
+  modal.classList.remove("hidden");
+  updateSchedulePreview();
+}
+
+function closeGenerateScheduleModal() {
+  const modal = document.getElementById("generateScheduleModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function getScheduleFormValues() {
+  const startDate = document.getElementById("scheduleStartDate").value;
+  const endDate = document.getElementById("scheduleEndDate").value;
+  const days = Array.from(document.querySelectorAll(".schedule-day-btn.day-selected")).map(b => Number(b.dataset.day));
+  const startTime = document.getElementById("scheduleStartTime").value || "18:00";
+  const endTime = document.getElementById("scheduleEndTime").value || "20:00";
+  const skipRaw = document.getElementById("scheduleSkipDates").value || "";
+  const skipDates = skipRaw.split(",").map(s => s.trim()).filter(Boolean);
+  return { startDate, endDate, days, startTime, endTime, skipDates };
+}
+
+function updateSchedulePreview() {
+  const { startDate, endDate, days, skipDates } = getScheduleFormValues();
+  const preview = document.getElementById("schedulePreviewBox");
+  if (!preview) return;
+  if (!startDate || !endDate || days.length === 0) {
+    preview.classList.add("hidden");
+    return;
+  }
+  const start = new Date(startDate + "T00:00:00");
+  const end = new Date(endDate + "T00:00:00");
+  if (isNaN(start) || isNaN(end) || end < start) {
+    preview.classList.add("hidden");
+    return;
+  }
+  const skipSet = new Set(skipDates.map(d => d.slice(0, 10)));
+  let count = 0;
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    const iso = cursor.toISOString().slice(0, 10);
+    if (days.includes(cursor.getDay()) && !skipSet.has(iso)) count++;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const selectedDayNames = days.map(d => dayNames[d]).join(" & ");
+  preview.innerHTML = `<span class="schedule-preview-count">${count}</span> practice${count !== 1 ? "s" : ""} will be created<br><span style="color:#666;font-size:12px;">${selectedDayNames} · ${startDate} to ${endDate}</span>`;
+  preview.classList.remove("hidden");
+}
+
+async function submitGenerateSchedule() {
+  const btn = document.getElementById("scheduleGenerateBtn");
+  const msgEl = document.getElementById("scheduleModalMessage");
+  const vals = getScheduleFormValues();
+
+  if (!vals.startDate || !vals.endDate) {
+    msgEl.textContent = "Please select a start and end date.";
+    return;
+  }
+  if (vals.days.length === 0) {
+    msgEl.textContent = "Please select at least one practice day.";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Generating...";
+  msgEl.textContent = "";
+
+  try {
+    const res = await fetch(`${API_BASE}/events/generate-schedule`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        startDate: vals.startDate,
+        endDate: vals.endDate,
+        days: vals.days,
+        startTime: vals.startTime + ":00",
+        endTime: vals.endTime + ":00",
+        skipDates: vals.skipDates
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      msgEl.style.color = "#2e7d32";
+      msgEl.textContent = data.message;
+      setTimeout(() => {
+        closeGenerateScheduleModal();
+        if (typeof loadEvents === "function") loadEvents();
+      }, 1800);
+    } else {
+      msgEl.style.color = "#c62828";
+      msgEl.textContent = data.message || "Error generating schedule.";
+    }
+  } catch (err) {
+    msgEl.style.color = "#c62828";
+    msgEl.textContent = "Network error. Please try again.";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Generate schedule";
+  }
+}
+
+// Wire up schedule modal events after DOM ready
+document.addEventListener("DOMContentLoaded", function() {
+  if (generateScheduleBtn) {
+    generateScheduleBtn.addEventListener("click", openGenerateScheduleModal);
+  }
+  const closeBtn = document.getElementById("scheduleModalCloseBtn");
+  const cancelBtn = document.getElementById("scheduleCancelBtn");
+  const genBtn = document.getElementById("scheduleGenerateBtn");
+  if (closeBtn) closeBtn.addEventListener("click", closeGenerateScheduleModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeGenerateScheduleModal);
+  if (genBtn) genBtn.addEventListener("click", submitGenerateSchedule);
+
+  document.querySelectorAll(".schedule-day-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      this.classList.toggle("day-selected");
+      updateSchedulePreview();
+    });
+  });
+
+  ["scheduleStartDate","scheduleEndDate","scheduleSkipDates","scheduleStartTime","scheduleEndTime"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("change", updateSchedulePreview);
+  });
+
+  const scheduleOverlay = document.getElementById("generateScheduleModal");
+  if (scheduleOverlay) {
+    scheduleOverlay.addEventListener("click", function(e) {
+      if (e.target === scheduleOverlay) closeGenerateScheduleModal();
+    });
+  }
+});

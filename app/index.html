@@ -28,6 +28,7 @@
   <link class="appStylesheet" rel="stylesheet" href="css/11-event-roster-filters.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/12-dashboard-final-badges-snapshot.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/13-user-management.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/14-batch8-practice.css" />
 </head>
 
 <body>
@@ -109,11 +110,11 @@
 
       <!-- Ball center = x:242, y:55 (right:2px in 300px scene, 56px ball = center at 272-28=244) -->
 
-      <!-- -- BIG BACKGROUND GLOW -- -->
+      <!-- ── BIG BACKGROUND GLOW ── -->
       <ellipse cx="264" cy="55" rx="62" ry="52" fill="#f97316" opacity="0.15" filter="url(#glow2)"/>
       <ellipse cx="240" cy="55" rx="75" ry="32" fill="#f97316" opacity="0.12" filter="url(#glow2)"/>
 
-      <!-- -- MAIN JET TRAIL -- -->
+      <!-- ── MAIN JET TRAIL ── -->
       <!-- Outer blast cone -->
       <ellipse cx="190" cy="55" rx="95" ry="32" fill="url(#trail)" opacity="0.4" filter="url(#soft)">
         <animateTransform attributeName="transform" type="scale" values="1 1;1.04 0.93;0.96 1.07;1 1" dur="0.52s" repeatCount="indefinite" additive="sum"/>
@@ -131,7 +132,7 @@
         <animateTransform attributeName="transform" type="scale" values="1 1;1.09 0.84;0.91 1.14;1 1" dur="0.2s" repeatCount="indefinite" additive="sum"/>
       </ellipse>
 
-      <!-- -- SPEED LINES -- -->
+      <!-- ── SPEED LINES ── -->
       <line x1="12" y1="55" x2="215" y2="55" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.35">
         <animate attributeName="x1" values="12;45;12" dur="0.33s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="0.35;0.75;0.35" dur="0.33s" repeatCount="indefinite"/>
@@ -143,7 +144,7 @@
         <animate attributeName="x1" values="25;48;25" dur="0.37s" repeatCount="indefinite"/>
       </line>
 
-      <!-- -- RING OF FIRE AROUND BALL -- -->
+      <!-- ── RING OF FIRE AROUND BALL ── -->
       <!-- Glowing ring halo -->
       <circle cx="264" cy="55" r="36" fill="url(#ring)" filter="url(#glow1)">
         <animate attributeName="r" values="36;38;35;37;36" dur="0.45s" repeatCount="indefinite"/>
@@ -174,7 +175,7 @@
         <animate attributeName="opacity" values="0.65;0.9;0.45;0.75;0.65" dur="0.42s" repeatCount="indefinite"/>
       </path>
 
-      <!-- -- PARTICLES -- -->
+      <!-- ── PARTICLES ── -->
       <circle cx="160" cy="52" r="2.2" fill="#fde68a" opacity="0.85">
         <animate attributeName="cx" values="160;120;160" dur="1.0s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="0.85;0.1;0.85" dur="1.0s" repeatCount="indefinite"/>
@@ -338,73 +339,61 @@
           </details>
         </section>
 
-        <!-- EVENT SELECTOR -->
-        <div class="form-row">
-          <label for="eventSelect">Event</label>
+        <!-- EVENT SELECTOR ROW + DOTS MENU -->
+        <div id="practiceTabHeader" class="practice-tab-header hidden">
+          <h3>Practice</h3>
+          <button id="generateScheduleBtn" class="btn-schedule" type="button">
+            <i class="ti ti-calendar-plus" aria-hidden="true"></i> Schedule
+          </button>
+        </div>
+
+        <div class="event-selector-row">
           <select id="eventSelect">
             <option value="">Select event</option>
           </select>
+          <button id="eventDotsBtn" type="button" class="event-dots-btn hidden" aria-label="Event actions">
+            <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+          </button>
+        </div>
 
-          <!-- EVENT ACTION BUTTONS
-               - Scheduled events show Cancel Event.
-               - Cancelled events show Restore Event.
-               - Delete Event is for mistakes such as duplicates or
-                 events created accidentally, not normal rainouts.
-          -->
-          <div id="eventActionButtons" class="event-action-buttons hidden">
-            <button id="cancelEventBtn" type="button" class="btn btn-danger hidden">
-              Cancel Event
-            </button>
+        <!-- DOTS DROPDOWN MENU -->
+        <div id="eventDotsMenu" class="event-dots-menu hidden">
+          <button id="cancelEventBtn" type="button" class="hidden dots-menu-danger">
+            <i class="ti ti-ban" aria-hidden="true"></i> Cancel event
+          </button>
+          <button id="restoreEventBtn" type="button" class="hidden">
+            <i class="ti ti-refresh" aria-hidden="true"></i> Restore event
+          </button>
+          <button id="deleteEventBtn" type="button" class="dots-menu-delete hidden">
+            <i class="ti ti-trash" aria-hidden="true"></i> Delete event
+          </button>
+        </div>
 
-            <button id="restoreEventBtn" type="button" class="btn btn-secondary hidden">
-              Restore Event
-            </button>
-
-            <button id="deleteEventBtn" type="button" class="btn btn-delete hidden">
-              Delete Event
-            </button>
+        <!-- COMPACT EVENT STATUS BAR -->
+        <div id="eventCompactBar" class="event-compact-bar hidden">
+          <div class="event-compact-info">
+            <span id="eventCompactDate" class="event-compact-time"></span>
+            <span class="event-compact-dot">·</span>
+            <span id="eventCompactTime"></span>
+            <span id="eventCompactLocationWrap"><span class="event-compact-dot">·</span><span id="eventCompactLocation"></span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span id="eventCompactStatus" class="event-compact-status"></span>
+            <span id="eventCompactCount" class="event-compact-count hidden"></span>
           </div>
         </div>
 
-        <!-- SELECTED EVENT DETAILS -->
-        <div id="eventDetailsSection" class="event-details-card hidden">
-          <h3>Selected Event Details</h3>
-
-          <div class="event-details-grid">
-            <div>
-              <span class="event-detail-label">Date</span>
-              <span id="eventDetailDate" class="event-detail-value">-</span>
-            </div>
-            <div>
-              <span class="event-detail-label">Type</span>
-              <span id="eventDetailType" class="event-detail-value">-</span>
-            </div>
-            <div>
-              <span class="event-detail-label">Teams Included</span>
-              <span id="eventDetailTeams" class="event-detail-value">-</span>
-            </div>
-            <div>
-              <span class="event-detail-label">Status</span>
-              <span id="eventDetailStatus" class="event-detail-value">-</span>
-            </div>
-            <div>
-              <span class="event-detail-label">Start Time</span>
-              <span id="eventDetailStartTime" class="event-detail-value">-</span>
-            </div>
-            <div>
-              <span class="event-detail-label">End Time</span>
-              <span id="eventDetailEndTime" class="event-detail-value">-</span>
-            </div>
-            <div class="event-detail-wide">
-              <span class="event-detail-label">Location</span>
-              <span id="eventDetailLocation" class="event-detail-value">-</span>
-            </div>
-            <div class="event-detail-wide">
-              <span class="event-detail-label">Notes</span>
-              <span id="eventDetailNotes" class="event-detail-value">-</span>
-            </div>
-          </div>
-        </div>
+        <!-- HIDDEN SPANS kept for JS compatibility -->
+        <span id="eventDetailDate" class="hidden"></span>
+        <span id="eventDetailType" class="hidden"></span>
+        <span id="eventDetailTeams" class="hidden"></span>
+        <span id="eventDetailStatus" class="hidden"></span>
+        <span id="eventDetailStartTime" class="hidden"></span>
+        <span id="eventDetailEndTime" class="hidden"></span>
+        <span id="eventDetailLocation" class="hidden"></span>
+        <span id="eventDetailNotes" class="hidden"></span>
+        <div id="eventDetailsSection" class="hidden"></div>
+        <div id="eventActionButtons" class="hidden"></div>
 
         <!-- TEAM EVENT WORKFLOW BUTTON
              Appears when an existing Team Event is selected so
@@ -523,17 +512,33 @@
           <div class="form-row">
             <h3>Players</h3>
 
-            <!-- ATTENDANCE SUMMARY / HIDE COMPLETED TOOLS -->
-            <div class="attendance-tools">
-              <div id="attendanceSummary" class="attendance-summary">
-                Present: 0 | Absent: 0 | Excused: 0 | Cancelled: 0 | Remaining: 0
+          <!-- COMPACT ATTENDANCE TOOLBAR -->
+            <div class="attendance-compact-toolbar">
+              <div class="attendance-compact-search-row">
+                <i class="ti ti-search" style="font-size:16px;color:#9ca3af;flex-shrink:0;" aria-hidden="true"></i>
+                <input
+                  id="attendanceSearchInputCompact"
+                  type="text"
+                  placeholder="Search players..."
+                  autocomplete="off"
+                />
+                <button id="attendanceFilterIconBtn" class="attendance-filter-icon-btn" type="button" aria-label="Filters">
+                  <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
+                </button>
               </div>
+              <div class="attendance-compact-meta-row">
+                <div id="attendanceSummary" class="attendance-compact-summary">
+                  Present: 0 · Absent: 0 · Remaining: 0
+                </div>
+                <label class="attendance-compact-hide-toggle">
+                  <input type="checkbox" id="hideMarkedToggle" checked />
+                  Hide marked
+                </label>
+              </div>
+            </div>
 
-              <label class="hide-marked-toggle">
-                <input type="checkbox" id="hideMarkedToggle" checked />
-                Hide marked players
-              </label>
-
+            <!-- ATTENDANCE SUMMARY / HIDE COMPLETED TOOLS (legacy, hidden) -->
+            <div class="attendance-tools hidden" aria-hidden="true">
               <button id="showCompletedBtn" type="button" class="btn btn-secondary">
                 Show Completed Attendance (0)
               </button>
@@ -711,5 +716,79 @@
       }
     })();
   </script>
+<!-- GENERATE PRACTICE SCHEDULE MODAL -->
+<div id="generateScheduleModal" class="schedule-modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Generate practice schedule">
+  <div class="schedule-modal">
+    <div class="schedule-modal-header">
+      <i class="ti ti-calendar-plus" style="font-size:20px;color:#f57c00;" aria-hidden="true"></i>
+      <h3>Generate practice schedule</h3>
+      <button class="schedule-modal-close" id="scheduleModalCloseBtn" type="button" aria-label="Close">
+        <i class="ti ti-x" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="form-row">
+      <label for="scheduleStartDate">Start date</label>
+      <input type="date" id="scheduleStartDate" />
+    </div>
+
+    <div class="form-row">
+      <label for="scheduleEndDate">End date</label>
+      <input type="date" id="scheduleEndDate" />
+    </div>
+
+    <div class="form-row">
+      <label>Practice days</label>
+      <div class="schedule-day-grid">
+        <button type="button" class="schedule-day-btn" data-day="0">Sun</button>
+        <button type="button" class="schedule-day-btn day-selected" data-day="1">Mon</button>
+        <button type="button" class="schedule-day-btn" data-day="2">Tue</button>
+        <button type="button" class="schedule-day-btn day-selected" data-day="3">Wed</button>
+        <button type="button" class="schedule-day-btn" data-day="4">Thu</button>
+        <button type="button" class="schedule-day-btn" data-day="5">Fri</button>
+        <button type="button" class="schedule-day-btn" data-day="6">Sat</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-row" style="margin-bottom:0;">
+        <label for="scheduleStartTime">Start time</label>
+        <input type="time" id="scheduleStartTime" value="18:00" />
+      </div>
+      <div class="form-row" style="margin-bottom:0;">
+        <label for="scheduleEndTime">End time</label>
+        <input type="time" id="scheduleEndTime" value="20:00" />
+      </div>
+    </div>
+
+    <div class="form-row" style="margin-top:14px;">
+      <label for="scheduleSkipDates">Skip dates <span style="font-weight:400;color:#888;">(optional, comma-separated)</span></label>
+      <input type="text" id="scheduleSkipDates" placeholder="e.g. 2026-11-23, 2026-12-25" />
+    </div>
+
+    <div id="schedulePreviewBox" class="schedule-preview-box hidden"></div>
+    <p id="scheduleModalMessage" class="message"></p>
+
+    <div class="schedule-modal-actions">
+      <button id="scheduleGenerateBtn" type="button" class="btn btn-primary">Generate schedule</button>
+      <button id="scheduleCancelBtn" type="button" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   MOBILE KEYBOARD SCROLL FIX
+   When a text input is focused on mobile, scroll it into view
+   so the keyboard doesn't cover it.
+   ========================= */
+document.addEventListener("focusin", function(e) {
+  if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") && e.target.type !== "checkbox" && e.target.type !== "radio") {
+    setTimeout(function() {
+      e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 320);
+  }
+});
+</script>
 </body>
 </html>

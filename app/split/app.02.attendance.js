@@ -27,7 +27,7 @@ function ensureAttendanceFilterControls() {
   if (!filterPanel) {
     filterPanel = document.createElement("div");
     filterPanel.id = "attendanceFilterPanel";
-    filterPanel.className = "attendance-filter-panel";
+    filterPanel.className = "attendance-filter-panel hidden";
 
     filterPanel.innerHTML = `
       <div class="attendance-filter-row attendance-search-row">
@@ -89,6 +89,32 @@ function ensureAttendanceFilterControls() {
         attendanceSearchText = normalizeAttendanceSearchText(searchInput.value);
         updateAttendanceDisplay();
       }, 150);
+    });
+  }
+
+  // Compact search input (Batch 8)
+  const compactSearch = document.getElementById("attendanceSearchInputCompact");
+  if (compactSearch && !compactSearch.dataset.listenerAttached) {
+    compactSearch.dataset.listenerAttached = "1";
+    compactSearch.addEventListener("input", () => {
+      clearTimeout(attendanceSearchTimer);
+      attendanceSearchTimer = setTimeout(() => {
+        attendanceSearchText = normalizeAttendanceSearchText(compactSearch.value);
+        updateAttendanceDisplay();
+      }, 150);
+    });
+  }
+
+  // Filter icon btn toggles the existing filter panel
+  const filterIconBtn = document.getElementById("attendanceFilterIconBtn");
+  if (filterIconBtn && !filterIconBtn.dataset.listenerAttached) {
+    filterIconBtn.dataset.listenerAttached = "1";
+    filterIconBtn.addEventListener("click", () => {
+      const panel = document.getElementById("attendanceFilterPanel");
+      if (panel) {
+        const isHidden = panel.classList.toggle("hidden");
+        filterIconBtn.classList.toggle("filters-active", !isHidden);
+      }
     });
   }
 
@@ -581,7 +607,7 @@ function updateAttendanceDisplay() {
 
   if (attendanceSummary) {
     attendanceSummary.textContent =
-      `Present: ${present} | Absent: ${absent} | Excused: ${excused} | Cancelled: ${cancelled} | Remaining: ${remaining}`;
+      `Present: ${present} · Absent: ${absent} · Excused: ${excused} · Remaining: ${remaining}`;
   }
 
   const hideMarked = hideMarkedToggle ? hideMarkedToggle.checked : true;
