@@ -342,9 +342,15 @@
         <!-- EVENT SELECTOR ROW + DOTS MENU -->
         <div id="practiceTabHeader" class="practice-tab-header hidden">
           <h3>Practice</h3>
-          <button id="generateScheduleBtn" class="btn-schedule" type="button">
-            <i class="ti ti-calendar-plus" aria-hidden="true"></i> Schedule
-          </button>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#555;cursor:pointer;white-space:nowrap;">
+              <input type="checkbox" id="practiceShowAllToggle" style="width:auto;margin:0;padding:0;" />
+              All dates
+            </label>
+            <button id="generateScheduleBtn" class="btn-schedule" type="button">
+              <i class="ti ti-calendar-plus" aria-hidden="true"></i> Schedule
+            </button>
+          </div>
         </div>
 
         <div class="event-selector-row">

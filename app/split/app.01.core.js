@@ -1690,6 +1690,9 @@ async function loadEvents() {
 
     console.log("Events loaded:", events.length, events);
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const filteredEvents = events.filter(event => {
       if (!event.EventDate || !event.EventType) return false;
 
@@ -1704,6 +1707,25 @@ async function loadEvents() {
       return true;
     });
 
+    // For Practice tab: sort descending and filter to current month onward
+    // unless "show all" is toggled
+    let displayEvents = filteredEvents;
+    if (currentTab === "Practice") {
+      const showAll = document.getElementById("practiceShowAllToggle") &&
+        document.getElementById("practiceShowAllToggle").checked;
+
+      // Always sort descending (most recent first)
+      displayEvents = [...filteredEvents].sort((a, b) =>
+        new Date(b.EventDate) - new Date(a.EventDate)
+      );
+
+      if (!showAll) {
+        // Show from start of current month onward
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        displayEvents = displayEvents.filter(e => new Date(e.EventDate) >= startOfMonth);
+      }
+    }
+
     console.log(
       "Filtered events for tab:",
       currentTab,
@@ -1711,7 +1733,7 @@ async function loadEvents() {
       filteredEvents
     );
 
-    filteredEvents.forEach(event => addEventOption(event));
+    displayEvents.forEach(event => addEventOption(event));
 
     updateEventActionButtons();
 
@@ -2098,6 +2120,13 @@ document.addEventListener("DOMContentLoaded", function() {
   if (scheduleOverlay) {
     scheduleOverlay.addEventListener("click", function(e) {
       if (e.target === scheduleOverlay) closeGenerateScheduleModal();
+    });
+  }
+
+  const practiceShowAll = document.getElementById("practiceShowAllToggle");
+  if (practiceShowAll) {
+    practiceShowAll.addEventListener("change", function() {
+      if (typeof loadEvents === "function") loadEvents();
     });
   }
 });
