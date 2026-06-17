@@ -342,15 +342,17 @@
         <!-- EVENT SELECTOR ROW + DOTS MENU -->
         <div id="practiceTabHeader" class="practice-tab-header hidden">
           <h3>Practice</h3>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#555;cursor:pointer;white-space:nowrap;">
-              <input type="checkbox" id="practiceShowAllToggle" style="width:auto;margin:0;padding:0;" />
-              All dates
-            </label>
-            <button id="generateScheduleBtn" class="btn-schedule" type="button">
-              <i class="ti ti-calendar-plus" aria-hidden="true"></i> Schedule
-            </button>
-          </div>
+          <button id="generateScheduleBtn" class="btn-schedule" type="button">
+            <i class="ti ti-calendar-plus" aria-hidden="true"></i> Schedule
+          </button>
+        </div>
+
+        <!-- PRACTICE SHOW ALL TOGGLE — visible to all roles on Practice tab -->
+        <div id="practiceFilterBar" class="hidden" style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;cursor:pointer;">
+            <input type="checkbox" id="practiceShowAllToggle" style="width:auto;margin:0;padding:0;" />
+            Show all dates
+          </label>
         </div>
 
         <div class="event-selector-row">

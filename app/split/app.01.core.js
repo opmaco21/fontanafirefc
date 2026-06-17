@@ -897,6 +897,15 @@ function updateMainModeVisibility() {
     }
   });
 
+  // practiceFilterBar: only on Practice tab, all roles
+  const practiceFilterBar = document.getElementById("practiceFilterBar");
+  if (practiceFilterBar) {
+    practiceFilterBar.classList.toggle("hidden", isDashboard || isPlayerManagement || currentTab !== "Practice");
+    if (!isDashboard && !isPlayerManagement && currentTab === "Practice") {
+      practiceFilterBar.style.display = "flex";
+    }
+  }
+
   // practiceTabHeader: only on Practice tab, Admin only
   if (practiceTabHeader && !isDashboard && !isPlayerManagement) {
     const isAdmin = currentUser && currentUser.RoleName === "Admin";
@@ -1716,16 +1725,16 @@ async function loadEvents() {
       return true;
     });
 
-    // For Practice tab: sort descending and filter to current month onward
+    // For Practice tab: sort ascending (soonest first) and filter to current month onward
     // unless "show all" is toggled
     let displayEvents = filteredEvents;
     if (currentTab === "Practice") {
       const showAll = document.getElementById("practiceShowAllToggle") &&
         document.getElementById("practiceShowAllToggle").checked;
 
-      // Always sort descending (most recent first)
+      // Sort ascending — soonest practice at top
       displayEvents = [...filteredEvents].sort((a, b) =>
-        new Date(b.EventDate) - new Date(a.EventDate)
+        new Date(a.EventDate) - new Date(b.EventDate)
       );
 
       if (!showAll) {
