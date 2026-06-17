@@ -384,11 +384,6 @@ function applyRolePermissions() {
     if (userMgmtBtn) userMgmtBtn.style.display = "none";
   }
 
-  // Practice tab header with Schedule button — Admin only
-  if (practiceTabHeader) {
-    practiceTabHeader.classList.toggle("hidden", currentUser.RoleName !== "Admin");
-  }
-
   // Role label display
   const roleLabels = {
     Admin: "Admin",
@@ -623,6 +618,13 @@ function setActiveTab() {
     teamEventsTab.classList.add("active");
   } else if (currentTab === "Player Management") {
     playerManagementTab.classList.add("active");
+  }
+
+  // Practice tab header (Schedule button) only visible on Practice tab for Admin
+  if (practiceTabHeader) {
+    const isPractice = currentTab === "Practice";
+    const isAdmin = currentUser && currentUser.RoleName === "Admin";
+    practiceTabHeader.classList.toggle("hidden", !(isPractice && isAdmin));
   }
 
   updateMainModeVisibility();
