@@ -398,3 +398,10 @@
     padding: 7px 1px;
   }
 }
+
+/* Completed status badge */
+.event-compact-status.status-completed {
+  background: #e6f4ea;
+  color: #2e7d32;
+  border: 1px solid #a8d5b4;
+}

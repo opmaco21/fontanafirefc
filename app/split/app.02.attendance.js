@@ -629,6 +629,37 @@ function updateAttendanceDisplay() {
       `Present: ${present} · Absent: ${absent} · Excused: ${excused} · Remaining: ${remaining}`;
   }
 
+  // Show "Completed" status when all players have been marked
+  const totalPlayers = allRows.length;
+  const isPracticeComplete = totalPlayers > 0 && remaining === 0;
+
+  // Update compact bar status badge
+  const eventCompactStatus = document.getElementById("eventCompactStatus");
+  if (eventCompactStatus) {
+    const currentStatus = eventCompactStatus.textContent.trim();
+    if (isPracticeComplete) {
+      eventCompactStatus.textContent = "Completed";
+      eventCompactStatus.className = "event-compact-status status-completed";
+    } else if (currentStatus === "Completed") {
+      // Revert if someone cleared a mark
+      eventCompactStatus.textContent = "Scheduled";
+      eventCompactStatus.className = "event-compact-status status-scheduled";
+    }
+  }
+
+  // Update the dropdown option label
+  if (eventSelect && eventSelect.value) {
+    const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+    if (selectedOption) {
+      const label = selectedOption.textContent;
+      if (isPracticeComplete && !label.includes("Completed")) {
+        selectedOption.textContent = label.replace(/- Scheduled$/, "- Completed");
+      } else if (!isPracticeComplete && label.includes("- Completed")) {
+        selectedOption.textContent = label.replace(/- Completed$/, "- Scheduled");
+      }
+    }
+  }
+
   const hideMarked = hideMarkedToggle ? hideMarkedToggle.checked : true;
 
   allRows.forEach(row => {
