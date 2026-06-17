@@ -1948,6 +1948,11 @@ async function loadSelectedEventDetails() {
         eventCompactStatus.textContent = st;
         eventCompactStatus.className = "event-compact-status " + (st === "Cancelled" ? "status-cancelled" : "status-scheduled");
       }
+
+      // Re-evaluate completion status in case attendance was already loaded
+      if (typeof updateAttendanceDisplay === "function") {
+        updateAttendanceDisplay();
+      }
       if (eventCompactCount) eventCompactCount.classList.add("hidden");
       eventCompactBar.classList.remove("hidden");
     }

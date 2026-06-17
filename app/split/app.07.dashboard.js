@@ -12,6 +12,7 @@
 
 let dashboardSelectedMonth = new Date().toISOString().slice(0, 7); // default to current month (YYYY-MM)
 let dashboardMonthFilterReady = false;
+let dashboardPlayerDates = {}; // cache of player missed dates by key
 let dashboardOpenDetailKey = "";
 
 function getDashboardCurrentMonthValue() {
@@ -78,6 +79,7 @@ function ensureDashboardMonthFilterOptions() {
   dashboardMonthFilter.addEventListener("change", async () => {
     dashboardSelectedMonth = dashboardMonthFilter.value || "";
     dashboardOpenDetailKey = "";
+    dashboardPlayerDates = {};
     await loadDashboard();
   });
 
@@ -399,6 +401,7 @@ function getDashboardCategoryDetail(row, category) {
   const config = getDashboardCategoryConfig(category);
   const counted = Number(row[config.counted] || 0);
   const cancelled = Number(row[config.cancelled] || 0);
+  const playerId = row.PlayerID;
 
   if (!counted && !cancelled) {
     return `
@@ -409,17 +412,45 @@ function getDashboardCategoryDetail(row, category) {
     `;
   }
 
+  // Build missed dates list from cache
+  const datesKey = `${playerId}-${category}`;
+  const dates = dashboardPlayerDates[datesKey] || [];
+  const missedDates = dates.filter(d => d.AttendanceStatus === "Absent" || d.AttendanceStatus === "No Record");
+  const presentDates = dates.filter(d => d.AttendanceStatus === "Present");
+  const excusedDates = dates.filter(d => d.AttendanceStatus === "Excused");
+
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  };
+
+  const missedHtml = missedDates.length > 0
+    ? `<div style="margin-top:8px;">
+        <div style="font-size:12px;font-weight:700;color:#c62828;margin-bottom:4px;">Missed (${missedDates.length})</div>
+        ${missedDates.map(d => `<div style="font-size:12px;color:#555;padding:2px 0;border-bottom:1px solid #f3f4f6;">${formatDate(d.EventDate)}${d.LocationName ? ` · ${d.LocationName}` : ""}</div>`).join("")}
+       </div>`
+    : "";
+
+  const excusedHtml = excusedDates.length > 0
+    ? `<div style="margin-top:8px;">
+        <div style="font-size:12px;font-weight:700;color:#f9a825;margin-bottom:4px;">Excused (${excusedDates.length})</div>
+        ${excusedDates.map(d => `<div style="font-size:12px;color:#555;padding:2px 0;border-bottom:1px solid #f3f4f6;">${formatDate(d.EventDate)}</div>`).join("")}
+       </div>`
+    : "";
+
   return `
     <div class="dashboard-player-detail-box">
       <strong>${config.label} Details</strong>
       <div class="dashboard-player-detail-grid">
-        <span>Total Counted: <strong>${counted}</strong></span>
+        <span>Counted: <strong>${counted}</strong></span>
         <span>Present: <strong>${row[config.present] || 0}</strong></span>
         <span>Absent: <strong>${row[config.absent] || 0}</strong></span>
         <span>Excused: <strong>${row[config.excused] || 0}</strong></span>
-        <span>Cancelled: <strong>${cancelled}</strong></span>
         <span>Attendance: <strong>${formatDashboardPercent(row[config.percent])}</strong></span>
       </div>
+      ${missedHtml}
+      ${excusedHtml}
+      ${dates.length === 0 ? '<p style="font-size:12px;color:#999;margin-top:6px;">Loading dates...</p>' : ""}
     </div>
   `;
 }
@@ -536,12 +567,36 @@ function setupDashboardDetailClickHandlers() {
     if (!container || container.dataset.detailListenerAttached) return;
 
     container.dataset.detailListenerAttached = "1";
-    container.addEventListener("click", event => {
+    container.addEventListener("click", async event => {
       const button = event.target.closest(".dashboard-category-btn");
       if (!button) return;
 
       const nextKey = button.dataset.dashboardDetailKey || "";
       dashboardOpenDetailKey = dashboardOpenDetailKey === nextKey ? "" : nextKey;
+
+      // Load missed dates if opening a category
+      if (dashboardOpenDetailKey) {
+        const parts = dashboardOpenDetailKey.split("-");
+        const playerId = parts[1];
+        const category = parts[2];
+        const eventTypeMap = { practice: "Practice", game: "Game", teamEvent: "Team Event" };
+        const eventType = eventTypeMap[category] || null;
+
+        if (playerId && eventType) {
+          const monthParam = dashboardSelectedMonth ? `&month=${dashboardSelectedMonth}` : "";
+          try {
+            const res = await fetch(`${API_BASE}/dashboard/player-dates/${playerId}?eventType=${encodeURIComponent(eventType)}${monthParam}`, {
+              credentials: "include"
+            });
+            const data = await res.json();
+            if (data.success) {
+              dashboardPlayerDates[`${playerId}-${category}`] = data.dates;
+            }
+          } catch (e) {
+            console.error("Failed to load player dates:", e);
+          }
+        }
+      }
 
       if (typeof loadDashboard === "function") {
         loadDashboard();
