@@ -1765,7 +1765,12 @@ async function loadEvents() {
       if (!showAll) {
         // Show from start of current month onward
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        displayEvents = displayEvents.filter(e => new Date(e.EventDate) >= startOfMonth);
+        displayEvents = displayEvents.filter(e => {
+          // Parse YYYY-MM-DD as local date to avoid UTC timezone offset issues
+          const parts = String(e.EventDate).slice(0, 10).split("-");
+          const eventDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+          return eventDate >= startOfMonth;
+        });
       }
     }
 
