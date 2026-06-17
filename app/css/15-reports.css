@@ -1,166 +1,365 @@
-/* Fontana Fire FC - 15-reports.css
-   Reports tab styles */
+/* 15-reports.css — Reports Tab Styles + Print */
 
-/* =========================
-   REPORTS TAB CONTAINER
-   ========================= */
-
-.reports-container {
-  padding: 4px 0 20px;
-}
-
-.reports-header {
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid #f3f4f6;
-}
-
-.reports-header h3 {
-  margin: 0 0 4px;
-  color: #111827;
-}
-
-.reports-header p {
-  margin: 0;
-  font-size: 13px;
-  color: #6b7280;
-  line-height: 1.4;
-}
-
-/* =========================
-   MONTH FILTER
-   ========================= */
-
-.reports-filter-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-}
-
-.reports-filter-row label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #374151;
-  margin-bottom: 0;
-  white-space: nowrap;
-}
-
-.reports-filter-row select {
-  flex: 1;
-  max-width: 220px;
-  padding: 9px 12px;
-  font-size: 14px;
-  border-radius: 10px;
-}
-
-/* =========================
-   REPORT CARDS
-   ========================= */
-
-.reports-grid {
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+.reports-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px 12px 40px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.report-card {
-  background: #fff;
-  border: 1px solid #e1e5ea;
-  border-left: 4px solid #f57c00;
-  border-radius: 0 14px 14px 0;
-  padding: 16px;
+/* ── Accordion ───────────────────────────────────────────────────────────── */
+.report-accordion {
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a1a2e;
+}
+
+.report-accordion--open {
+  border-color: #e05c00;
+}
+
+.report-accordion-header {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-}
-
-.report-card-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.report-card-title {
+  padding: 14px 18px;
+  background: #1e1e30;
+  border: none;
+  cursor: pointer;
+  color: #f0f0f0;
   font-size: 15px;
-  font-weight: 800;
-  color: #111827;
-  margin-bottom: 3px;
+  font-weight: 600;
+  text-align: left;
+  transition: background 0.15s;
+  gap: 12px;
 }
 
-.report-card-desc {
+.report-accordion-header:hover {
+  background: #252540;
+}
+
+.report-accordion--open .report-accordion-header {
+  background: #1e1e30;
+  border-bottom: 1px solid #2a2a3a;
+}
+
+.report-accordion-label {
+  flex: 1;
+}
+
+.report-accordion-chevron {
   font-size: 12px;
-  color: #6b7280;
-  line-height: 1.4;
+  color: #888;
+  transition: color 0.15s;
 }
 
-.report-card-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  background: #fffaf5;
-  border: 1px solid #f2dcc8;
-  color: #9a3412;
-  margin-top: 4px;
+.report-accordion--open .report-accordion-chevron {
+  color: #e05c00;
 }
 
-.btn-download {
+/* ── Accordion body ──────────────────────────────────────────────────────── */
+.report-accordion-body {
+  padding: 0;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
+.report-toolbar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  background: #111827;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #2a2a3a;
+  background: #16162a;
+}
+
+.report-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-filter-label {
+  color: #aaa;
   font-size: 13px;
-  font-weight: 700;
+}
+
+.report-month-select {
+  background: #252540;
+  border: 1px solid #3a3a5a;
+  color: #f0f0f0;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 13px;
   cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
-.btn-download:hover {
-  background: #374151;
+.report-month-select:focus {
+  outline: none;
+  border-color: #e05c00;
 }
 
-.btn-download:disabled {
-  opacity: 0.6;
-  cursor: wait;
+.report-toolbar-actions {
+  display: flex;
+  gap: 8px;
 }
 
-.btn-download i {
-  font-size: 16px;
-}
-
-/* =========================
-   REPORT STATUS MESSAGE
-   ========================= */
-
-.reports-message {
-  margin-top: 12px;
+.btn-report-print,
+.btn-report-excel {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
   font-size: 13px;
-  min-height: 18px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+
+.btn-report-print {
+  background: #2a2a44;
+  color: #f0f0f0;
+  border: 1px solid #3a3a5a;
+}
+
+.btn-report-print:hover {
+  background: #35355a;
+}
+
+.btn-report-excel {
+  background: #1a6e3a;
+  color: #fff;
+}
+
+.btn-report-excel:hover {
+  opacity: 0.85;
+}
+
+/* ── Content area ────────────────────────────────────────────────────────── */
+.report-content {
+  padding: 16px 18px;
+  overflow-x: auto;
+}
+
+.report-loading,
+.report-error,
+.report-empty {
+  text-align: center;
+  color: #888;
+  padding: 32px 16px;
+  font-size: 14px;
+}
+
+.report-error {
+  color: #e05c00;
+}
+
+.report-empty {
+  color: #5a5;
+}
+
+/* ── Print header (shown only when printing) ─────────────────────────────── */
+.report-print-header {
+  display: none;
+}
+
+.report-footer-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+.report-table th {
+  background: #1e1e30;
+  color: #bbb;
+  text-align: left;
+  padding: 8px 10px;
+  font-weight: 600;
+  border-bottom: 2px solid #2a2a3a;
+  white-space: nowrap;
+}
+
+.report-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #222238;
+  vertical-align: middle;
+}
+
+.report-table tbody tr:hover {
+  background: #1e1e38;
+}
+
+.report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.report-table--compact th,
+.report-table--compact td {
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+.col-num {
+  text-align: center;
+  color: #888;
+  width: 36px;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.badge-ok {
+  background: #1a4a2a;
+  color: #5dca7e;
+}
+
+.badge-missing {
+  background: #4a1a1a;
+  color: #e07070;
+}
+
+.pct-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 40px;
   text-align: center;
 }
 
-@media (max-width: 520px) {
-  .report-card {
-    flex-direction: column;
-    align-items: stretch;
+.pct-green  { background: #1a4a2a; color: #5dca7e; }
+.pct-yellow { background: #4a3a0a; color: #d4aa40; }
+.pct-red    { background: #4a1a1a; color: #e07070; }
+.pct-grey   { background: #2a2a3a; color: #888; }
+
+/* ── Confidential label ──────────────────────────────────────────────────── */
+.report-print-confidential {
+  font-size: 11px;
+  color: #e05c00;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid #e05c00;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRINT STYLES
+   Only the targeted report section prints. Everything else is hidden.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
   }
 
-  .btn-download {
+  /* Show only the open report's content area */
+  body[data-printing-report] .report-accordion--open .report-accordion-body,
+  body[data-printing-report] .report-accordion--open .report-accordion-body * {
+    visibility: visible;
+  }
+
+  /* Position the report block at top-left */
+  body[data-printing-report] .report-accordion--open .report-accordion-body {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    justify-content: center;
   }
 
-  .reports-filter-row select {
-    max-width: none;
-    flex: 1;
+  /* Show the print header */
+  .report-print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #000;
+    font-size: 14px;
+  }
+
+  /* Hide toolbar buttons when printing */
+  .report-toolbar {
+    display: none !important;
+  }
+
+  /* Reset table colors for print */
+  .report-table {
+    color: #000 !important;
+    font-size: 11px;
+  }
+
+  .report-table th {
+    background: #eee !important;
+    color: #000 !important;
+    border-bottom: 2px solid #000 !important;
+  }
+
+  .report-table td {
+    border-bottom: 1px solid #ccc !important;
+    color: #000 !important;
+  }
+
+  .report-table tbody tr:hover {
+    background: none !important;
+  }
+
+  .status-badge, .pct-badge {
+    border: 1px solid #000 !important;
+    background: none !important;
+    color: #000 !important;
+    padding: 1px 5px;
+  }
+
+  .report-print-confidential {
+    border-color: #000 !important;
+    color: #000 !important;
+  }
+
+  .report-footer-note {
+    color: #000 !important;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 0.75in;
+    size: letter landscape;
+  }
+
+  /* Emergency contacts goes landscape by default (many columns) */
+  body[data-printing-report="emergency"] {
+    /* landscape already set above */
+  }
+
+  /* Roster and attendance can be portrait */
+  body[data-printing-report="roster"],
+  body[data-printing-report="attendance"],
+  body[data-printing-report="paperwork"],
+  body[data-printing-report="snacks"] {
+    /* inherits landscape — fine for all */
   }
 }
