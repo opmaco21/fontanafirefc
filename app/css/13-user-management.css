@@ -458,3 +458,147 @@
     width: 100%;
   }
 }
+
+/* =========================
+   PERMISSION MANAGER (Batch 9)
+   ========================= */
+
+.perm-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e1e5ea;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.perm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 520px;
+}
+
+.perm-table th {
+  background: #111827;
+  color: #fff;
+  padding: 12px 10px;
+  font-weight: 800;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.perm-cap-col {
+  width: 42%;
+  text-align: left;
+}
+
+.perm-role-col {
+  text-align: center;
+}
+
+.perm-table td {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.perm-table tr:last-child td {
+  border-bottom: none;
+}
+
+.perm-table tr:hover td {
+  background: #fafafa;
+}
+
+.perm-cap-cell {
+  text-align: left;
+}
+
+.perm-cap-label {
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.perm-cap-desc {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.perm-toggle-cell {
+  text-align: center;
+}
+
+.perm-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.perm-toggle-locked {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.perm-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.perm-toggle-track {
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  position: relative;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.perm-toggle-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.perm-toggle-track.perm-on {
+  background: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.perm-toggle-track.perm-on::after {
+  transform: translateX(16px);
+}
+
+.perm-toggle-track.perm-off {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.perm-toggle-track.perm-locked {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+@media (max-width: 520px) {
+  .perm-cap-desc {
+    display: none;
+  }
+  .perm-cap-col {
+    width: 36%;
+  }
+}

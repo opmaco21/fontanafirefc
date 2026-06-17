@@ -76,8 +76,8 @@ async function showUserManagement() {
     <div class="user-mgmt-header">
       <h3>User Management</h3>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        ${currentUser && currentUser.RoleName === "Admin" ? `<button id="createUserBtn" class="btn btn-primary" style="margin-top:0;">+ Create New User</button>` : ""}
-        <button id="backFromUserMgmtBtn" class="btn btn-secondary" style="margin-top:0;">? Back to App</button>
+        ${isAdmin ? `<button id="createUserBtn" class="btn btn-primary" style="margin-top:0;">+ Create New User</button>` : ""}
+        <button id="backFromUserMgmtBtn" class="btn btn-secondary" style="margin-top:0;">← Back to App</button>
       </div>
     </div>
 
@@ -98,6 +98,18 @@ async function showUserManagement() {
         </tbody>
       </table>
     </div>
+
+    ${isAdmin ? `
+    <div style="margin-top:24px;">
+      <div class="user-mgmt-header" style="margin-bottom:12px;">
+        <h3 style="margin:0;">Role Permissions</h3>
+        <span style="font-size:13px; color:#666;">Changes take effect immediately</span>
+      </div>
+      <div id="permissionManagerContainer">
+        <div style="padding:20px; text-align:center; color:#999;">Loading permissions...</div>
+      </div>
+    </div>
+    ` : ""}
   `;
 
   appScreen.appendChild(section);
@@ -107,6 +119,9 @@ async function showUserManagement() {
   document.getElementById("backFromUserMgmtBtn").addEventListener("click", closeUserManagement);
 
   await loadUsers();
+  if (isAdmin) {
+    await loadPermissionManager();
+  }
 }
 
 async function loadUsers() {
@@ -157,7 +172,7 @@ function renderUsersTable() {
       : "Never";
 
     const mustChangeBadge = (u.MustChangePassword === true || u.MustChangePassword === 1)
-      ? `<span class="user-must-change">? Must change</span>`
+      ? `<span class="user-must-change">⚠ Must change</span>`
       : "";
 
     const isSelf = currentUser && u.UserID === currentUser.UserID;
@@ -388,7 +403,7 @@ function showTempPasswordModal(userName, email, tempPassword, isReset = false) {
   const safeTempPassword = escapeUserMgmtHtml(tempPassword);
 
   const modal = buildModal("tempPasswordModal", `
-    <h3 style="color:#166534; text-align:center;">? Password ${email ? 'Created' : 'Reset'}</h3>
+    <h3 style="color:#166534; text-align:center;">✓ Password ${email ? 'Created' : 'Reset'}</h3>
     <p style="text-align:center;">
       <strong>${safeUserName}</strong>${email ? `<br><span style="font-size:13px; color:#666;">${safeEmail}</span>` : ''}<br>
       Must change password on next login.
@@ -404,12 +419,12 @@ function showTempPasswordModal(userName, email, tempPassword, isReset = false) {
 
     ${isReset ? `
     <div class="temp-password-warning" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b;">
-      ?? ${safeUserName}'s old password no longer works. They must log in with this temporary password above, then set a new one.
+      🔒 ${safeUserName}'s old password no longer works. They must log in with this temporary password above, then set a new one.
     </div>
     ` : ''}
 
     <div class="temp-password-warning">
-      ?? Share this password securely. It will not be shown again.
+      ⚠️ Share this password securely. It will not be shown again.
     </div>
 
     <div class="user-mgmt-modal-actions" style="justify-content:center; margin-top:20px;">
@@ -564,4 +579,163 @@ function buildModal(id, innerHtml) {
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   return overlay;
+}
+/* =========================
+   PERMISSION MANAGER
+   Admin-only. Loads from DB, renders grid of toggles per role per capability.
+   Changes save immediately on toggle.
+   ========================= */
+
+const PERMISSION_LABELS = {
+  canMarkAttendance:     { label: "Mark Attendance",       desc: "Take roll call for practices, games, and events" },
+  canManageEvents:       { label: "Manage Events",         desc: "Create, edit, cancel, restore games and events; manage rosters" },
+  canManagePlayers:      { label: "Manage Players",        desc: "Add, edit, and view full player profiles and contact info" },
+  canGenerateSchedule:   { label: "Generate Schedule",     desc: "Bulk-create practice events from the Practice tab" },
+  canViewDashboard:      { label: "View Dashboard",        desc: "Access attendance reports and player summaries" },
+  canViewUserManagement: { label: "View User Management",  desc: "See the user list (Admin can also edit users)" }
+};
+
+const ROLE_LABELS = {
+  Admin:     "Admin",
+  TeamMom:   "Team Mom",
+  HeadCoach: "Head Coach",
+  Coaches:   "Coaches"
+};
+
+// Capabilities that Admin cannot have toggled (prevent lockout)
+const ADMIN_LOCKED = ["canMarkAttendance", "canViewDashboard", "canViewUserManagement"];
+
+async function loadPermissionManager() {
+  const container = document.getElementById("permissionManagerContainer");
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/permissions`, { credentials: "include" });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      container.innerHTML = `<p style="color:#c62828;">Failed to load permissions: ${escapeUserMgmtHtml(data.message || "")}</p>`;
+      return;
+    }
+
+    renderPermissionManager(data.permissions, container);
+
+  } catch (err) {
+    console.error("Load permissions error:", err);
+    container.innerHTML = `<p style="color:#c62828;">Network error loading permissions.</p>`;
+  }
+}
+
+function renderPermissionManager(permissions, container) {
+  const roles = ["Admin", "TeamMom", "HeadCoach", "Coaches"];
+  const capabilities = Object.keys(PERMISSION_LABELS);
+
+  let html = `
+    <div class="perm-table-wrap">
+      <table class="perm-table">
+        <thead>
+          <tr>
+            <th class="perm-cap-col">Capability</th>
+            ${roles.map(r => `<th class="perm-role-col">${escapeUserMgmtHtml(ROLE_LABELS[r])}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  capabilities.forEach(cap => {
+    const info = PERMISSION_LABELS[cap];
+    html += `<tr>
+      <td class="perm-cap-cell">
+        <div class="perm-cap-label">${escapeUserMgmtHtml(info.label)}</div>
+        <div class="perm-cap-desc">${escapeUserMgmtHtml(info.desc)}</div>
+      </td>`;
+
+    roles.forEach(role => {
+      const isGranted = permissions[role] && permissions[role][cap] === true;
+      const isLocked = role === "Admin" && ADMIN_LOCKED.includes(cap);
+      const toggleId = `perm-${role}-${cap}`;
+
+      html += `<td class="perm-toggle-cell">
+        <label class="perm-toggle ${isLocked ? "perm-toggle-locked" : ""}" title="${isLocked ? "Cannot be changed for Admin" : ""}">
+          <input
+            type="checkbox"
+            id="${escapeUserMgmtHtml(toggleId)}"
+            data-role="${escapeUserMgmtHtml(role)}"
+            data-capability="${escapeUserMgmtHtml(cap)}"
+            ${isGranted ? "checked" : ""}
+            ${isLocked ? "disabled" : ""}
+            style="width:auto; margin:0; padding:0;"
+          />
+          <span class="perm-toggle-track ${isGranted ? "perm-on" : "perm-off"} ${isLocked ? "perm-locked" : ""}"></span>
+        </label>
+      </td>`;
+    });
+
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table></div>
+    <p id="permSaveMessage" style="font-size:13px; margin-top:8px; min-height:18px;"></p>`;
+
+  container.innerHTML = html;
+
+  // Wire up toggle listeners
+  container.querySelectorAll("input[data-role][data-capability]").forEach(input => {
+    input.addEventListener("change", async function() {
+      const role = this.dataset.role;
+      const capability = this.dataset.capability;
+      const isGranted = this.checked;
+      const track = this.nextElementSibling;
+
+      this.disabled = true;
+      await savePermission(role, capability, isGranted, track);
+      this.disabled = this.closest(".perm-toggle-locked") ? true : false;
+    });
+  });
+}
+
+async function savePermission(role, capability, isGranted, trackEl) {
+  const msgEl = document.getElementById("permSaveMessage");
+
+  try {
+    const res = await fetch(`${API_BASE}/permissions`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ roleName: role, capability, isGranted })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      if (msgEl) { msgEl.style.color = "#c62828"; msgEl.textContent = data.message || "Failed to save."; }
+      return;
+    }
+
+    // Update track styling
+    if (trackEl) {
+      trackEl.classList.toggle("perm-on", isGranted);
+      trackEl.classList.toggle("perm-off", !isGranted);
+    }
+
+    // Refresh local permissions so the app reflects changes immediately
+    try {
+      const permRes = await fetch(`${API_BASE}/permissions/my`, { credentials: "include" });
+      const permData = await permRes.json();
+      if (permData.success) {
+        currentPermissions = permData.permissions;
+        if (typeof applyRolePermissions === "function") applyRolePermissions();
+      }
+    } catch (_) {}
+
+    if (msgEl) {
+      msgEl.style.color = "#2e7d32";
+      msgEl.textContent = `✓ ${ROLE_LABELS[role]} · ${PERMISSION_LABELS[capability].label} ${isGranted ? "enabled" : "disabled"}`;
+      setTimeout(() => { if (msgEl) msgEl.textContent = ""; }, 3000);
+    }
+
+  } catch (err) {
+    console.error("Save permission error:", err);
+    if (msgEl) { msgEl.style.color = "#c62828"; msgEl.textContent = "Network error. Please try again."; }
+  }
 }

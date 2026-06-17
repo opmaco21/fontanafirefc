@@ -168,6 +168,7 @@ const apiVersionText = document.getElementById("apiVersionText");
    APP STATE
    ========================= */
 let currentUser = null;
+let currentPermissions = {};  // loaded from /api/auth/me — DB-driven per role
 let currentTab = "Dashboard";
 let isTeamEventFormOpen = false;
 let isAttendanceModeActive = true;
@@ -331,20 +332,30 @@ function hasRole(...roles) {
   return currentUser && roles.includes(currentUser.RoleName);
 }
 
+function hasPerm(capability) {
+  return currentUser && currentPermissions[capability] === true;
+}
+
 function canManagePlayers() {
-  return hasRole("Admin", "TeamMom");
+  return hasPerm("canManagePlayers");
 }
 
 function canManageEvents() {
-  return hasRole("Admin", "TeamMom", "HeadCoach");
+  return hasPerm("canManageEvents");
 }
 
 function canManageUsers() {
+  // User management view — Admin always, TeamMom always
   return hasRole("Admin", "TeamMom");
 }
 
 function canCreateResetUsers() {
+  // Always Admin only — not configurable
   return hasRole("Admin");
+}
+
+function canGenerateSchedule() {
+  return hasPerm("canGenerateSchedule");
 }
 
 function applyRolePermissions() {
@@ -439,6 +450,7 @@ async function login() {
     }
 
     currentUser = data.user;
+    currentPermissions = data.permissions || {};
     localStorage.setItem("attendanceUser", JSON.stringify(currentUser));
 
     if (data.mustChangePassword) {
@@ -906,10 +918,10 @@ function updateMainModeVisibility() {
     }
   }
 
-  // practiceTabHeader: only on Practice tab, Admin only
+  // practiceTabHeader: only on Practice tab, for users who can generate schedule
   if (practiceTabHeader && !isDashboard && !isPlayerManagement) {
-    const isAdmin = currentUser && currentUser.RoleName === "Admin";
-    practiceTabHeader.classList.toggle("hidden", !(currentTab === "Practice" && isAdmin));
+    const canSchedule = canGenerateSchedule();
+    practiceTabHeader.classList.toggle("hidden", !(currentTab === "Practice" && canSchedule));
   }
 
   if (dashboardSection) {

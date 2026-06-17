@@ -204,6 +204,7 @@ async function restoreSession() {
 
     if (res.ok && data.success) {
       currentUser = data.user;
+      currentPermissions = data.permissions || {};
       localStorage.setItem("attendanceUser", JSON.stringify(currentUser));
       if (loginMessage) loginMessage.textContent = "";
       
