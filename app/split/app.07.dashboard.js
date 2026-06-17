@@ -12,7 +12,9 @@
 
 let dashboardSelectedMonth = new Date().toISOString().slice(0, 7); // default to current month (YYYY-MM)
 let dashboardMonthFilterReady = false;
-let dashboardPlayerDates = {}; // cache of player missed dates by key
+let dashboardPlayerDates = {};
+let dashboardOpenSummaryCard = ""; // tracks which top summary card is expanded
+let dashboardSummaryPlayerCache = {}; // cache of player lists per card
 let dashboardOpenDetailKey = "";
 
 function getDashboardCurrentMonthValue() {
@@ -80,6 +82,8 @@ function ensureDashboardMonthFilterOptions() {
     dashboardSelectedMonth = dashboardMonthFilter.value || "";
     dashboardOpenDetailKey = "";
     dashboardPlayerDates = {};
+    dashboardSummaryPlayerCache = {};
+    dashboardOpenSummaryCard = "";
     await loadDashboard();
   });
 
@@ -129,11 +133,16 @@ function getDashboardPercentClass(value, counted) {
   return "dashboard-percent-low";
 }
 
-function renderDashboardCard(label, value, note = "") {
+function renderDashboardCard(label, value, note = "", clickAction = "") {
+  const isOpen = clickAction && dashboardOpenSummaryCard === clickAction;
+  const clickAttr = clickAction
+    ? `data-dash-card="${escapeDashboardHtml(clickAction)}" tabindex="0" role="button" style="cursor:pointer;${isOpen ? "border-color:#f57c00;box-shadow:0 0 0 2px rgba(245,124,0,0.15);" : ""}"`
+    : "";
+  const arrow = clickAction ? ` <span style="font-size:9px;color:#f57c00;vertical-align:middle;">${isOpen ? "▲" : "▼"}</span>` : "";
   return `
-    <div class="dashboard-stat-card">
-      <div class="dashboard-stat-label">${escapeDashboardHtml(label)}</div>
-      <div class="dashboard-stat-value">${escapeDashboardHtml(value)}</div>
+    <div class="dashboard-stat-card" ${clickAttr}>
+      <div class="dashboard-stat-label">${escapeDashboardHtml(label)}${arrow}</div>
+      <div class="dashboard-stat-value">${value}</div>
       ${note ? `<div class="dashboard-stat-note">${escapeDashboardHtml(note)}</div>` : ""}
     </div>
   `;
@@ -148,14 +157,51 @@ function renderDashboardSummaryCards(data) {
   const photo = data.photoReleaseTotals || {};
   const emergency = data.emergencyTotals || {};
 
-  dashboardSummaryCards.innerHTML = [
-    renderDashboardCard("Active Players", totals.ActivePlayers || 0, `${totals.InactivePlayers || 0} inactive`),
-    renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, `${paperwork.CompletePaperwork || 0} complete`),
-    renderDashboardCard("Photo Release Missing", photo.MissingPhotoRelease || 0, `${photo.ReceivedPhotoRelease || 0} received`),
-    renderDashboardCard("Emergency Info Missing", emergency.MissingEmergencyInfo || 0, `${emergency.CompleteEmergencyInfo || 0} complete`),
-    renderDashboardCard("Bring Snack", snack.BringSnackPlayers || 0, "Parent snack rotation"),
-    renderDashboardCard("Paid Out", snack.PaidOutPlayers || 0, "Coach provides snacks")
+  const cards = [
+    renderDashboardCard("Active Players", totals.ActivePlayers || 0, `${totals.InactivePlayers || 0} inactive`, "active"),
+    renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, `${paperwork.CompletePaperwork || 0} complete`, "paperwork"),
+    renderDashboardCard("Photo Release Missing", photo.MissingPhotoRelease || 0, `${photo.ReceivedPhotoRelease || 0} received`, "photo"),
+    renderDashboardCard("Emergency Info Missing", emergency.MissingEmergencyInfo || 0, `${emergency.CompleteEmergencyInfo || 0} complete`, "emergency"),
+    renderDashboardCard("Bring Snack", snack.BringSnackPlayers || 0, "Parent snack rotation", "snack"),
+    renderDashboardCard("Paid Out", snack.PaidOutPlayers || 0, "Coach provides snacks", "paidout")
   ].join("");
+
+  // Expandable panel below cards
+  const panelHtml = `<div id="dashboardSummaryPanel" style="grid-column:1/-1;"></div>`;
+
+  dashboardSummaryCards.innerHTML = cards + panelHtml;
+
+  // Wire click handlers
+  dashboardSummaryCards.querySelectorAll("[data-dash-card]").forEach(card => {
+    card.addEventListener("click", async () => {
+      const category = card.dataset.dashCard;
+      if (dashboardOpenSummaryCard === category) {
+        dashboardOpenSummaryCard = "";
+        renderSummaryPanel(null);
+        return;
+      }
+      dashboardOpenSummaryCard = category;
+
+      const panel = document.getElementById("dashboardSummaryPanel");
+      if (panel) panel.innerHTML = `<div style="padding:12px;color:#999;font-size:13px;">Loading...</div>`;
+
+      if (!dashboardSummaryPlayerCache[category]) {
+        try {
+          const res = await fetch(`${API_BASE}/dashboard/summary-players?category=${encodeURIComponent(category)}`, { credentials: "include" });
+          const data = await res.json();
+          if (data.success) dashboardSummaryPlayerCache[category] = data.players;
+        } catch (e) {
+          console.error("Failed to load summary players:", e);
+        }
+      }
+      renderSummaryPanel(category);
+    });
+  });
+
+  // Re-render panel if a card was already open
+  if (dashboardOpenSummaryCard) {
+    renderSummaryPanel(dashboardOpenSummaryCard);
+  }
 }
 
 function renderMonthlySummary(rows) {
@@ -331,10 +377,10 @@ function renderPracticeSummary(summary) {
   if (!dashboardPracticeSummary) return;
   const practice = summary || {};
   dashboardPracticeSummary.innerHTML = [
-    renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month"),
+    renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month", "scroll-upcoming"),
     renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention"),
-    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance")
+    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention", "scroll-attention"),
+    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance", "scroll-exceptional")
   ].join("");
 }
 
@@ -342,10 +388,10 @@ function renderGameSummary(summary) {
   if (!dashboardGameSummary) return;
   const game = summary || {};
   dashboardGameSummary.innerHTML = [
-    renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month"),
+    renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month", "scroll-upcoming"),
     renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention"),
-    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance")
+    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "scroll-attention"),
+    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional")
   ].join("");
 }
 
@@ -353,10 +399,10 @@ function renderEventSummary(summary) {
   if (!dashboardEventSummary) return;
   const event = summary || {};
   dashboardEventSummary.innerHTML = [
-    renderDashboardCard("Total Events", event.TotalEvents || 0, "Team events / scrimmages"),
+    renderDashboardCard("Total Events", event.TotalEvents || 0, "Team events / scrimmages", "scroll-upcoming"),
     renderDashboardCard("Event Att %", formatDashboardPercent(event.EventAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", event.LowEventPlayers || 0, "Players needing attention"),
-    renderDashboardCard("85% or Higher", event.HighEventPlayers || 0, "Strong attendance"),
+    renderDashboardCard("70% or Lower", event.LowEventPlayers || 0, "Players needing attention", "scroll-attention"),
+    renderDashboardCard("85% or Higher", event.HighEventPlayers || 0, "Strong attendance", "scroll-exceptional"),
     renderDashboardCard("Cancelled Events", event.CancelledEvents || 0, "Selected month")
   ].join("");
 }
@@ -562,6 +608,64 @@ function renderExceptionalPlayers(rows) {
   );
 }
 
+function renderSummaryPanel(category) {
+  const panel = document.getElementById("dashboardSummaryPanel");
+  if (!panel) return;
+  if (!category) { panel.innerHTML = ""; return; }
+
+  const players = dashboardSummaryPlayerCache[category] || [];
+
+  const titles = {
+    active:    "Active Players",
+    paperwork: "Missing Paperwork",
+    photo:     "Missing Photo Release",
+    emergency: "Missing Emergency Info",
+    snack:     "Bring Snack Players",
+    paidout:   "Paid Out Players"
+  };
+
+  const subtitles = {
+    active:    "All currently active players",
+    paperwork: "These players need paperwork completed",
+    photo:     "These players have not returned photo release",
+    emergency: "These players are missing emergency contact name or phone",
+    snack:     "These families are in the snack rotation",
+    paidout:   "Coach provides snacks for these players"
+  };
+
+  const formatPlayer = (p) => {
+    const num = p.PlayerNumber ? `#${p.PlayerNumber}` : "";
+    const extra = {
+      paperwork: p.PaperworkStatus ? ` · ${p.PaperworkStatus}` : " · Not Received",
+      photo:     p.PhotoReleaseStatus ? ` · ${p.PhotoReleaseStatus}` : " · Not Received",
+      emergency: (p.EmergencyContactName ? "" : " · No contact name") + (p.EmergencyContactPhone ? "" : " · No phone"),
+      active:    p.BirthYear ? ` · ${p.BirthYear}` : "",
+      snack:     "",
+      paidout:   ""
+    }[category] || "";
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:13px;">
+      <span style="font-weight:700;color:#111827;">${escapeDashboardHtml(`${p.FirstName} ${p.LastName}`.trim())}</span>
+      <span style="color:#6b7280;font-size:12px;">${escapeDashboardHtml(num + extra)}</span>
+    </div>`;
+  };
+
+  panel.innerHTML = `
+    <div style="margin-top:12px;background:#fff;border:1px solid #e1e5ea;border-radius:14px;padding:14px;border-left:4px solid #f57c00;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div>
+          <div style="font-weight:800;font-size:15px;color:#111827;">${escapeDashboardHtml(titles[category] || "")}</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px;">${escapeDashboardHtml(subtitles[category] || "")} · ${players.length} player${players.length !== 1 ? "s" : ""}</div>
+        </div>
+        <button onclick="dashboardOpenSummaryCard=''; document.getElementById('dashboardSummaryPanel').innerHTML='';" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;padding:4px;">✕</button>
+      </div>
+      ${players.length === 0
+        ? `<div style="color:#999;font-size:13px;padding:8px 0;">No players found.</div>`
+        : `<div style="max-height:280px;overflow-y:auto;">${players.map(formatPlayer).join("")}</div>`
+      }
+    </div>
+  `;
+}
+
 function setupDashboardDetailClickHandlers() {
   [dashboardPlayerAlerts, dashboardPerfectPlayers, dashboardExceptionalPlayers].forEach(container => {
     if (!container || container.dataset.detailListenerAttached) return;
@@ -648,6 +752,26 @@ async function loadDashboard() {
     renderPlayerAlerts(data.playerAlerts || []);
     renderPerfectPlayers(data.perfectPlayers || []);
     renderExceptionalPlayers(data.exceptionalPlayers || []);
+
+    // Wire stat card scroll-to handlers for Practice/Game/Event summaries
+    [dashboardPracticeSummary, dashboardGameSummary, dashboardEventSummary].forEach(container => {
+      if (!container) return;
+      container.querySelectorAll("[data-dash-action]").forEach(card => {
+        card.addEventListener("click", () => {
+          const action = card.dataset.dashAction;
+          let target = null;
+          if (action === "scroll-attention") target = dashboardPlayerAlerts;
+          if (action === "scroll-exceptional") target = dashboardExceptionalPlayers;
+          if (action === "scroll-upcoming") target = document.getElementById("dashboardUpcomingSnapshotSection") || dashboardSection;
+          if (target) {
+            // Open the collapsible if closed
+            const details = target.closest("details");
+            if (details && !details.open) details.open = true;
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+    });
 
     const filterLabel = dashboardSelectedMonth
       ? formatDashboardMonthLabel(dashboardSelectedMonth)
