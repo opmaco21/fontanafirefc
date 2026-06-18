@@ -15,21 +15,21 @@ function escapeUserMgmtHtml(value) {
 }
 
 function closeUserManagement() {
-  const section = document.getElementById("userMgmtSection");
-  if (!section) return;
-  section.remove();
+  // Clear the container instead of removing a floating section and nuking all sections
+  const container = document.getElementById("userManagementSection");
+  if (container) {
+    container.innerHTML = "";
+    container.classList.add("hidden");
+  }
+  // Also clean up any legacy floating section
+  const legacy = document.getElementById("userMgmtSection");
+  if (legacy) legacy.remove();
 
-  const appScreen = document.getElementById("appScreen");
-  if (appScreen) {
-    appScreen.querySelectorAll("section, hr").forEach(el => el.classList.remove("hidden"));
-  }
-
-  if (typeof updateMainModeVisibility === "function") {
-    updateMainModeVisibility();
-  }
-  if (typeof applyRolePermissions === "function") {
-    applyRolePermissions();
-  }
+  // Navigate back to dashboard
+  if (typeof currentTab !== "undefined") currentTab = "Dashboard";
+  if (typeof setActiveTab === "function") setActiveTab();
+  if (typeof updateMainModeVisibility === "function") updateMainModeVisibility();
+  if (typeof loadDashboard === "function") loadDashboard();
 }
 
 // Close User Management whenever a main nav tab is clicked
@@ -49,35 +49,35 @@ function attachUserMgmtTabCloseListeners() {
 }
 
 async function showUserManagement() {
-  const appScreen = document.getElementById("appScreen");
-  if (!appScreen) return;
+  // Render into the tab container instead of as a floating section
+  const container = document.getElementById("userManagementSection");
+  if (!container) return;
 
   // Only Admin and TeamMom can access User Management
   if (!currentUser || (!["Admin", "TeamMom"].includes(currentUser.RoleName))) {
-    alert("Access denied. Admin or Team Mom role required.");
+    container.innerHTML = `<div style="padding:32px;text-align:center;color:#c62828;">Access denied. Admin or Team Mom role required.</div>`;
     return;
   }
 
-  attachUserMgmtTabCloseListeners();
+  // Remove any legacy floating section
+  const legacy = document.getElementById("userMgmtSection");
+  if (legacy) legacy.remove();
 
-  // Hide all other sections
-  appScreen.querySelectorAll("section, hr").forEach(el => el.classList.add("hidden"));
+  // If already rendered with content, don't re-render (just reload data)
+  const alreadyRendered = container.querySelector(".user-mgmt-container");
+  if (alreadyRendered) {
+    await loadUsers();
+    const isAdmin = currentUser && currentUser.RoleName === "Admin";
+    if (isAdmin) await loadPermissionManager();
+    return;
+  }
 
-  // Remove existing user mgmt section if present
-  const existing = document.getElementById("userMgmtSection");
-  if (existing) existing.remove();
-
-  // Build the section
-  const section = document.createElement("section");
-  section.id = "userMgmtSection";
-  section.className = "user-mgmt-container";
   const isAdmin = currentUser && currentUser.RoleName === 'Admin';
-  section.innerHTML = `
+  container.innerHTML = `<div class="user-mgmt-container">
     <div class="user-mgmt-header">
       <h3>User Management</h3>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         ${isAdmin ? `<button id="createUserBtn" class="btn btn-primary" style="margin-top:0;">+ Create New User</button>` : ""}
-        <button id="backFromUserMgmtBtn" class="btn btn-secondary" style="margin-top:0;">← Back to App</button>
       </div>
     </div>
 
@@ -110,13 +110,10 @@ async function showUserManagement() {
       </div>
     </div>
     ` : ""}
-  `;
-
-  appScreen.appendChild(section);
+  </div>`;
 
   const createUserBtn = document.getElementById("createUserBtn");
   if (createUserBtn) createUserBtn.addEventListener("click", showCreateUserModal);
-  document.getElementById("backFromUserMgmtBtn").addEventListener("click", closeUserManagement);
 
   await loadUsers();
   if (isAdmin) {
