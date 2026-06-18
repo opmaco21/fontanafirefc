@@ -1,0 +1,115 @@
+/* 16-help.css — Inline Help Tab */
+
+.help-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 12px 48px;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 2px solid #e05c00;
+}
+
+.help-logo {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.help-title {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #f0f0f0;
+}
+
+.help-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* ── Accordion sections ─────────────────────────────────────────────────── */
+.help-section {
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #1a1a2e;
+  overflow: hidden;
+}
+
+.help-section[open] {
+  border-color: #e05c00;
+}
+
+.help-section-title {
+  padding: 13px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f0f0;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1e1e30;
+  user-select: none;
+}
+
+.help-section-title::-webkit-details-marker { display: none; }
+
+.help-section-title::after {
+  content: '▼';
+  font-size: 11px;
+  color: #888;
+  transition: color 0.15s;
+}
+
+.help-section[open] .help-section-title::after {
+  content: '▲';
+  color: #e05c00;
+}
+
+.help-section[open] .help-section-title {
+  border-bottom: 1px solid #2a2a3a;
+}
+
+.help-section-body {
+  padding: 14px 18px 16px;
+  color: #ccc;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.help-section-body ol,
+.help-section-body ul {
+  padding-left: 1.4em;
+  margin: 6px 0;
+}
+
+.help-section-body li {
+  margin-bottom: 6px;
+}
+
+.help-section-body strong {
+  color: #f0f0f0;
+}
+
+.help-section-body em {
+  color: #bbb;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.help-note {
+  background: #2a2000;
+  border-left: 3px solid #e05c00;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: #d4aa40;
+}

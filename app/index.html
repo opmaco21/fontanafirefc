@@ -30,6 +30,7 @@
   <link class="appStylesheet" rel="stylesheet" href="css/13-user-management.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/14-batch8-practice.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/15-reports.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/16-help.css" />
 </head>
 
 <body>
@@ -44,6 +45,10 @@
           <p>Coach Attendance App</p>
         </div>
       </div>
+      <button id="logoutBtn" class="topbar-logout hidden" type="button">
+        <i class="ti ti-logout" aria-hidden="true"></i>
+        <span>Logout</span>
+      </button>
     </header>
 
     <!-- MAIN APP AREA -->
@@ -247,7 +252,7 @@
           </select>
         </div>
 
-        <!-- DASHBOARD / PRACTICE / GAME / TEAM EVENT TABS -->
+        <!-- TABS -->
         <div class="tabs">
           <button id="dashboardTab" class="tab active"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dash</button>
           <button id="practiceTab" class="tab"><i class="ti ti-run" aria-hidden="true"></i>Practice</button>
@@ -255,6 +260,8 @@
           <button id="teamEventsTab" class="tab"><i class="ti ti-calendar-event" aria-hidden="true"></i>Events</button>
           <button id="playerManagementTab" class="tab"><i class="ti ti-users" aria-hidden="true"></i>Players</button>
           <button id="reportsTab" class="tab hidden"><i class="ti ti-file-analytics" aria-hidden="true"></i>Reports</button>
+          <button id="userManagementTab" class="tab hidden"><i class="ti ti-shield-lock" aria-hidden="true"></i>Users</button>
+          <button id="helpTab" class="tab"><i class="ti ti-help-circle" aria-hidden="true"></i>Help</button>
         </div>
 
         <!-- DASHBOARD / REPORTS SECTION
@@ -639,19 +646,15 @@
           <div>API: <span id="apiVersionText">loading...</span></div>
         </div>
 
-        <!-- FOOTER ACTIONS -->
-        <div class="app-footer-actions">
-          <button
-            id="helpBtn"
-            type="button"
-            class="btn btn-secondary"
-            onclick="window.open('help.html', '_blank')"
-          >
-            Help / Instructions
-          </button>
+        <!-- REPORTS SECTION -->
+        <section id="reportsSection" class="hidden">
+          <div id="reportsContainer"></div>
+        </section>
 
-          <button id="logoutBtn" class="btn btn-secondary">Logout</button>
-        </div>
+        <!-- HELP SECTION -->
+        <section id="helpSection" class="hidden">
+          <div id="helpContainer"></div>
+        </section>
       </section>
     </main>
   </div>
@@ -704,6 +707,7 @@
         "split/app.07.dashboard.js",
         "split/app.08.user_management.js",
         "split/app.09.reports.js",
+        "split/app.10.help.js",
         "split/app.99.bootstrap.js"
       ];
 
