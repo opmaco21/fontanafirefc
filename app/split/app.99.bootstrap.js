@@ -314,6 +314,28 @@ if (reportsTab) {
   });
 }
 
+if (userManagementTab) {
+  userManagementTab.addEventListener("click", () => {
+    currentTab = "User Management";
+    setActiveTab();
+    clearSelectedEvent();
+    if (eventSelect) eventSelect.value = "";
+    resetWorkflowForSelectedEvent();
+    clearSelectedEventDetails();
+    updateTeamEventSection();
+    updateAttendanceSectionVisibility();
+    updateMainModeVisibility();
+  });
+}
+
+if (helpTab) {
+  helpTab.addEventListener("click", () => {
+    currentTab = "Help";
+    setActiveTab();
+    updateMainModeVisibility();
+  });
+}
+
 // Init schedule modal (defined in app.01.core.js)
 if (typeof initScheduleModal === "function") {
   initScheduleModal();

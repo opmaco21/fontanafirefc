@@ -44,6 +44,8 @@ const gamesTab = document.getElementById("gamesTab");
 const teamEventsTab = document.getElementById("teamEventsTab");
 const playerManagementTab = document.getElementById("playerManagementTab");
 const reportsTab = document.getElementById("reportsTab");
+const userManagementTab = document.getElementById("userManagementTab");
+const helpTab = document.getElementById("helpTab");
 const dashboardSection = document.getElementById("dashboardSection");
 const refreshDashboardBtn = document.getElementById("refreshDashboardBtn");
 const dashboardMonthFilter = document.getElementById("dashboardMonthFilter");
@@ -267,6 +269,8 @@ function handleAuthExpired(message = "Session expired. Please log in again.") {
   localStorage.removeItem("attendanceUser");
   clearSelectedEvent();
 
+  if (logoutBtn) logoutBtn.classList.add("hidden");
+
   if (appScreen) {
     appScreen.classList.add("hidden");
   }
@@ -385,28 +389,9 @@ function applyRolePermissions() {
     playerManagementTab.style.display = canManagePlayers() ? "" : "none";
   }
 
-  // User Management button — Admin and TeamMom only
-  let userMgmtBtn = document.getElementById("userManagementBtn");
-  if (canManageUsers()) {
-    if (!userMgmtBtn) {
-      userMgmtBtn = document.createElement("button");
-      userMgmtBtn.id = "userManagementBtn";
-      userMgmtBtn.type = "button";
-      userMgmtBtn.className = "btn btn-secondary";
-      userMgmtBtn.textContent = "User Management";
-      userMgmtBtn.addEventListener("click", () => {
-        if (typeof showUserManagement === "function") {
-          showUserManagement();
-        }
-      });
-      const footerActions = document.querySelector(".app-footer-actions");
-      if (footerActions) {
-        footerActions.insertBefore(userMgmtBtn, footerActions.firstChild);
-      }
-    }
-    userMgmtBtn.style.display = "";
-  } else {
-    if (userMgmtBtn) userMgmtBtn.style.display = "none";
+  // User Management tab — Admin and TeamMom only
+  if (userManagementTab) {
+    userManagementTab.classList.toggle("hidden", !canManageUsers());
   }
 
   // Reports tab — Admin and TeamMom only
@@ -504,6 +489,9 @@ async function logout() {
   localStorage.removeItem("attendanceUser");
   clearSelectedEvent();
 
+  // Hide topbar logout button
+  if (logoutBtn) logoutBtn.classList.add("hidden");
+
   if (appScreen) {
     appScreen.classList.add("hidden");
   }
@@ -531,7 +519,6 @@ async function showApp() {
     welcomeText.textContent = `Welcome, ${currentUser.FullName}`;
   }
 
-
   if (loginScreen) {
     loginScreen.classList.add("hidden");
   }
@@ -539,6 +526,10 @@ async function showApp() {
   if (appScreen) {
     appScreen.classList.remove("hidden");
   }
+
+  // Show topbar logout button
+  if (logoutBtn) logoutBtn.classList.remove("hidden");
+
   hideGroupDropdown();
 
 
@@ -639,6 +630,8 @@ function setActiveTab() {
   teamEventsTab.classList.remove("active");
   playerManagementTab.classList.remove("active");
   if (reportsTab) reportsTab.classList.remove("active");
+  if (userManagementTab) userManagementTab.classList.remove("active");
+  if (helpTab) helpTab.classList.remove("active");
 
   if (currentTab === "Dashboard") {
     dashboardTab.classList.add("active");
@@ -652,6 +645,10 @@ function setActiveTab() {
     playerManagementTab.classList.add("active");
   } else if (currentTab === "Reports") {
     if (reportsTab) reportsTab.classList.add("active");
+  } else if (currentTab === "User Management") {
+    if (userManagementTab) userManagementTab.classList.add("active");
+  } else if (currentTab === "Help") {
+    if (helpTab) helpTab.classList.add("active");
   }
 
   // Practice tab header handled in updateMainModeVisibility
@@ -890,17 +887,41 @@ if (gameClearPlayersBtn && !gameClearPlayersBtn.dataset.listenerAttached) {
    MAIN MODE VISIBILITY
    ========================= */
 function updateMainModeVisibility() {
-  const isDashboard = currentTab === "Dashboard";
+  const isDashboard       = currentTab === "Dashboard";
   const isPlayerManagement = currentTab === "Player Management";
-  const isReports = currentTab === "Reports";
+  const isReports         = currentTab === "Reports";
+  const isUserManagement  = currentTab === "User Management";
+  const isHelp            = currentTab === "Help";
+  const isNonEventTab     = isDashboard || isPlayerManagement || isReports || isUserManagement || isHelp;
 
-  // Show/hide Reports section
-  if (isReports) {
-    if (typeof showReportsTab === "function") showReportsTab();
-  } else {
-    if (typeof hideReportsTab === "function") hideReportsTab();
+  // ── Reports section ───────────────────────────────────────────────────────
+  const reportsSection = document.getElementById("reportsSection");
+  if (reportsSection) {
+    reportsSection.classList.toggle("hidden", !isReports);
+    if (isReports && typeof initReportsTab === "function") {
+      initReportsTab();
+    }
   }
 
+  // ── User Management section ───────────────────────────────────────────────
+  const userManagementSection = document.getElementById("userManagementSection");
+  if (userManagementSection) {
+    userManagementSection.classList.toggle("hidden", !isUserManagement);
+    if (isUserManagement && typeof showUserManagement === "function") {
+      showUserManagement();
+    }
+  }
+
+  // ── Help section ──────────────────────────────────────────────────────────
+  const helpSection = document.getElementById("helpSection");
+  if (helpSection) {
+    helpSection.classList.toggle("hidden", !isHelp);
+    if (isHelp && typeof initHelpTab === "function") {
+      initHelpTab();
+    }
+  }
+
+  // ── Event-flow elements (hidden on non-event tabs) ────────────────────────
   const eventSelectorRow = document.querySelector(".event-selector-row");
   const eventDotsMenuEl = document.getElementById("eventDotsMenu");
 
@@ -922,7 +943,7 @@ function updateMainModeVisibility() {
   eventFlowElements.forEach(element => {
     if (!element) return;
 
-    if (isDashboard || isPlayerManagement || isReports) {
+    if (isNonEventTab) {
       element.classList.add("hidden");
     } else if (
       element !== eventDetailsSection &&
@@ -939,17 +960,17 @@ function updateMainModeVisibility() {
     }
   });
 
-  // practiceFilterBar: only on Practice tab, all roles
+  // practiceFilterBar: only on Practice tab
   const practiceFilterBar = document.getElementById("practiceFilterBar");
   if (practiceFilterBar) {
-    practiceFilterBar.classList.toggle("hidden", isDashboard || isPlayerManagement || isReports || currentTab !== "Practice");
-    if (!isDashboard && !isPlayerManagement && !isReports && currentTab === "Practice") {
+    practiceFilterBar.classList.toggle("hidden", isNonEventTab || currentTab !== "Practice");
+    if (!isNonEventTab && currentTab === "Practice") {
       practiceFilterBar.style.display = "flex";
     }
   }
 
-  // practiceTabHeader: only on Practice tab, for users who can generate schedule
-  if (practiceTabHeader && !isDashboard && !isPlayerManagement && !isReports) {
+  // practiceTabHeader: only on Practice tab for users who can generate schedule
+  if (practiceTabHeader && !isNonEventTab) {
     const canSchedule = canGenerateSchedule();
     practiceTabHeader.classList.toggle("hidden", !(currentTab === "Practice" && canSchedule));
   }
