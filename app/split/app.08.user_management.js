@@ -15,17 +15,9 @@ function escapeUserMgmtHtml(value) {
 }
 
 function closeUserManagement() {
-  // Clear the container instead of removing a floating section and nuking all sections
-  const container = document.getElementById("userManagementSection");
-  if (container) {
-    container.innerHTML = "";
-    container.classList.add("hidden");
-  }
-  // Also clean up any legacy floating section
   const legacy = document.getElementById("userMgmtSection");
   if (legacy) legacy.remove();
 
-  // Navigate back to dashboard
   if (typeof currentTab !== "undefined") currentTab = "Dashboard";
   if (typeof setActiveTab === "function") setActiveTab();
   if (typeof updateMainModeVisibility === "function") updateMainModeVisibility();
@@ -49,30 +41,28 @@ function attachUserMgmtTabCloseListeners() {
 }
 
 async function showUserManagement() {
-  // Render into the tab container instead of as a floating section
+  // Render into the userManagementSection tab container
   const container = document.getElementById("userManagementSection");
   if (!container) return;
 
-  // Only Admin and TeamMom can access User Management
   if (!currentUser || (!["Admin", "TeamMom"].includes(currentUser.RoleName))) {
-    container.innerHTML = `<div style="padding:32px;text-align:center;color:#c62828;">Access denied. Admin or Team Mom role required.</div>`;
+    container.innerHTML = `<div style="padding:32px;text-align:center;color:#c62828;">Access denied.</div>`;
     return;
   }
 
-  // Remove any legacy floating section
+  // Clean up any legacy floating section
   const legacy = document.getElementById("userMgmtSection");
   if (legacy) legacy.remove();
 
-  // If already rendered with content, don't re-render (just reload data)
-  const alreadyRendered = container.querySelector(".user-mgmt-container");
-  if (alreadyRendered) {
+  // If already rendered, just reload data
+  if (container.querySelector(".user-mgmt-container")) {
     await loadUsers();
     const isAdmin = currentUser && currentUser.RoleName === "Admin";
     if (isAdmin) await loadPermissionManager();
     return;
   }
 
-  const isAdmin = currentUser && currentUser.RoleName === 'Admin';
+  const isAdmin = currentUser && currentUser.RoleName === "Admin";
   container.innerHTML = `<div class="user-mgmt-container">
     <div class="user-mgmt-header">
       <h3>User Management</h3>

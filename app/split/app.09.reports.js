@@ -22,7 +22,9 @@
     const container = document.getElementById('reportsContainer');
     if (!container) return;
     container.innerHTML = buildReportsShell();
-    bindReportAccordions();
+    // Wire month select
+    const sel = document.getElementById('attendance-month-select');
+    if (sel) sel.addEventListener('change', () => onAttendanceMonthChange(sel.value));
   };
 
   // ── Shell HTML ─────────────────────────────────────────────────────────────
@@ -62,12 +64,11 @@
   }
 
   function buildAttendanceControls() {
-    const months = buildMonthOptions();
     return `
       <div class="report-filter-row">
         <label class="report-filter-label">Month</label>
-        <select id="attendance-month-select" class="report-month-select" onchange="onAttendanceMonthChange(this.value)">
-          ${months}
+        <select id="attendance-month-select" class="report-month-select">
+          ${buildMonthOptions()}
         </select>
       </div>
     `;
@@ -89,17 +90,18 @@
   window.toggleReportAccordion = function (key) {
     const body = document.getElementById(`body-${key}`);
     const accordion = document.getElementById(`accordion-${key}`);
+    if (!body || !accordion) return;
     const chevron = accordion.querySelector('.report-accordion-chevron');
     const isOpen = body.style.display !== 'none';
 
     if (isOpen) {
       body.style.display = 'none';
       accordion.classList.remove('report-accordion--open');
-      chevron.textContent = '▼';
+      if (chevron) chevron.textContent = '▼';
     } else {
       body.style.display = 'block';
       accordion.classList.add('report-accordion--open');
-      chevron.textContent = '▲';
+      if (chevron) chevron.textContent = '▲';
       if (!reportState[key].loaded) {
         loadReport(key);
       }
@@ -115,17 +117,20 @@
   // ── Data loading ───────────────────────────────────────────────────────────
   async function loadReport(key) {
     const el = document.getElementById(`content-${key}`);
+    if (!el) return;
     el.innerHTML = '<div class="report-loading">Loading…</div>';
 
     try {
-      let url = `${API_BASE}/api/reports/${key}`;
+      // API_BASE already ends with /api — so path is /reports/key
+      let url = `${API_BASE}/reports/${key}`;
       if (key === 'attendance') {
         url += `?month=${reportState.attendance.month}`;
       }
 
       const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const json = await res.json();
+      const data = json.data || json;
 
       reportState[key].data = data;
       reportState[key].loaded = true;
@@ -148,35 +153,27 @@
     }
   }
 
-  // Attendance Summary
   function renderAttendance(data) {
     if (!data || !data.length) return '<div class="report-empty">No attendance data for this month.</div>';
-
     const monthLabel = document.getElementById('attendance-month-select')?.selectedOptions[0]?.text || '';
-
     return `
       <div class="report-print-header">
         <strong>Fontana Fire FC — Attendance Summary</strong>
         <span>${monthLabel}</span>
       </div>
       <table class="report-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Player</th>
-            <th>Practices</th>
-            <th>Games</th>
-            <th>Overall %</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>#</th><th>Player</th><th>Practices</th><th>Games</th><th>Practice %</th><th>Game %</th>
+        </tr></thead>
         <tbody>
           ${data.map((r, i) => `
             <tr>
               <td class="col-num">${i + 1}</td>
-              <td>${escapeHtml(r.FullName || r.PlayerName || '')}</td>
-              <td>${r.PracticeAttended ?? 0} / ${r.PracticeTotal ?? 0}</td>
-              <td>${r.GameAttended ?? 0} / ${r.GameTotal ?? 0}</td>
-              <td><span class="pct-badge ${pctClass(r.OverallPct)}">${fmtPct(r.OverallPct)}</span></td>
+              <td>${esc(r.FirstName)} ${esc(r.LastName)}</td>
+              <td>${r.PracticePresent ?? 0} / ${r.PracticeCounted ?? 0}</td>
+              <td>${r.GamePresent ?? 0} / ${r.GameCounted ?? 0}</td>
+              <td><span class="pct-badge ${pctClass(r.PracticePct)}">${fmtPct(r.PracticePct)}</span></td>
+              <td><span class="pct-badge ${pctClass(r.GamePct)}">${fmtPct(r.GamePct)}</span></td>
             </tr>
           `).join('')}
         </tbody>
@@ -185,33 +182,23 @@
     `;
   }
 
-  // Paperwork
   function renderPaperwork(data) {
     if (!data || !data.length) return '<div class="report-empty">All paperwork is complete. 🎉</div>';
     return `
-      <div class="report-print-header">
-        <strong>Fontana Fire FC — Missing Paperwork & Photo Release</strong>
-      </div>
+      <div class="report-print-header"><strong>Fontana Fire FC — Missing Paperwork & Photo Release</strong></div>
       <table class="report-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Player</th>
-            <th>Parent</th>
-            <th>Phone</th>
-            <th>Paperwork</th>
-            <th>Photo Release</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>#</th><th>Player</th><th>Parent</th><th>Phone</th><th>Paperwork</th><th>Photo Release</th>
+        </tr></thead>
         <tbody>
           ${data.map((r, i) => `
             <tr>
               <td class="col-num">${i + 1}</td>
-              <td>${escapeHtml(r.FullName || '')}</td>
-              <td>${escapeHtml(r.ParentName || '')}</td>
-              <td>${escapeHtml(r.ParentPhone || '')}</td>
-              <td><span class="status-badge ${r.PaperworkStatus === 'Complete' ? 'badge-ok' : 'badge-missing'}">${escapeHtml(r.PaperworkStatus || 'Missing')}</span></td>
-              <td><span class="status-badge ${r.PhotoReleaseFormReceived ? 'badge-ok' : 'badge-missing'}">${r.PhotoReleaseFormReceived ? 'Received' : 'Missing'}</span></td>
+              <td>${esc(r.FirstName)} ${esc(r.LastName)}</td>
+              <td>${esc(r.ParentName || '')}</td>
+              <td>${esc(r.ParentPhone || '')}</td>
+              <td><span class="status-badge ${r.PaperworkStatus === 'Complete' ? 'badge-ok' : 'badge-missing'}">${esc(r.PaperworkStatus || 'Missing')}</span></td>
+              <td><span class="status-badge ${r.PhotoRelease === 'Received' ? 'badge-ok' : 'badge-missing'}">${esc(r.PhotoRelease || 'Missing')}</span></td>
             </tr>
           `).join('')}
         </tbody>
@@ -220,33 +207,22 @@
     `;
   }
 
-  // Snacks
   function renderSnacks(data) {
     if (!data || !data.length) return '<div class="report-empty">No snack data available.</div>';
     return `
-      <div class="report-print-header">
-        <strong>Fontana Fire FC — Snack Rotation</strong>
-      </div>
+      <div class="report-print-header"><strong>Fontana Fire FC — Snack Rotation</strong></div>
       <table class="report-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Player</th>
-            <th>Parent</th>
-            <th>Phone</th>
-            <th>Snack Preference</th>
-            <th>Assigned Date</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>#</th><th>Player</th><th>Parent</th><th>Phone</th><th>Snack Preference</th>
+        </tr></thead>
         <tbody>
           ${data.map((r, i) => `
             <tr>
               <td class="col-num">${i + 1}</td>
-              <td>${escapeHtml(r.FullName || '')}</td>
-              <td>${escapeHtml(r.ParentName || '')}</td>
-              <td>${escapeHtml(r.ParentPhone || '')}</td>
-              <td>${escapeHtml(r.SnackPreference || '—')}</td>
-              <td>${r.AssignedDate ? fmtDate(r.AssignedDate) : '—'}</td>
+              <td>${esc(r.FirstName)} ${esc(r.LastName)}</td>
+              <td>${esc(r.ParentName || '')}</td>
+              <td>${esc(r.ParentPhone || '')}</td>
+              <td>${esc(r.SnackPreference || '—')}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -255,7 +231,6 @@
     `;
   }
 
-  // Emergency Contacts
   function renderEmergency(data) {
     if (!data || !data.length) return '<div class="report-empty">No emergency contact data.</div>';
     return `
@@ -264,31 +239,21 @@
         <span class="report-print-confidential">CONFIDENTIAL</span>
       </div>
       <table class="report-table report-table--compact">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Player</th>
-            <th>Parent</th>
-            <th>Parent Phone</th>
-            <th>Emergency Contact</th>
-            <th>Relationship</th>
-            <th>EC Phone</th>
-            <th>Alt Phone</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>#</th><th>Player</th><th>Parent</th><th>Parent Phone</th>
+          <th>Emergency Contact</th><th>Relationship</th><th>EC Phone</th><th>Notes</th>
+        </tr></thead>
         <tbody>
           ${data.map((r, i) => `
             <tr>
               <td class="col-num">${i + 1}</td>
-              <td>${escapeHtml(r.FullName || '')}</td>
-              <td>${escapeHtml(r.ParentName || '')}</td>
-              <td>${escapeHtml(r.ParentPhone || '')}</td>
-              <td>${escapeHtml(r.EmergencyContactName || '')}</td>
-              <td>${escapeHtml(r.EmergencyContactRelationship || '')}</td>
-              <td>${escapeHtml(r.EmergencyContactPhone || '')}</td>
-              <td>${escapeHtml(r.EmergencyContactAltPhone || '')}</td>
-              <td>${escapeHtml(r.EmergencyNotes || '')}</td>
+              <td>${esc(r.FirstName)} ${esc(r.LastName)}</td>
+              <td>${esc(r.ParentName || '')}</td>
+              <td>${esc(r.ParentPhone || '')}</td>
+              <td>${esc(r.EmergencyContactName || '')}</td>
+              <td>${esc(r.EmergencyContactRelationship || '')}</td>
+              <td>${esc(r.EmergencyContactPhone || '')}</td>
+              <td>${esc(r.EmergencyNotes || '')}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -297,7 +262,6 @@
     `;
   }
 
-  // Full Roster
   function renderRoster(data) {
     if (!data || !data.length) return '<div class="report-empty">No roster data.</div>';
     return `
@@ -306,29 +270,21 @@
         <span>As of ${new Date().toLocaleDateString()}</span>
       </div>
       <table class="report-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Jersey</th>
-            <th>Player</th>
-            <th>DOB</th>
-            <th>Parent</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Paperwork</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>#</th><th>Jersey</th><th>Player</th><th>DOB</th>
+          <th>Parent</th><th>Phone</th><th>Email</th><th>Paperwork</th>
+        </tr></thead>
         <tbody>
           ${data.map((r, i) => `
             <tr>
               <td class="col-num">${i + 1}</td>
               <td class="col-num">${r.PlayerNumber ?? '—'}</td>
-              <td>${escapeHtml(r.FullName || '')}</td>
+              <td>${esc(r.FirstName)} ${esc(r.LastName)}</td>
               <td>${r.DateOfBirth ? fmtDate(r.DateOfBirth) : '—'}</td>
-              <td>${escapeHtml(r.ParentName || '')}</td>
-              <td>${escapeHtml(r.ParentPhone || '')}</td>
-              <td>${escapeHtml(r.ParentEmail || '')}</td>
-              <td><span class="status-badge ${r.PaperworkStatus === 'Complete' ? 'badge-ok' : 'badge-missing'}">${escapeHtml(r.PaperworkStatus || 'Missing')}</span></td>
+              <td>${esc(r.ParentName || '')}</td>
+              <td>${esc(r.ParentPhone || '')}</td>
+              <td>${esc(r.ParentEmail || '')}</td>
+              <td><span class="status-badge ${r.PaperworkStatus === 'Complete' ? 'badge-ok' : 'badge-missing'}">${esc(r.PaperworkStatus || 'Missing')}</span></td>
             </tr>
           `).join('')}
         </tbody>
@@ -339,20 +295,17 @@
 
   // ── Print ──────────────────────────────────────────────────────────────────
   window.printReport = function (key) {
-    if (!reportState[key].loaded) {
-      alert('Report is still loading. Please wait a moment and try again.');
+    if (!reportState[key] || !reportState[key].loaded) {
+      alert('Report is still loading. Please wait and try again.');
       return;
     }
-    // Set a body attr so the print CSS knows which section to show
     document.body.setAttribute('data-printing-report', key);
     window.print();
     setTimeout(() => document.body.removeAttribute('data-printing-report'), 1000);
   };
 
-  // ── Excel download (delegates to existing SheetJS logic) ───────────────────
+  // ── Excel download ─────────────────────────────────────────────────────────
   window.downloadReportExcel = function (key) {
-    // Re-use whatever function was in the original reports build.
-    // Pattern: downloadReport_<key>() — call if it exists, else warn.
     const fnName = `downloadReport_${key}`;
     if (typeof window[fnName] === 'function') {
       window[fnName]();
@@ -376,19 +329,19 @@
 
   function fmtDate(val) {
     if (!val) return '—';
-    const d = new Date(val);
-    if (isNaN(d)) return val;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const parts = val.substring(0, 10).split('-');
+    if (parts.length === 3) {
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    return val;
   }
 
-  // escapeHtml — use shared helper if available, else local fallback
-  function escapeHtml(str) {
+  function esc(str) {
     if (typeof window.escapeHtml === 'function') return window.escapeHtml(str);
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return String(str ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
 })();
