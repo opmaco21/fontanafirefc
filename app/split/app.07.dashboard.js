@@ -353,34 +353,59 @@ function renderUpcomingSnapshot(rows) {
     : `Showing next ${snapshotCount} upcoming ${snapshotCount === 1 ? "game/event" : "games/events"}.`;
 
   const cardsHtml = rows.map(event => {
-    const eventType = event.EventType || "Event";
-    const eventName = event.EventName || eventType;
-    const dateText = formatDashboardDate(event.EventDate);
-    const timeText = formatDashboardTime(event.StartTime);
+    const eventType    = event.EventType  || "Event";
+    const eventName    = event.EventName  || eventType;
+    const dateText     = formatDashboardDate(event.EventDate);
+    const timeText     = formatDashboardTime(event.StartTime);
     const locationText = event.LocationName || "Location TBD";
-    const teamText = event.GroupCode || event.GroupName || "Team TBD";
-    const snackText = event.AssignedSnackFamily || event.SnackStatus || "Not assigned yet";
+    const snackText    = event.AssignedSnackFamily || event.SnackStatus || "Not assigned yet";
+    const status       = event.EventStatus || "Scheduled";
+
+    const typeClass = eventType === "Game" ? "snapshot-card--game"
+      : eventType === "Team Event" ? "snapshot-card--team-event"
+      : "snapshot-card--practice";
+    const cancelledClass = status === "Cancelled" ? "snapshot-card--cancelled" : "";
+
+    const statusPillClass = status === "Completed" ? "snapshot-status--completed"
+      : status === "Cancelled" ? "snapshot-status--cancelled"
+      : "snapshot-status--scheduled";
+    const statusIcon = status === "Completed" ? "✓ " : "";
+
+    const snackChip = eventType === "Game"
+      ? `<div class="snapshot-snack-chip">🍎 Snack: ${escapeDashboardHtml(snackText)}</div>`
+      : "";
+
+    const nameStyle = status === "Cancelled" ? ' style="text-decoration:line-through;color:#999;"' : "";
 
     return `
-      <article class="dashboard-upcoming-card">
-        <div class="dashboard-upcoming-topline">
-          <span class="dashboard-upcoming-type">${escapeDashboardHtml(eventType)}</span>
-          <strong>${escapeDashboardHtml(dateText)} • ${escapeDashboardHtml(timeText)}</strong>
+      <article class="dashboard-upcoming-card snapshot-card ${typeClass} ${cancelledClass}">
+        <div class="snapshot-topline">
+          <div class="snapshot-name-block">
+            <div class="snapshot-name"${nameStyle}>${escapeDashboardHtml(eventName)}</div>
+            <div class="snapshot-datetime">${escapeDashboardHtml(dateText)} · ${escapeDashboardHtml(timeText)}</div>
+          </div>
+          <span class="snapshot-status-pill ${statusPillClass}">${statusIcon}${escapeDashboardHtml(status)}</span>
         </div>
-        <h4>${escapeDashboardHtml(eventName)}</h4>
-        <div class="dashboard-upcoming-meta">
-          <span><strong>Team:</strong> ${escapeDashboardHtml(teamText)}</span>
+        <div class="snapshot-meta">
           <span><strong>Location:</strong> ${escapeDashboardHtml(locationText)}</span>
-          <span><strong>Snack:</strong> ${escapeDashboardHtml(snackText)}</span>
+          <span><strong>Type:</strong> ${escapeDashboardHtml(eventType)}</span>
         </div>
+        ${snackChip}
       </article>
     `;
   }).join("");
 
-  container.innerHTML = `
-    <div class="dashboard-upcoming-count">${escapeDashboardHtml(snapshotNote)}</div>
-    ${cardsHtml}
-  `;
+  container.innerHTML = cardsHtml;
+
+  // Insert count note BEFORE the grid container (outside it)
+  const snapshotSection = container.closest(".dashboard-upcoming-snapshot-section") || container.parentElement;
+  const existingNote = snapshotSection ? snapshotSection.querySelector(".dashboard-upcoming-count") : null;
+  if (existingNote) existingNote.remove();
+  const noteEl = document.createElement("div");
+  noteEl.className = "dashboard-upcoming-count";
+  noteEl.textContent = snapshotNote;
+  if (snapshotSection) snapshotSection.insertBefore(noteEl, container);
+  else container.insertAdjacentHTML("beforebegin", `<div class="dashboard-upcoming-count">${escapeDashboardHtml(snapshotNote)}</div>`);
 }
 
 function renderPracticeSummary(summary) {
@@ -403,8 +428,7 @@ function renderGameSummary(summary) {
     renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month", "scroll-upcoming"),
     renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
     renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "scroll-attention", {report:"attendance",month,below:70}),
-    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month}),
-    renderDashboardCard("Cancelled Games", game.CancelledGames || 0, "Selected month")
+    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month})
   ].join("");
 }
 
@@ -474,16 +498,12 @@ function getDashboardCategoryDetail(row, category) {
   // Build missed dates list from cache
   const datesKey = `${playerId}-${category}`;
   const dates = dashboardPlayerDates[datesKey] || [];
-  const missedDates = dates.filter(d => d.AttendanceStatus === "Absent");
+  const missedDates = dates.filter(d => d.AttendanceStatus === "Absent" || d.AttendanceStatus === "No Record");
   const presentDates = dates.filter(d => d.AttendanceStatus === "Present");
   const excusedDates = dates.filter(d => d.AttendanceStatus === "Excused");
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return "—";
-    const s = String(dateStr).substring(0, 10);
-    const parts = s.split("-");
-    if (parts.length !== 3) return s;
-    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   };
 
@@ -560,16 +580,15 @@ function renderPlayerAlertCard(row, cardType = "attention") {
   const issueDetail = row.AlertDetail || row.HighlightDetail || "Review attendance record.";
   const isExceptional = cardType === "exceptional";
   const isPerfect = cardType === "perfect";
-  const isGood = cardType === "good";
 
   return `
-    <article class="dashboard-alert-card ${isExceptional ? "dashboard-exceptional-card" : ""} ${isPerfect ? "dashboard-perfect-card" : ""} ${isGood ? "dashboard-good-card" : ""}">
+    <article class="dashboard-alert-card ${isExceptional ? "dashboard-exceptional-card" : ""} ${isPerfect ? "dashboard-perfect-card" : ""}">
       <div class="dashboard-alert-topline">
         <div>
           <h4>${escapeDashboardHtml(playerName || "Player")}</h4>
           <p>Birth Year: <strong>${escapeDashboardHtml(groupLabel)}</strong></p>
         </div>
-        <span class="dashboard-alert-badge ${isExceptional ? "dashboard-exceptional-badge" : ""} ${isPerfect ? "dashboard-perfect-badge" : ""} ${isGood ? "dashboard-good-badge" : ""}">${escapeDashboardHtml(issue)}</span>
+        <span class="dashboard-alert-badge ${isExceptional ? "dashboard-exceptional-badge" : ""} ${isPerfect ? "dashboard-perfect-badge" : ""}">${escapeDashboardHtml(issue)}</span>
       </div>
 
       <p class="dashboard-alert-detail">${escapeDashboardHtml(issueDetail)}</p>
@@ -603,16 +622,6 @@ function renderPlayerAlerts(rows) {
     rows,
     "attention",
     "No players are at 70% or lower for practices or games in the selected month."
-  );
-}
-
-function renderGoodPlayers(rows) {
-  renderCollapsiblePlayerSection(
-    dashboardGoodPlayers,
-    dashboardGoodPlayersCount,
-    rows,
-    "good",
-    "No players in the 71%–84% attendance range for the selected month."
   );
 }
 
@@ -714,7 +723,7 @@ function renderSummaryPanel(category) {
 }
 
 function setupDashboardDetailClickHandlers() {
-  [dashboardPlayerAlerts, dashboardGoodPlayers, dashboardPerfectPlayers, dashboardExceptionalPlayers].forEach(container => {
+  [dashboardPlayerAlerts, dashboardPerfectPlayers, dashboardExceptionalPlayers].forEach(container => {
     if (!container || container.dataset.detailListenerAttached) return;
 
     container.dataset.detailListenerAttached = "1";
@@ -797,9 +806,8 @@ async function loadDashboard() {
     renderGameSummary(data.gameSummary || {});
     renderEventSummary(data.eventSummary || {});
     renderPlayerAlerts(data.playerAlerts || []);
-    renderGoodPlayers(data.goodPlayers || []);
-    renderExceptionalPlayers(data.exceptionalPlayers || []);
     renderPerfectPlayers(data.perfectPlayers || []);
+    renderExceptionalPlayers(data.exceptionalPlayers || []);
 
     // Wire stat card scroll-to handlers for Practice/Game/Event summaries
     [dashboardPracticeSummary, dashboardGameSummary, dashboardEventSummary].forEach(container => {

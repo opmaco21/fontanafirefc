@@ -682,3 +682,11 @@
   padding: 3px 10px;
   margin-top: 4px;
 }
+
+/* ── Snapshot count note — sits above the card grid ─────────────────────── */
+.dashboard-upcoming-count {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
