@@ -555,15 +555,16 @@ function renderPlayerAlertCard(row, cardType = "attention") {
   const issueDetail = row.AlertDetail || row.HighlightDetail || "Review attendance record.";
   const isExceptional = cardType === "exceptional";
   const isPerfect = cardType === "perfect";
+  const isGood = cardType === "good";
 
   return `
-    <article class="dashboard-alert-card ${isExceptional ? "dashboard-exceptional-card" : ""} ${isPerfect ? "dashboard-perfect-card" : ""}">
+    <article class="dashboard-alert-card ${isExceptional ? "dashboard-exceptional-card" : ""} ${isPerfect ? "dashboard-perfect-card" : ""} ${isGood ? "dashboard-good-card" : ""}">
       <div class="dashboard-alert-topline">
         <div>
           <h4>${escapeDashboardHtml(playerName || "Player")}</h4>
           <p>Birth Year: <strong>${escapeDashboardHtml(groupLabel)}</strong></p>
         </div>
-        <span class="dashboard-alert-badge ${isExceptional ? "dashboard-exceptional-badge" : ""} ${isPerfect ? "dashboard-perfect-badge" : ""}">${escapeDashboardHtml(issue)}</span>
+        <span class="dashboard-alert-badge ${isExceptional ? "dashboard-exceptional-badge" : ""} ${isPerfect ? "dashboard-perfect-badge" : ""} ${isGood ? "dashboard-good-badge" : ""}">${escapeDashboardHtml(issue)}</span>
       </div>
 
       <p class="dashboard-alert-detail">${escapeDashboardHtml(issueDetail)}</p>
@@ -597,6 +598,16 @@ function renderPlayerAlerts(rows) {
     rows,
     "attention",
     "No players are at 70% or lower for practices or games in the selected month."
+  );
+}
+
+function renderGoodPlayers(rows) {
+  renderCollapsiblePlayerSection(
+    dashboardGoodPlayers,
+    dashboardGoodPlayersCount,
+    rows,
+    "good",
+    "No players in the 71%–84% attendance range for the selected month."
   );
 }
 
@@ -698,7 +709,7 @@ function renderSummaryPanel(category) {
 }
 
 function setupDashboardDetailClickHandlers() {
-  [dashboardPlayerAlerts, dashboardPerfectPlayers, dashboardExceptionalPlayers].forEach(container => {
+  [dashboardPlayerAlerts, dashboardGoodPlayers, dashboardPerfectPlayers, dashboardExceptionalPlayers].forEach(container => {
     if (!container || container.dataset.detailListenerAttached) return;
 
     container.dataset.detailListenerAttached = "1";
@@ -781,8 +792,9 @@ async function loadDashboard() {
     renderGameSummary(data.gameSummary || {});
     renderEventSummary(data.eventSummary || {});
     renderPlayerAlerts(data.playerAlerts || []);
-    renderPerfectPlayers(data.perfectPlayers || []);
+    renderGoodPlayers(data.goodPlayers || []);
     renderExceptionalPlayers(data.exceptionalPlayers || []);
+    renderPerfectPlayers(data.perfectPlayers || []);
 
     // Wire stat card scroll-to handlers for Practice/Game/Event summaries
     [dashboardPracticeSummary, dashboardGameSummary, dashboardEventSummary].forEach(container => {
