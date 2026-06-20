@@ -35,6 +35,9 @@ body {
   color: #fff;
   padding: 18px 20px;
   border-bottom: 5px solid #f57c00;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .brand {
