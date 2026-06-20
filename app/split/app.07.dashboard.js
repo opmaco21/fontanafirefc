@@ -100,9 +100,9 @@ function escapeDashboardHtml(value) {
 }
 
 function formatDashboardPercent(value) {
-  if (value === null || value === undefined || value === "") return "‚Äî";
+  if (value === null || value === undefined || value === "") return "ó";
   const num = Number(value);
-  if (!Number.isFinite(num)) return "‚Äî";
+  if (!Number.isFinite(num)) return "ó";
   return `${num.toFixed(1)}%`;
 }
 
@@ -139,12 +139,12 @@ function renderDashboardCard(label, value, note = "", clickAction = "", reportAc
   const clickAttr = clickAction
     ? `data-dash-card="${escapeDashboardHtml(clickAction)}" tabindex="0" role="button" style="cursor:pointer;${isOpen ? "border-color:#f57c00;box-shadow:0 0 0 2px rgba(245,124,0,0.15);" : ""}"`
     : "";
-  const arrow = clickAction ? ` <span style="font-size:9px;color:#f57c00;vertical-align:middle;">${isOpen ? "‚ñ≤" : "‚ñº"}</span>` : "";
+  const arrow = clickAction ? ` <span style="font-size:9px;color:#f57c00;vertical-align:middle;">${isOpen ? "?" : "?"}</span>` : "";
   const reportBtn = reportAction
     ? `<div style="margin-top:6px;">
         <button onclick="event.stopPropagation();openReportFromDashboard(${JSON.stringify(reportAction)})"
           style="font-size:10px;font-weight:700;color:#f57c00;background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;">
-          ‚Üí View Report
+          ? View Report
         </button>
        </div>`
     : "";
@@ -369,10 +369,10 @@ function renderUpcomingSnapshot(rows) {
     const statusPillClass = status === "Completed" ? "snapshot-status--completed"
       : status === "Cancelled" ? "snapshot-status--cancelled"
       : "snapshot-status--scheduled";
-    const statusIcon = status === "Completed" ? "‚úì " : "";
+    const statusIcon = status === "Completed" ? "? " : "";
 
     const snackChip = eventType === "Game"
-      ? `<div class="snapshot-snack-chip">üçé Snack: ${escapeDashboardHtml(snackText)}</div>`
+      ? `<div class="snapshot-snack-chip">?? Snack: ${escapeDashboardHtml(snackText)}</div>`
       : "";
 
     const nameStyle = status === "Cancelled" ? ' style="text-decoration:line-through;color:#999;"' : "";
@@ -382,7 +382,7 @@ function renderUpcomingSnapshot(rows) {
         <div class="snapshot-topline">
           <div class="snapshot-name-block">
             <div class="snapshot-name"${nameStyle}>${escapeDashboardHtml(eventName)}</div>
-            <div class="snapshot-datetime">${escapeDashboardHtml(dateText)} ¬∑ ${escapeDashboardHtml(timeText)}</div>
+            <div class="snapshot-datetime">${escapeDashboardHtml(dateText)} ∑ ${escapeDashboardHtml(timeText)}</div>
           </div>
           <span class="snapshot-status-pill ${statusPillClass}">${statusIcon}${escapeDashboardHtml(status)}</span>
         </div>
@@ -499,19 +499,23 @@ function getDashboardCategoryDetail(row, category) {
   // Build missed dates list from cache
   const datesKey = `${playerId}-${category}`;
   const dates = dashboardPlayerDates[datesKey] || [];
-  const missedDates = dates.filter(d => d.AttendanceStatus === "Absent" || d.AttendanceStatus === "No Record");
+  const missedDates = dates.filter(d => d.AttendanceStatus === "Absent");
   const presentDates = dates.filter(d => d.AttendanceStatus === "Present");
   const excusedDates = dates.filter(d => d.AttendanceStatus === "Excused");
 
   const formatDate = (dateStr) => {
-    const d = new Date(dateStr + "T00:00:00");
+    if (!dateStr) return "ó";
+    const s = String(dateStr).substring(0, 10);
+    const parts = s.split("-");
+    if (parts.length !== 3) return s;
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
     return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   };
 
   const missedHtml = missedDates.length > 0
     ? `<div style="margin-top:8px;">
         <div style="font-size:12px;font-weight:700;color:#c62828;margin-bottom:4px;">Missed (${missedDates.length})</div>
-        ${missedDates.map(d => `<div style="font-size:12px;color:#555;padding:2px 0;border-bottom:1px solid #f3f4f6;">${formatDate(d.EventDate)}${d.LocationName ? ` ¬∑ ${d.LocationName}` : ""}</div>`).join("")}
+        ${missedDates.map(d => `<div style="font-size:12px;color:#555;padding:2px 0;border-bottom:1px solid #f3f4f6;">${formatDate(d.EventDate)}${d.LocationName ? ` ∑ ${d.LocationName}` : ""}</div>`).join("")}
        </div>`
     : "";
 
@@ -633,7 +637,17 @@ function renderGoodPlayers(rows) {
     dashboardGoodPlayersCount,
     rows,
     "good",
-    "No players in the 71%‚Äì84% attendance range for the selected month."
+    "No players in the 71%ñ84% attendance range for the selected month."
+  );
+}
+
+function renderGoodPlayers(rows) {
+  renderCollapsiblePlayerSection(
+    dashboardGoodPlayers,
+    dashboardGoodPlayersCount,
+    rows,
+    "good",
+    "No players in the 71%ñ84% attendance range for the selected month."
   );
 }
 
@@ -694,17 +708,17 @@ function renderSummaryPanel(category) {
   const reportBtn = reportLink
     ? `<button onclick="openReportFromDashboard('${reportLink.report}')"
         style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#f57c00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
-        ‚Üí ${escapeDashboardHtml(reportLink.label)}
+        ? ${escapeDashboardHtml(reportLink.label)}
       </button>`
     : "";
 
   const formatPlayer = (p) => {
     const num = p.PlayerNumber ? `#${p.PlayerNumber}` : "";
     const extra = {
-      paperwork: p.PaperworkStatus ? ` ¬∑ ${p.PaperworkStatus}` : " ¬∑ Not Received",
-      photo:     p.PhotoReleaseStatus ? ` ¬∑ ${p.PhotoReleaseStatus}` : " ¬∑ Not Received",
-      emergency: (p.EmergencyContactName ? "" : " ¬∑ No contact name") + (p.EmergencyContactPhone ? "" : " ¬∑ No phone"),
-      active:    p.BirthYear ? ` ¬∑ ${p.BirthYear}` : "",
+      paperwork: p.PaperworkStatus ? ` ∑ ${p.PaperworkStatus}` : " ∑ Not Received",
+      photo:     p.PhotoReleaseStatus ? ` ∑ ${p.PhotoReleaseStatus}` : " ∑ Not Received",
+      emergency: (p.EmergencyContactName ? "" : " ∑ No contact name") + (p.EmergencyContactPhone ? "" : " ∑ No phone"),
+      active:    p.BirthYear ? ` ∑ ${p.BirthYear}` : "",
       snack:     "",
       paidout:   ""
     }[category] || "";
@@ -719,11 +733,11 @@ function renderSummaryPanel(category) {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
           <div style="font-weight:800;font-size:15px;color:#111827;">${escapeDashboardHtml(titles[category] || "")}</div>
-          <div style="font-size:12px;color:#6b7280;margin-top:2px;">${escapeDashboardHtml(subtitles[category] || "")} ¬∑ ${players.length} player${players.length !== 1 ? "s" : ""}</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px;">${escapeDashboardHtml(subtitles[category] || "")} ∑ ${players.length} player${players.length !== 1 ? "s" : ""}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           ${reportBtn}
-          <button onclick="dashboardOpenSummaryCard=''; document.getElementById('dashboardSummaryPanel').innerHTML='';" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;padding:4px;">‚úï</button>
+          <button onclick="dashboardOpenSummaryCard=''; document.getElementById('dashboardSummaryPanel').innerHTML='';" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;padding:4px;">?</button>
         </div>
       </div>
       ${players.length === 0
@@ -866,9 +880,9 @@ ensureDashboardMonthFilterOptions();
 setupDashboardDetailClickHandlers();
 
 /* =========================
-   DASHBOARD ‚Üí REPORTS NAVIGATION
+   DASHBOARD ? REPORTS NAVIGATION
    Opens the Reports tab and pre-applies filters.
-   Called from dashboard card "‚Üí View Report" buttons.
+   Called from dashboard card "? View Report" buttons.
    config: { report: 'attendance'|'paperwork'|'emergency'|'roster', month, below }
    ========================= */
 window.openReportFromDashboard = function (config) {
