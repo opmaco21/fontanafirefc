@@ -8,7 +8,7 @@ function renderDashboardSummaryCards(data) {
   const photo = data.photoReleaseTotals || {};
   const emergency = data.emergencyTotals || {};
   const cards = [
-    renderDashboardCard("Active Players", totals.ActivePlayers || 0, `${totals.InactivePlayers || 0} inactive`, "active"),
+    renderDashboardCard("Inactive Players", totals.InactivePlayers || 0, `${totals.ActivePlayers || 0} active`, "active"),
     renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, `${paperwork.CompletePaperwork || 0} complete`, "paperwork"),
     renderDashboardCard("Photo Release Missing", photo.MissingPhotoRelease || 0, `${photo.ReceivedPhotoRelease || 0} received`, "photo"),
     renderDashboardCard("Emergency Info Missing", emergency.MissingEmergencyInfo || 0, `${emergency.CompleteEmergencyInfo || 0} complete`, "emergency"),
@@ -153,8 +153,8 @@ function renderPracticeSummary(summary) {
   dashboardPracticeSummary.innerHTML = [
     renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month", "scroll-upcoming"),
     renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
-    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention", "scroll-attention", {report:"attendance",month,below:70}),
-    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month})
+    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention", "", {report:"attendance",month,below:70}),
+    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance", "", {report:"attendance",month})
   ].join("");
 }
 
@@ -165,8 +165,8 @@ function renderGameSummary(summary) {
   dashboardGameSummary.innerHTML = [
     renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month", "scroll-upcoming"),
     renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
-    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "scroll-attention", {report:"attendance",month,below:70}),
-    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month}),
+    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "", {report:"attendance",month,below:70}),
+    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "", {report:"attendance",month}),
     renderDashboardCard("Cancelled Games", game.CancelledGames || 0, "Selected month")
   ].join("");
 }
@@ -177,8 +177,8 @@ function renderEventSummary(summary) {
   dashboardEventSummary.innerHTML = [
     renderDashboardCard("Total Events", event.TotalEvents || 0, "Team events / scrimmages", "scroll-upcoming"),
     renderDashboardCard("Event Att %", formatDashboardPercent(event.EventAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", event.LowEventPlayers || 0, "Players needing attention", "scroll-attention"),
-    renderDashboardCard("85% or Higher", event.HighEventPlayers || 0, "Strong attendance", "scroll-exceptional"),
+    renderDashboardCard("70% or Lower", event.LowEventPlayers || 0, "Players needing attention"),
+    renderDashboardCard("85% or Higher", event.HighEventPlayers || 0, "Strong attendance"),
     renderDashboardCard("Cancelled Events", event.CancelledEvents || 0, "Selected month")
   ].join("");
 }

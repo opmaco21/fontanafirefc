@@ -127,11 +127,15 @@ function renderSummaryPanel(category) {
   const players = dashboardSummaryPlayerCache[category] || [];
   const titles = { active:"Active Players", paperwork:"Missing Paperwork", photo:"Missing Photo Release", emergency:"Missing Emergency Info", snack:"Bring Snack Players", paidout:"Paid Out Players" };
   const subtitles = { active:"All currently active players", paperwork:"These players need paperwork completed", photo:"These players have not returned photo release", emergency:"These players are missing emergency contact name or phone", snack:"These families are in the snack rotation", paidout:"Coach provides snacks for these players" };
-  const reportLinks = { paperwork:{report:"paperwork",label:"Paperwork Report"}, photo:{report:"paperwork",label:"Paperwork Report"}, emergency:{report:"emergency",label:"Emergency Contacts"}, active:{report:"roster",label:"Full Roster"} };
-  const reportLink = reportLinks[category];
-  const reportBtn = reportLink
-    ? `<button onclick="openReportFromDashboard('${reportLink.report}')" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#f57c00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">&rarr; ${escapeDashboardHtml(reportLink.label)}</button>`
+  const reportLinks = { paperwork:{report:"paperwork",label:"Paperwork Report"}, photo:{report:"paperwork",label:"Paperwork Report"}, emergency:{report:"emergency",label:"Emergency Contacts"} };
+  // Active Players goes to Player Management tab, not Reports
+  const activeBtn = category === "active"
+    ? `<button onclick="if(typeof playerManagementTab!=='undefined')playerManagementTab.click();" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#f57c00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">&rarr; Player Management</button>`
     : "";
+  const reportLink = reportLinks[category];
+  const reportBtn = activeBtn || (reportLink
+    ? `<button onclick="openReportFromDashboard('${reportLink.report}')" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#f57c00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">&rarr; ${escapeDashboardHtml(reportLink.label)}</button>`
+    : "");
   const formatPlayer = (p) => {
     const num = p.PlayerNumber ? `#${p.PlayerNumber}` : "";
     const extra = {
