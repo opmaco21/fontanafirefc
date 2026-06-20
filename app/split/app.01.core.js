@@ -60,8 +60,6 @@ const dashboardEventSummary = document.getElementById("dashboardEventSummary");
 const dashboardGroupSummary = document.getElementById("dashboardGroupSummary");
 const dashboardPlayerAlerts = document.getElementById("dashboardPlayerAlerts");
 const dashboardPlayerAlertsCount = document.getElementById("dashboardPlayerAlertsCount");
-const dashboardGoodPlayers = document.getElementById("dashboardGoodPlayers");
-const dashboardGoodPlayersCount = document.getElementById("dashboardGoodPlayersCount");
 const dashboardPerfectPlayers = document.getElementById("dashboardPerfectPlayers");
 const dashboardPerfectPlayersCount = document.getElementById("dashboardPerfectPlayersCount");
 const dashboardExceptionalPlayers = document.getElementById("dashboardExceptionalPlayers");
@@ -677,9 +675,14 @@ function ensureGameManagementElements() {
   gameWorkflowBar.className = "team-event-workflow-bar hidden";
 
   gameWorkflowBar.innerHTML = `
-    <button type="button" id="showGameFormBtn" class="btn btn-secondary">
-      + Add New Game
-    </button>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button type="button" id="showGameFormBtn" class="btn btn-primary" style="margin-top:0;">
+        + Add New Game
+      </button>
+      <button type="button" id="importGamesBtn" class="btn btn-secondary" onclick="openGameImportModal()" style="margin-top:0;font-size:13px;padding:10px 14px;">
+        📋 Import from Post
+      </button>
+    </div>
   `;
 
   gameSection = document.createElement("section");

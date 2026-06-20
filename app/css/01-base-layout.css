@@ -202,3 +202,27 @@ hr {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   OUTLINE BUTTON
+   Used for secondary actions like Edit Roster that need
+   visual separation from primary action buttons.
+   ========================================================= */
+
+.btn-outline {
+  background: transparent;
+  color: #333;
+  border: 2px solid #cfd4dc;
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-outline:hover {
+  border-color: #f57c00;
+  color: #f57c00;
+}

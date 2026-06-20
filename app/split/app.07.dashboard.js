@@ -353,26 +353,49 @@ function renderUpcomingSnapshot(rows) {
     : `Showing next ${snapshotCount} upcoming ${snapshotCount === 1 ? "game/event" : "games/events"}.`;
 
   const cardsHtml = rows.map(event => {
-    const eventType = event.EventType || "Event";
-    const eventName = event.EventName || eventType;
-    const dateText = formatDashboardDate(event.EventDate);
-    const timeText = formatDashboardTime(event.StartTime);
+    const eventType   = event.EventType  || "Event";
+    const eventName   = event.EventName  || eventType;
+    const dateText    = formatDashboardDate(event.EventDate);
+    const timeText    = formatDashboardTime(event.StartTime);
     const locationText = event.LocationName || "Location TBD";
-    const teamText = event.GroupCode || event.GroupName || "Team TBD";
-    const snackText = event.AssignedSnackFamily || event.SnackStatus || "Not assigned yet";
+    const snackText   = event.AssignedSnackFamily || event.SnackStatus || "Not assigned yet";
+    const status      = event.EventStatus || "Scheduled";
+
+    // Card border color by type
+    const typeClass = eventType === "Game" ? "snapshot-card--game"
+      : eventType === "Team Event" ? "snapshot-card--team-event"
+      : "snapshot-card--practice";
+
+    const cancelledClass = status === "Cancelled" ? "snapshot-card--cancelled" : "";
+
+    // Status pill
+    const statusPillClass = status === "Completed" ? "snapshot-status--completed"
+      : status === "Cancelled" ? "snapshot-status--cancelled"
+      : "snapshot-status--scheduled";
+    const statusIcon = status === "Completed" ? "✓ " : "";
+
+    // Snack chip — only show for games
+    const snackChip = eventType === "Game"
+      ? `<div class="snapshot-snack-chip">🍎 Snack: ${escapeDashboardHtml(snackText)}</div>`
+      : "";
+
+    // Strikethrough name if cancelled
+    const nameStyle = status === "Cancelled" ? "style=\"text-decoration:line-through;color:#999;\"" : "";
 
     return `
-      <article class="dashboard-upcoming-card">
-        <div class="dashboard-upcoming-topline">
-          <span class="dashboard-upcoming-type">${escapeDashboardHtml(eventType)}</span>
-          <strong>${escapeDashboardHtml(dateText)} • ${escapeDashboardHtml(timeText)}</strong>
+      <article class="dashboard-upcoming-card snapshot-card ${typeClass} ${cancelledClass}">
+        <div class="snapshot-topline">
+          <div class="snapshot-name-block">
+            <div class="snapshot-name" ${nameStyle}>${escapeDashboardHtml(eventName)}</div>
+            <div class="snapshot-datetime">${escapeDashboardHtml(dateText)} · ${escapeDashboardHtml(timeText)}</div>
+          </div>
+          <span class="snapshot-status-pill ${statusPillClass}">${statusIcon}${escapeDashboardHtml(status)}</span>
         </div>
-        <h4>${escapeDashboardHtml(eventName)}</h4>
-        <div class="dashboard-upcoming-meta">
-          <span><strong>Team:</strong> ${escapeDashboardHtml(teamText)}</span>
+        <div class="snapshot-meta">
           <span><strong>Location:</strong> ${escapeDashboardHtml(locationText)}</span>
-          <span><strong>Snack:</strong> ${escapeDashboardHtml(snackText)}</span>
+          <span><strong>Type:</strong> ${escapeDashboardHtml(eventType)}</span>
         </div>
+        ${snackChip}
       </article>
     `;
   }).join("");
@@ -403,7 +426,8 @@ function renderGameSummary(summary) {
     renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month", "scroll-upcoming"),
     renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
     renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "scroll-attention", {report:"attendance",month,below:70}),
-    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month})
+    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month}),
+    renderDashboardCard("Cancelled Games", game.CancelledGames || 0, "Selected month")
   ].join("");
 }
 
