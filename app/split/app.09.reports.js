@@ -157,7 +157,7 @@
     });
   }
 
-  function onAttFilterChange() {
+  window.onAttFilterChange = function () {
     const st = reportState.attendance;
     st.month  = document.getElementById('att-month')?.value  || '';
     st.group  = document.getElementById('att-group')?.value  || '';
@@ -168,7 +168,7 @@
     st.loaded = false;
     st.viewingPlayer = null;
     loadReport('attendance');
-  }
+  };
 
   window.toggleAttDateRange = function () {
     const rangeGroup = document.querySelector('.att-range-group');

@@ -133,17 +133,26 @@ function getDashboardPercentClass(value, counted) {
   return "dashboard-percent-low";
 }
 
-function renderDashboardCard(label, value, note = "", clickAction = "") {
+function renderDashboardCard(label, value, note = "", clickAction = "", reportAction = "") {
   const isOpen = clickAction && dashboardOpenSummaryCard === clickAction;
   const clickAttr = clickAction
     ? `data-dash-card="${escapeDashboardHtml(clickAction)}" tabindex="0" role="button" style="cursor:pointer;${isOpen ? "border-color:#f57c00;box-shadow:0 0 0 2px rgba(245,124,0,0.15);" : ""}"`
     : "";
   const arrow = clickAction ? ` <span style="font-size:9px;color:#f57c00;vertical-align:middle;">${isOpen ? "▲" : "▼"}</span>` : "";
+  const reportBtn = reportAction
+    ? `<div style="margin-top:6px;">
+        <button onclick="event.stopPropagation();openReportFromDashboard(${JSON.stringify(reportAction)})"
+          style="font-size:10px;font-weight:700;color:#f57c00;background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;">
+          → View Report
+        </button>
+       </div>`
+    : "";
   return `
     <div class="dashboard-stat-card" ${clickAttr}>
       <div class="dashboard-stat-label">${escapeDashboardHtml(label)}${arrow}</div>
       <div class="dashboard-stat-value">${value}</div>
       ${note ? `<div class="dashboard-stat-note">${escapeDashboardHtml(note)}</div>` : ""}
+      ${reportBtn}
     </div>
   `;
 }
@@ -376,22 +385,24 @@ function renderUpcomingSnapshot(rows) {
 function renderPracticeSummary(summary) {
   if (!dashboardPracticeSummary) return;
   const practice = summary || {};
+  const month = dashboardSelectedMonth || "";
   dashboardPracticeSummary.innerHTML = [
     renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month", "scroll-upcoming"),
-    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention", "scroll-attention"),
-    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance", "scroll-exceptional")
+    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
+    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention", "scroll-attention", {report:"attendance",month,below:70}),
+    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month})
   ].join("");
 }
 
 function renderGameSummary(summary) {
   if (!dashboardGameSummary) return;
   const game = summary || {};
+  const month = dashboardSelectedMonth || "";
   dashboardGameSummary.innerHTML = [
     renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month", "scroll-upcoming"),
-    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "scroll-attention"),
-    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional")
+    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
+    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "scroll-attention", {report:"attendance",month,below:70}),
+    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month})
   ].join("");
 }
 
@@ -633,6 +644,22 @@ function renderSummaryPanel(category) {
     paidout:   "Coach provides snacks for these players"
   };
 
+  // Map dashboard card categories to report accordion + filter config
+  const reportLinks = {
+    paperwork: { report: "paperwork", label: "Paperwork Report" },
+    photo:     { report: "paperwork", label: "Paperwork Report" },
+    emergency: { report: "emergency", label: "Emergency Contacts" },
+    active:    { report: "roster",    label: "Full Roster" },
+  };
+
+  const reportLink = reportLinks[category];
+  const reportBtn = reportLink
+    ? `<button onclick="openReportFromDashboard('${reportLink.report}')"
+        style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#f57c00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
+        → ${escapeDashboardHtml(reportLink.label)}
+      </button>`
+    : "";
+
   const formatPlayer = (p) => {
     const num = p.PlayerNumber ? `#${p.PlayerNumber}` : "";
     const extra = {
@@ -656,7 +683,10 @@ function renderSummaryPanel(category) {
           <div style="font-weight:800;font-size:15px;color:#111827;">${escapeDashboardHtml(titles[category] || "")}</div>
           <div style="font-size:12px;color:#6b7280;margin-top:2px;">${escapeDashboardHtml(subtitles[category] || "")} · ${players.length} player${players.length !== 1 ? "s" : ""}</div>
         </div>
-        <button onclick="dashboardOpenSummaryCard=''; document.getElementById('dashboardSummaryPanel').innerHTML='';" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;padding:4px;">✕</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${reportBtn}
+          <button onclick="dashboardOpenSummaryCard=''; document.getElementById('dashboardSummaryPanel').innerHTML='';" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;padding:4px;">✕</button>
+        </div>
       </div>
       ${players.length === 0
         ? `<div style="color:#999;font-size:13px;padding:8px 0;">No players found.</div>`
@@ -795,3 +825,49 @@ async function loadDashboard() {
 
 ensureDashboardMonthFilterOptions();
 setupDashboardDetailClickHandlers();
+
+/* =========================
+   DASHBOARD → REPORTS NAVIGATION
+   Opens the Reports tab and pre-applies filters.
+   Called from dashboard card "→ View Report" buttons.
+   config: { report: 'attendance'|'paperwork'|'emergency'|'roster', month, below }
+   ========================= */
+window.openReportFromDashboard = function (config) {
+  if (!config) return;
+
+  // Switch to Reports tab
+  currentTab = "Reports";
+  if (typeof setActiveTab === "function") setActiveTab();
+  if (typeof updateMainModeVisibility === "function") updateMainModeVisibility();
+
+  // Give the Reports tab a moment to initialise, then apply filters + open accordion
+  setTimeout(() => {
+    const key = config.report || "attendance";
+
+    // Open the accordion
+    if (typeof toggleReportAccordion === "function") {
+      const body = document.getElementById(`body-${key}`);
+      if (body && body.style.display === "none") {
+        toggleReportAccordion(key);
+      }
+    }
+
+    // Apply attendance filters if specified
+    if (key === "attendance") {
+      const monthSel = document.getElementById("att-month");
+      if (monthSel && config.month) {
+        monthSel.value = config.month;
+      }
+
+      const belowSel = document.getElementById("att-below");
+      if (belowSel) {
+        belowSel.value = config.below ? String(config.below) : "";
+      }
+
+      // Trigger filter reload
+      if (typeof onAttFilterChange === "function") {
+        onAttFilterChange();
+      }
+    }
+  }, 150);
+};
