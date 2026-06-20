@@ -363,3 +363,287 @@
     /* inherits landscape — fine for all */
   }
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   ATTENDANCE SUMMARY — IMPROVED FILTERS + DRILL-DOWN
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Filter bar ─────────────────────────────────────────────────────────── */
+.att-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  flex: 1;
+}
+
+.att-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.att-range-group {
+  gap: 6px;
+}
+
+.report-date-input {
+  background: #252540;
+  border: 1px solid #3a3a5a;
+  color: #f0f0f0;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  width: 130px;
+}
+
+.report-date-input:focus {
+  outline: none;
+  border-color: #e05c00;
+}
+
+.btn-att-range-toggle {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #3a3a5a;
+  background: #252540;
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-att-range-toggle:hover,
+.btn-att-range-toggle.active {
+  border-color: #e05c00;
+  color: #e05c00;
+}
+
+/* ── Table hint ─────────────────────────────────────────────────────────── */
+.rpt-hint {
+  font-size: 12px;
+  color: #666;
+  padding: 6px 0 8px;
+  font-style: italic;
+}
+
+/* ── Group subtotal rows ────────────────────────────────────────────────── */
+.rpt-group-row td {
+  background: #141428 !important;
+  padding: 6px 10px;
+  border-top: 2px solid #2a2a3a;
+  border-bottom: 1px solid #2a2a3a;
+}
+
+.rpt-group-name {
+  font-weight: 800;
+  font-size: 12px;
+  color: #e05c00;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 8px;
+}
+
+.rpt-group-count {
+  font-size: 11px;
+  color: #666;
+}
+
+/* ── Clickable player rows ──────────────────────────────────────────────── */
+.rpt-att-table tbody tr.rpt-player-row {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.rpt-att-table tbody tr.rpt-player-row:hover td {
+  background: #1e1e38;
+}
+
+.rpt-att-table tbody tr.rpt-player-row:hover .rpt-player-name {
+  color: #e05c00;
+}
+
+.rpt-player-name {
+  font-weight: 700;
+  color: #e0e0e0;
+  transition: color 0.1s;
+}
+
+.rpt-jersey {
+  font-size: 11px;
+  color: #666;
+  margin-left: 6px;
+}
+
+.rpt-cell-sub {
+  font-size: 12px;
+  color: #888;
+}
+
+.rpt-fraction {
+  font-size: 11px;
+  color: #666;
+  margin-left: 5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PLAYER DETAIL VIEW
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.rpt-detail-wrap {
+  padding: 4px 0;
+}
+
+/* ── Back button ────────────────────────────────────────────────────────── */
+.btn-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #e05c00;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 0 12px;
+  transition: opacity 0.15s;
+}
+
+.btn-detail-back:hover { opacity: 0.75; }
+
+/* ── Player header ──────────────────────────────────────────────────────── */
+.rpt-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.rpt-detail-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #e05c00;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.rpt-detail-info { flex: 1; }
+
+.rpt-detail-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f0f0f0;
+}
+
+.rpt-detail-sub {
+  font-size: 13px;
+  color: #888;
+  margin-top: 3px;
+}
+
+.rpt-detail-print-actions {
+  margin-left: auto;
+}
+
+/* ── Stat cards ─────────────────────────────────────────────────────────── */
+.rpt-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.rpt-detail-stat {
+  background: #141428;
+  border: 1px solid #2a2a3a;
+  border-radius: 10px;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.rpt-detail-stat-val {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.rpt-detail-stat-label {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rpt-detail-stat-sub {
+  font-size: 11px;
+  color: #555;
+  margin-top: 4px;
+}
+
+/* Colored text classes for stat values */
+.pct-green-text { color: #5dca7e; }
+.pct-yellow-text { color: #d4aa40; }
+.pct-red-text { color: #e07070; }
+.pct-grey-text { color: #888; }
+
+/* ── Event detail table ─────────────────────────────────────────────────── */
+.rpt-detail-table th,
+.rpt-detail-table td {
+  font-size: 13px;
+}
+
+.rpt-detail-event-row td {
+  vertical-align: middle;
+}
+
+/* Event type pills */
+.rpt-event-type-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rpt-type-practice   { background: #1a2a4a; color: #7ab0f0; }
+.rpt-type-game       { background: #1a3a1a; color: #7ad07a; }
+.rpt-type-team-event { background: #3a1a3a; color: #c07ac0; }
+
+/* Status dots + badges */
+.rpt-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.dot-present   { background: #22c55e; }
+.dot-absent    { background: #ef4444; }
+.dot-excused   { background: #f59e0b; }
+.dot-cancelled { background: #6b7280; }
+.dot-none      { background: #3a3a5a; }
+
+.rpt-status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.badge-present   { color: #5dca7e; }
+.badge-absent    { color: #e07070; }
+.badge-excused   { color: #d4aa40; }
+.badge-cancelled { color: #888; }
+.badge-none      { color: #555; }
