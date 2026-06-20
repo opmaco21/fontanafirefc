@@ -1,910 +1,815 @@
-/* =========================================================
-   FONTANA FIRE FC ATTENDANCE APP
-   Batch 6E Dashboard Summary + Collapsible Player Reports
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- PAGE SETTINGS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-   Purpose:
-   - Dashboard stays a reporting screen, not Player Management.
-   - Monthly summary shows Practices, Games, Team Events and percentages.
-   - Practice, Game, and Event summaries are separate.
-   - Player report sections are collapsible.
-   - Player cards show details only after clicking Practice, Game, or Team Event.
-   ========================================================= */
+  <!-- PAGE TITLE -->
+  <title>Fontana Fire FC Attendance App</title>
 
-let dashboardSelectedMonth = new Date().toISOString().slice(0, 7); // default to current month (YYYY-MM)
-let dashboardMonthFilterReady = false;
-let dashboardPlayerDates = {};
-let dashboardOpenSummaryCard = ""; // tracks which top summary card is expanded
-let dashboardSummaryPlayerCache = {}; // cache of player lists per card
-let dashboardOpenDetailKey = "";
+  <!-- CSS FILES
+       Split from the stable 72 KB style.css.
+       appLoader below updates each href with the current
+       automatic web build version before app JS is loaded.
+       Load order matters.
+  -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/01-base-layout.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/02-buttons-tabs-events.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/03-attendance.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/04-event-roster.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/05-player-management.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/06-team-event-player-selectors.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/07-attendance-filters-compact.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/08-dashboard-core.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/09-login-fire-animation.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/10-dashboard-birthday-overrides.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/11-event-roster-filters.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/12-dashboard-final-badges-snapshot.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/13-user-management.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/14-batch8-practice.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/15-reports.css" />
+  <link class="appStylesheet" rel="stylesheet" href="css/16-help.css" />
+</head>
 
-function getDashboardCurrentMonthValue() {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  return `${now.getFullYear()}-${month}`;
-}
+<body>
+  <div class="app-shell">
 
-function formatDashboardMonthLabel(value) {
-  if (!value) return "All Months";
-  const parts = String(value).split("-");
-  if (parts.length !== 2) return value;
-  const year = Number(parts[0]);
-  const month = Number(parts[1]);
-  if (!year || !month) return value;
-  const date = new Date(year, month - 1, 1);
-  return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
-}
-
-function getNextDashboardMonthValue(value) {
-  if (!value) return "";
-  const parts = String(value).split("-");
-  if (parts.length !== 2) return "";
-  const year = Number(parts[0]);
-  const month = Number(parts[1]);
-  if (!year || !month) return "";
-  const date = new Date(year, month, 1);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function ensureDashboardMonthFilterOptions() {
-  if (!dashboardMonthFilter || dashboardMonthFilterReady) return;
-
-  const currentMonth = getDashboardCurrentMonthValue();
-
-  // Generate last 6 months dynamically so the list never goes stale.
-  const pastMonths = [];
-  const now = new Date();
-  for (let i = 1; i <= 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    pastMonths.push({ value, label: formatDashboardMonthLabel(value) });
-  }
-
-  const options = [
-    { value: "", label: "All Months" },
-    { value: currentMonth, label: `Current Month (${formatDashboardMonthLabel(currentMonth)})` },
-    ...pastMonths
-  ];
-
-  const seen = new Set();
-  dashboardMonthFilter.innerHTML = options
-    .filter(option => {
-      const key = option.value || "all";
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .map(option => `<option value="${option.value}">${option.label}</option>`)
-    .join("");
-
-  dashboardMonthFilter.value = dashboardSelectedMonth;
-
-  dashboardMonthFilter.addEventListener("change", async () => {
-    dashboardSelectedMonth = dashboardMonthFilter.value || "";
-    dashboardOpenDetailKey = "";
-    dashboardPlayerDates = {};
-    dashboardSummaryPlayerCache = {};
-    dashboardOpenSummaryCard = "";
-    await loadDashboard();
-  });
-
-  dashboardMonthFilterReady = true;
-}
-
-function escapeDashboardHtml(value) {
-  return String(value === null || value === undefined ? "" : value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function formatDashboardPercent(value) {
-  if (value === null || value === undefined || value === "") return "—";
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "—";
-  return `${num.toFixed(1)}%`;
-}
-
-function formatDashboardBirthday(value) {
-  if (!value) return "-";
-  const raw = String(value);
-  const dateOnly = raw.includes("T") ? raw.split("T")[0] : raw.substring(0, 10);
-  const parts = dateOnly.split("-");
-  if (parts.length !== 3) return escapeDashboardHtml(raw);
-  return `${parts[1]}/${parts[2]}`;
-}
-
-function getDashboardPercentClass(value, counted) {
-  const percent = Number(value);
-  const total = Number(counted || 0);
-
-  if (!total) return "dashboard-percent-none";
-
-  /*
-    Excel-compatible attendance rule:
-    100% should stay metallic gold.
-    Percentages are calculated by the backend as:
-    Present / (Present + Absent)
-    Excused and Cancelled do not count against percentage.
-  */
-  if (percent === 100) return "dashboard-percent-perfect";
-  if (percent >= 85) return "dashboard-percent-good";
-  if (percent > 70) return "dashboard-percent-watch";
-  return "dashboard-percent-low";
-}
-
-function renderDashboardCard(label, value, note = "", clickAction = "", reportAction = "") {
-  const isOpen = clickAction && dashboardOpenSummaryCard === clickAction;
-  const clickAttr = clickAction
-    ? `data-dash-card="${escapeDashboardHtml(clickAction)}" tabindex="0" role="button" style="cursor:pointer;${isOpen ? "border-color:#f57c00;box-shadow:0 0 0 2px rgba(245,124,0,0.15);" : ""}"`
-    : "";
-  const arrow = clickAction ? ` <span style="font-size:9px;color:#f57c00;vertical-align:middle;">${isOpen ? "▲" : "▼"}</span>` : "";
-  const reportBtn = reportAction
-    ? `<div style="margin-top:6px;">
-        <button onclick="event.stopPropagation();openReportFromDashboard(${JSON.stringify(reportAction)})"
-          style="font-size:10px;font-weight:700;color:#f57c00;background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;">
-          → View Report
-        </button>
-       </div>`
-    : "";
-  return `
-    <div class="dashboard-stat-card" ${clickAttr}>
-      <div class="dashboard-stat-label">${escapeDashboardHtml(label)}${arrow}</div>
-      <div class="dashboard-stat-value">${value}</div>
-      ${note ? `<div class="dashboard-stat-note">${escapeDashboardHtml(note)}</div>` : ""}
-      ${reportBtn}
-    </div>
-  `;
-}
-
-function renderDashboardSummaryCards(data) {
-  if (!dashboardSummaryCards) return;
-
-  const totals = data.playerTotals || {};
-  const snack = data.snackTotals || {};
-  const paperwork = data.paperworkTotals || {};
-  const photo = data.photoReleaseTotals || {};
-  const emergency = data.emergencyTotals || {};
-
-  const cards = [
-    renderDashboardCard("Active Players", totals.ActivePlayers || 0, `${totals.InactivePlayers || 0} inactive`, "active"),
-    renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, `${paperwork.CompletePaperwork || 0} complete`, "paperwork"),
-    renderDashboardCard("Photo Release Missing", photo.MissingPhotoRelease || 0, `${photo.ReceivedPhotoRelease || 0} received`, "photo"),
-    renderDashboardCard("Emergency Info Missing", emergency.MissingEmergencyInfo || 0, `${emergency.CompleteEmergencyInfo || 0} complete`, "emergency"),
-    renderDashboardCard("Bring Snack", snack.BringSnackPlayers || 0, "Parent snack rotation", "snack"),
-    renderDashboardCard("Paid Out", snack.PaidOutPlayers || 0, "Coach provides snacks", "paidout")
-  ].join("");
-
-  // Expandable panel below cards
-  const panelHtml = `<div id="dashboardSummaryPanel" style="grid-column:1/-1;"></div>`;
-
-  dashboardSummaryCards.innerHTML = cards + panelHtml;
-
-  // Wire click handlers
-  dashboardSummaryCards.querySelectorAll("[data-dash-card]").forEach(card => {
-    card.addEventListener("click", async () => {
-      const category = card.dataset.dashCard;
-      if (dashboardOpenSummaryCard === category) {
-        dashboardOpenSummaryCard = "";
-        renderSummaryPanel(null);
-        return;
-      }
-      dashboardOpenSummaryCard = category;
-
-      const panel = document.getElementById("dashboardSummaryPanel");
-      if (panel) panel.innerHTML = `<div style="padding:12px;color:#999;font-size:13px;">Loading...</div>`;
-
-      if (!dashboardSummaryPlayerCache[category]) {
-        try {
-          const res = await fetch(`${API_BASE}/dashboard/summary-players?category=${encodeURIComponent(category)}`, { credentials: "include" });
-          const data = await res.json();
-          if (data.success) dashboardSummaryPlayerCache[category] = data.players;
-        } catch (e) {
-          console.error("Failed to load summary players:", e);
-        }
-      }
-      renderSummaryPanel(category);
-    });
-  });
-
-  // Re-render panel if a card was already open
-  if (dashboardOpenSummaryCard) {
-    renderSummaryPanel(dashboardOpenSummaryCard);
-  }
-}
-
-function renderMonthlySummary(rows) {
-  if (!dashboardMonthlySummary) return;
-
-  if (!rows || rows.length === 0) {
-    dashboardMonthlySummary.innerHTML = `<div class="roster-empty-message">No attendance records found yet.</div>`;
-    return;
-  }
-
-  dashboardMonthlySummary.innerHTML = `
-    <table class="dashboard-table dashboard-monthly-table dashboard-monthly-simple-table dashboard-monthly-six-table">
-      <thead>
-        <tr>
-          <th>Month</th>
-          <th>Practices</th>
-          <th>Practice %</th>
-          <th>Games</th>
-          <th>Game %</th>
-          <th>Events</th>
-          <th>Event %</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(row => `
-          <tr>
-            <td><strong>${escapeDashboardHtml(row.AttendanceMonth || "-")}</strong></td>
-            <td>${row.PracticeTotal || 0}</td>
-            <td><strong>${formatDashboardPercent(row.PracticePercent)}</strong></td>
-            <td>${row.GameTotal || 0}</td>
-            <td><strong>${formatDashboardPercent(row.GamePercent)}</strong></td>
-            <td>${row.EventTotal || 0}</td>
-            <td><strong>${formatDashboardPercent(row.EventPercent)}</strong></td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
-}
-
-function renderBirthdays(data) {
-  if (!dashboardBirthdays) return;
-
-  const thisMonth = data.thisMonth || [];
-  const nextMonth = data.nextMonth || [];
-
-  function list(items, emptyText) {
-    if (!items.length) return `<p class="subtext">${escapeDashboardHtml(emptyText)}</p>`;
-    return `
-      <ul class="birthday-player-list">
-        ${items.map(player => `
-          <li class="birthday-player-item">
-            <strong class="birthday-player-name">${escapeDashboardHtml(player.FirstName)} ${escapeDashboardHtml(player.LastName)}</strong>
-            <span class="birthday-player-date">${formatDashboardBirthday(player.DateOfBirth)}${player.BirthYear ? ` &nbsp;|&nbsp; ${escapeDashboardHtml(player.BirthYear)}` : ""}</span>
-          </li>
-        `).join("")}
-      </ul>
-    `;
-  }
-
-  const selectedBirthdayLabel = dashboardSelectedMonth
-    ? formatDashboardMonthLabel(dashboardSelectedMonth)
-    : "This Month";
-
-  const nextBirthdayMonth = dashboardSelectedMonth
-    ? getNextDashboardMonthValue(dashboardSelectedMonth)
-    : "";
-
-  const nextBirthdayLabel = nextBirthdayMonth
-    ? formatDashboardMonthLabel(nextBirthdayMonth)
-    : "Next Month";
-
-  // Heading is just "Birthdays" - counts go inside each card
-  const birthdayHeading = document.getElementById("dashboardBirthdaysHeading");
-  if (birthdayHeading) {
-    birthdayHeading.textContent = "Birthdays";
-  }
-
-  const thisCount = thisMonth.length;
-  const nextCount = nextMonth.length;
-  const thisCountLabel = thisCount === 1 ? "1 player" : `${thisCount} players`;
-  const nextCountLabel = nextCount === 1 ? "1 player" : `${nextCount} players`;
-
-  dashboardBirthdays.innerHTML = `
-    <div class="dashboard-mini-card dashboard-birthday-current">
-      <h4>${escapeDashboardHtml(selectedBirthdayLabel)} <span class="birthday-count-badge">${thisCountLabel}</span></h4>
-      ${list(thisMonth, `No birthdays for ${selectedBirthdayLabel}.`)}
-    </div>
-    <div class="dashboard-mini-card dashboard-birthday-next">
-      <h4>${escapeDashboardHtml(nextBirthdayLabel)} <span class="birthday-count-badge">${nextCountLabel}</span></h4>
-      ${list(nextMonth, `No birthdays for ${nextBirthdayLabel}.`)}
-    </div>
-  `;
-}
-
-
-function formatDashboardDate(value) {
-  if (!value) return "-";
-  const raw = String(value);
-  const dateOnly = raw.includes("T") ? raw.split("T")[0] : raw.substring(0, 10);
-  const parts = dateOnly.split("-");
-  if (parts.length !== 3) return escapeDashboardHtml(raw);
-  return `${parts[1]}/${parts[2]}/${parts[0]}`;
-}
-
-function formatDashboardTime(value) {
-  if (!value) return "Time TBD";
-  const raw = String(value);
-  const match = raw.match(/(\d{1,2}):(\d{2})/);
-  if (!match) return escapeDashboardHtml(raw);
-
-  let hour = Number(match[1]);
-  const minute = match[2];
-  if (!Number.isFinite(hour)) return escapeDashboardHtml(raw);
-
-  const suffix = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12;
-  if (hour === 0) hour = 12;
-  return `${hour}:${minute} ${suffix}`;
-}
-
-function renderUpcomingSnapshot(rows) {
-  const container = typeof dashboardUpcomingSnapshot !== "undefined"
-    ? dashboardUpcomingSnapshot
-    : document.getElementById("dashboardUpcomingSnapshot");
-
-  if (!container) return;
-
-  if (!rows || rows.length === 0) {
-    container.innerHTML = `
-      <div class="roster-empty-message">No games or team events found for this view.</div>
-    `;
-    return;
-  }
-
-  const snapshotCount = rows.length;
-  const snapshotNote = dashboardSelectedMonth
-    ? `${snapshotCount} ${snapshotCount === 1 ? "game/event" : "games/events"} found for ${formatDashboardMonthLabel(dashboardSelectedMonth)}.`
-    : `Showing next ${snapshotCount} upcoming ${snapshotCount === 1 ? "game/event" : "games/events"}.`;
-
-  const cardsHtml = rows.map(event => {
-    const eventType   = event.EventType  || "Event";
-    const eventName   = event.EventName  || eventType;
-    const dateText    = formatDashboardDate(event.EventDate);
-    const timeText    = formatDashboardTime(event.StartTime);
-    const locationText = event.LocationName || "Location TBD";
-    const snackText   = event.AssignedSnackFamily || event.SnackStatus || "Not assigned yet";
-    const status      = event.EventStatus || "Scheduled";
-
-    // Card border color by type
-    const typeClass = eventType === "Game" ? "snapshot-card--game"
-      : eventType === "Team Event" ? "snapshot-card--team-event"
-      : "snapshot-card--practice";
-
-    const cancelledClass = status === "Cancelled" ? "snapshot-card--cancelled" : "";
-
-    // Status pill
-    const statusPillClass = status === "Completed" ? "snapshot-status--completed"
-      : status === "Cancelled" ? "snapshot-status--cancelled"
-      : "snapshot-status--scheduled";
-    const statusIcon = status === "Completed" ? "✓ " : "";
-
-    // Snack chip — only show for games
-    const snackChip = eventType === "Game"
-      ? `<div class="snapshot-snack-chip">🍎 Snack: ${escapeDashboardHtml(snackText)}</div>`
-      : "";
-
-    // Strikethrough name if cancelled
-    const nameStyle = status === "Cancelled" ? "style=\"text-decoration:line-through;color:#999;\"" : "";
-
-    return `
-      <article class="dashboard-upcoming-card snapshot-card ${typeClass} ${cancelledClass}">
-        <div class="snapshot-topline">
-          <div class="snapshot-name-block">
-            <div class="snapshot-name" ${nameStyle}>${escapeDashboardHtml(eventName)}</div>
-            <div class="snapshot-datetime">${escapeDashboardHtml(dateText)} · ${escapeDashboardHtml(timeText)}</div>
-          </div>
-          <span class="snapshot-status-pill ${statusPillClass}">${statusIcon}${escapeDashboardHtml(status)}</span>
+    <!-- TOP HEADER / BRANDING -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">&#128293;</div>
+        <div>
+          <h1>Fontana Fire FC</h1>
+          <p>Coach Attendance App</p>
         </div>
-        <div class="snapshot-meta">
-          <span><strong>Location:</strong> ${escapeDashboardHtml(locationText)}</span>
-          <span><strong>Type:</strong> ${escapeDashboardHtml(eventType)}</span>
-        </div>
-        ${snackChip}
-      </article>
-    `;
-  }).join("");
-
-  container.innerHTML = `
-    <div class="dashboard-upcoming-count">${escapeDashboardHtml(snapshotNote)}</div>
-    ${cardsHtml}
-  `;
-}
-
-function renderPracticeSummary(summary) {
-  if (!dashboardPracticeSummary) return;
-  const practice = summary || {};
-  const month = dashboardSelectedMonth || "";
-  dashboardPracticeSummary.innerHTML = [
-    renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month", "scroll-upcoming"),
-    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
-    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention", "scroll-attention", {report:"attendance",month,below:70}),
-    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month})
-  ].join("");
-}
-
-function renderGameSummary(summary) {
-  if (!dashboardGameSummary) return;
-  const game = summary || {};
-  const month = dashboardSelectedMonth || "";
-  dashboardGameSummary.innerHTML = [
-    renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month", "scroll-upcoming"),
-    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
-    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "scroll-attention", {report:"attendance",month,below:70}),
-    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "scroll-exceptional", {report:"attendance",month}),
-    renderDashboardCard("Cancelled Games", game.CancelledGames || 0, "Selected month")
-  ].join("");
-}
-
-function renderEventSummary(summary) {
-  if (!dashboardEventSummary) return;
-  const event = summary || {};
-  dashboardEventSummary.innerHTML = [
-    renderDashboardCard("Total Events", event.TotalEvents || 0, "Team events / scrimmages", "scroll-upcoming"),
-    renderDashboardCard("Event Att %", formatDashboardPercent(event.EventAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", event.LowEventPlayers || 0, "Players needing attention", "scroll-attention"),
-    renderDashboardCard("85% or Higher", event.HighEventPlayers || 0, "Strong attendance", "scroll-exceptional"),
-    renderDashboardCard("Cancelled Events", event.CancelledEvents || 0, "Selected month")
-  ].join("");
-}
-
-function getDashboardCategoryConfig(category) {
-  if (category === "practice") {
-    return {
-      label: "Practice",
-      counted: "PracticeCounted",
-      present: "PracticePresent",
-      absent: "PracticeAbsent",
-      excused: "PracticeExcused",
-      cancelled: "PracticeCancelled",
-      percent: "PracticePercent"
-    };
-  }
-
-  if (category === "game") {
-    return {
-      label: "Game",
-      counted: "GameCounted",
-      present: "GamePresent",
-      absent: "GameAbsent",
-      excused: "GameExcused",
-      cancelled: "GameCancelled",
-      percent: "GamePercent"
-    };
-  }
-
-  return {
-    label: "Team Event",
-    counted: "TeamEventCounted",
-    present: "TeamEventPresent",
-    absent: "TeamEventAbsent",
-    excused: "TeamEventExcused",
-    cancelled: "TeamEventCancelled",
-    percent: "TeamEventPercent"
-  };
-}
-
-function getDashboardCategoryDetail(row, category) {
-  const config = getDashboardCategoryConfig(category);
-  const counted = Number(row[config.counted] || 0);
-  const cancelled = Number(row[config.cancelled] || 0);
-  const playerId = row.PlayerID;
-
-  if (!counted && !cancelled) {
-    return `
-      <div class="dashboard-player-detail-box">
-        <strong>${config.label} Details</strong>
-        <p>No ${config.label.toLowerCase()} attendance has been recorded for this player in the selected month.</p>
       </div>
-    `;
-  }
-
-  // Build missed dates list from cache
-  const datesKey = `${playerId}-${category}`;
-  const dates = dashboardPlayerDates[datesKey] || [];
-  const missedDates = dates.filter(d => d.AttendanceStatus === "Absent" || d.AttendanceStatus === "No Record");
-  const presentDates = dates.filter(d => d.AttendanceStatus === "Present");
-  const excusedDates = dates.filter(d => d.AttendanceStatus === "Excused");
-
-  const formatDate = (dateStr) => {
-    const d = new Date(dateStr + "T00:00:00");
-    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-  };
-
-  const missedHtml = missedDates.length > 0
-    ? `<div style="margin-top:8px;">
-        <div style="font-size:12px;font-weight:700;color:#c62828;margin-bottom:4px;">Missed (${missedDates.length})</div>
-        ${missedDates.map(d => `<div style="font-size:12px;color:#555;padding:2px 0;border-bottom:1px solid #f3f4f6;">${formatDate(d.EventDate)}${d.LocationName ? ` · ${d.LocationName}` : ""}</div>`).join("")}
-       </div>`
-    : "";
-
-  const excusedHtml = excusedDates.length > 0
-    ? `<div style="margin-top:8px;">
-        <div style="font-size:12px;font-weight:700;color:#f9a825;margin-bottom:4px;">Excused (${excusedDates.length})</div>
-        ${excusedDates.map(d => `<div style="font-size:12px;color:#555;padding:2px 0;border-bottom:1px solid #f3f4f6;">${formatDate(d.EventDate)}</div>`).join("")}
-       </div>`
-    : "";
-
-  return `
-    <div class="dashboard-player-detail-box">
-      <strong>${config.label} Details</strong>
-      <div class="dashboard-player-detail-grid">
-        <span>Counted: <strong>${counted}</strong></span>
-        <span>Present: <strong>${row[config.present] || 0}</strong></span>
-        <span>Absent: <strong>${row[config.absent] || 0}</strong></span>
-        <span>Excused: <strong>${row[config.excused] || 0}</strong></span>
-        <span>Attendance: <strong>${formatDashboardPercent(row[config.percent])}</strong></span>
-      </div>
-      ${missedHtml}
-      ${excusedHtml}
-      ${dates.length === 0 ? '<p style="font-size:12px;color:#999;margin-top:6px;">Loading dates...</p>' : ""}
-    </div>
-  `;
-}
-
-function renderDashboardCategoryButtons(row, cardType) {
-  const playerId = row.PlayerID;
-
-  function button(category, label, percentField, countedField) {
-    const detailKey = `${cardType}-${playerId}-${category}`;
-    const active = dashboardOpenDetailKey === detailKey;
-    const badgeClass = getDashboardPercentClass(row[percentField], row[countedField]);
-
-    return `
-      <button type="button" class="dashboard-category-btn ${active ? "active-dashboard-category" : ""}" data-dashboard-detail-key="${detailKey}">
-        <span>${label}</span>
-        <strong class="dashboard-percent-badge ${badgeClass}">${formatDashboardPercent(row[percentField])}</strong>
+      <button id="logoutBtn" class="topbar-logout hidden" type="button">
+        <i class="ti ti-logout" aria-hidden="true"></i>
+        <span>Logout</span>
       </button>
-    `;
-  }
+    </header>
 
-  return `
-    <div class="dashboard-alert-metrics dashboard-clickable-metrics">
-      ${button("practice", "Practice", "PracticePercent", "PracticeCounted")}
-      ${button("game", "Game", "GamePercent", "GameCounted")}
-      ${button("teamEvent", "Team Event", "TeamEventPercent", "TeamEventCounted")}
-    </div>
-  `;
-}
+    <!-- MAIN APP AREA -->
+    <main class="container">
 
-function getOpenDashboardDetail(row, cardType) {
-  const playerId = row.PlayerID;
-  const prefix = `${cardType}-${playerId}-`;
+      <!-- LOGIN SCREEN -->
+      <section id="loginScreen" class="card">
+        <h2>Login</h2>
 
-  if (!dashboardOpenDetailKey || !dashboardOpenDetailKey.startsWith(prefix)) return "";
-
-  const category = dashboardOpenDetailKey.replace(prefix, "");
-  return getDashboardCategoryDetail(row, category);
-}
-
-function renderPlayerAlertCard(row, cardType = "attention") {
-  const playerName = `${row.FirstName || ""} ${row.LastName || ""}`.trim();
-  const groupLabel = row.BirthYear || row.GroupCode || "-";
-  const issue = row.AlertType || row.HighlightType || "Review";
-  const issueDetail = row.AlertDetail || row.HighlightDetail || "Review attendance record.";
-  const isExceptional = cardType === "exceptional";
-  const isPerfect = cardType === "perfect";
-  const isGood = cardType === "good";
-
-  return `
-    <article class="dashboard-alert-card ${isExceptional ? "dashboard-exceptional-card" : ""} ${isPerfect ? "dashboard-perfect-card" : ""} ${isGood ? "dashboard-good-card" : ""}">
-      <div class="dashboard-alert-topline">
-        <div>
-          <h4>${escapeDashboardHtml(playerName || "Player")}</h4>
-          <p>Birth Year: <strong>${escapeDashboardHtml(groupLabel)}</strong></p>
+        <!-- EMAIL INPUT -->
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="Email" />
         </div>
-        <span class="dashboard-alert-badge ${isExceptional ? "dashboard-exceptional-badge" : ""} ${isPerfect ? "dashboard-perfect-badge" : ""} ${isGood ? "dashboard-good-badge" : ""}">${escapeDashboardHtml(issue)}</span>
-      </div>
 
-      <p class="dashboard-alert-detail">${escapeDashboardHtml(issueDetail)}</p>
-
-      ${renderDashboardCategoryButtons(row, cardType)}
-      ${getOpenDashboardDetail(row, cardType)}
-    </article>
-  `;
-}
-
-function renderCollapsiblePlayerSection(container, countEl, rows, cardType, emptyText) {
-  if (countEl) {
-    const count = rows && rows.length ? rows.length : 0;
-    countEl.textContent = `${count} ${count === 1 ? "player" : "players"}`;
-  }
-
-  if (!container) return;
-
-  if (!rows || rows.length === 0) {
-    container.innerHTML = `<div class="roster-empty-message">${escapeDashboardHtml(emptyText)}</div>`;
-    return;
-  }
-
-  container.innerHTML = rows.map(row => renderPlayerAlertCard(row, cardType)).join("");
-}
-
-function renderPlayerAlerts(rows) {
-  renderCollapsiblePlayerSection(
-    dashboardPlayerAlerts,
-    dashboardPlayerAlertsCount,
-    rows,
-    "attention",
-    "No players are at 70% or lower for practices or games in the selected month."
-  );
-}
-
-function renderGoodPlayers(rows) {
-  renderCollapsiblePlayerSection(
-    dashboardGoodPlayers,
-    dashboardGoodPlayersCount,
-    rows,
-    "good",
-    "No players in the 71%–84% attendance range for the selected month."
-  );
-}
-
-function renderPerfectPlayers(rows) {
-  renderCollapsiblePlayerSection(
-    dashboardPerfectPlayers,
-    dashboardPerfectPlayersCount,
-    rows,
-    "perfect",
-    "No players have 100% attendance for both practices and games in the selected month yet."
-  );
-}
-
-function renderExceptionalPlayers(rows) {
-  renderCollapsiblePlayerSection(
-    dashboardExceptionalPlayers,
-    dashboardExceptionalPlayersCount,
-    rows,
-    "exceptional",
-    "No players have outstanding attendance at 85% or higher for both practices and games in the selected month yet."
-  );
-}
-
-function renderSummaryPanel(category) {
-  const panel = document.getElementById("dashboardSummaryPanel");
-  if (!panel) return;
-  if (!category) { panel.innerHTML = ""; return; }
-
-  const players = dashboardSummaryPlayerCache[category] || [];
-
-  const titles = {
-    active:    "Active Players",
-    paperwork: "Missing Paperwork",
-    photo:     "Missing Photo Release",
-    emergency: "Missing Emergency Info",
-    snack:     "Bring Snack Players",
-    paidout:   "Paid Out Players"
-  };
-
-  const subtitles = {
-    active:    "All currently active players",
-    paperwork: "These players need paperwork completed",
-    photo:     "These players have not returned photo release",
-    emergency: "These players are missing emergency contact name or phone",
-    snack:     "These families are in the snack rotation",
-    paidout:   "Coach provides snacks for these players"
-  };
-
-  // Map dashboard card categories to report accordion + filter config
-  const reportLinks = {
-    paperwork: { report: "paperwork", label: "Paperwork Report" },
-    photo:     { report: "paperwork", label: "Paperwork Report" },
-    emergency: { report: "emergency", label: "Emergency Contacts" },
-    active:    { report: "roster",    label: "Full Roster" },
-  };
-
-  const reportLink = reportLinks[category];
-  const reportBtn = reportLink
-    ? `<button onclick="openReportFromDashboard('${reportLink.report}')"
-        style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:#f57c00;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
-        → ${escapeDashboardHtml(reportLink.label)}
-      </button>`
-    : "";
-
-  const formatPlayer = (p) => {
-    const num = p.PlayerNumber ? `#${p.PlayerNumber}` : "";
-    const extra = {
-      paperwork: p.PaperworkStatus ? ` · ${p.PaperworkStatus}` : " · Not Received",
-      photo:     p.PhotoReleaseStatus ? ` · ${p.PhotoReleaseStatus}` : " · Not Received",
-      emergency: (p.EmergencyContactName ? "" : " · No contact name") + (p.EmergencyContactPhone ? "" : " · No phone"),
-      active:    p.BirthYear ? ` · ${p.BirthYear}` : "",
-      snack:     "",
-      paidout:   ""
-    }[category] || "";
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:13px;">
-      <span style="font-weight:700;color:#111827;">${escapeDashboardHtml(`${p.FirstName} ${p.LastName}`.trim())}</span>
-      <span style="color:#6b7280;font-size:12px;">${escapeDashboardHtml(num + extra)}</span>
-    </div>`;
-  };
-
-  panel.innerHTML = `
-    <div style="margin-top:12px;background:#fff;border:1px solid #e1e5ea;border-radius:14px;padding:14px;border-left:4px solid #f57c00;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div>
-          <div style="font-weight:800;font-size:15px;color:#111827;">${escapeDashboardHtml(titles[category] || "")}</div>
-          <div style="font-size:12px;color:#6b7280;margin-top:2px;">${escapeDashboardHtml(subtitles[category] || "")} · ${players.length} player${players.length !== 1 ? "s" : ""}</div>
+        <!-- PASSWORD INPUT -->
+        <div class="form-row">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="Password" />
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          ${reportBtn}
-          <button onclick="dashboardOpenSummaryCard=''; document.getElementById('dashboardSummaryPanel').innerHTML='';" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;padding:4px;">✕</button>
+
+        <!-- LOGIN BUTTON / MESSAGE -->
+        <button id="loginBtn" class="btn btn-primary">
+          <span id="loginBtnText">Login</span>
+        </button>
+
+        <!-- LOGIN LOADING CUE -->
+        <div id="loginLoading" class="login-loading fire-loader-v5 hidden" aria-live="polite">
+          <div class="fire-scene-v5" aria-hidden="true">
+
+            <svg class="flame-svg" viewBox="0 0 300 110" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Main trail gradient left to right -->
+        <radialGradient id="trail" cx="100%" cy="50%" r="100%" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stop-color="#ffffff"  stop-opacity="1"/>
+          <stop offset="10%"  stop-color="#fef3c7"  stop-opacity="1"/>
+          <stop offset="28%"  stop-color="#fbbf24"  stop-opacity="0.95"/>
+          <stop offset="52%"  stop-color="#ea580c"  stop-opacity="0.82"/>
+          <stop offset="76%"  stop-color="#991b1b"  stop-opacity="0.42"/>
+          <stop offset="100%" stop-color="#450a0a"  stop-opacity="0"/>
+        </radialGradient>
+        <!-- Ring glow around ball -->
+        <radialGradient id="ring" cx="50%" cy="50%" r="50%">
+          <stop offset="55%"  stop-color="#f97316"  stop-opacity="0"/>
+          <stop offset="72%"  stop-color="#f97316"  stop-opacity="0.55"/>
+          <stop offset="82%"  stop-color="#fbbf24"  stop-opacity="0.8"/>
+          <stop offset="90%"  stop-color="#ffffff"  stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#f97316"  stop-opacity="0"/>
+        </radialGradient>
+        <!-- Wrap arc gradient -->
+        <linearGradient id="arcTop" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%"   stop-color="#fbbf24"  stop-opacity="0.9"/>
+          <stop offset="50%"  stop-color="#f97316"  stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#dc2626"  stop-opacity="0.2"/>
+        </linearGradient>
+        <linearGradient id="arcBot" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stop-color="#fbbf24"  stop-opacity="0.9"/>
+          <stop offset="50%"  stop-color="#f97316"  stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#dc2626"  stop-opacity="0.2"/>
+        </linearGradient>
+        <filter id="glow1"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="glow2"><feGaussianBlur stdDeviation="7"/></filter>
+        <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+      </defs>
+
+      <!-- Ball center = x:242, y:55 (right:2px in 300px scene, 56px ball = center at 272-28=244) -->
+
+      <!-- ── BIG BACKGROUND GLOW ── -->
+      <ellipse cx="264" cy="55" rx="62" ry="52" fill="#f97316" opacity="0.15" filter="url(#glow2)"/>
+      <ellipse cx="240" cy="55" rx="75" ry="32" fill="#f97316" opacity="0.12" filter="url(#glow2)"/>
+
+      <!-- ── MAIN JET TRAIL ── -->
+      <!-- Outer blast cone -->
+      <ellipse cx="190" cy="55" rx="95" ry="32" fill="url(#trail)" opacity="0.4" filter="url(#soft)">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.04 0.93;0.96 1.07;1 1" dur="0.52s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Mid blast -->
+      <ellipse cx="200" cy="55" rx="80" ry="22" fill="url(#trail)" opacity="0.65">
+        <animateTransform attributeName="transform" type="scale" values="1 1;0.97 1.07;1.04 0.92;1 1" dur="0.40s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Inner hot core -->
+      <ellipse cx="216" cy="55" rx="62" ry="14" fill="url(#trail)" opacity="0.88">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.06 0.88;0.94 1.1;1 1" dur="0.28s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+      <!-- Bright streak -->
+      <ellipse cx="228" cy="55" rx="46" ry="7" fill="url(#trail)" opacity="0.96">
+        <animateTransform attributeName="transform" type="scale" values="1 1;1.09 0.84;0.91 1.14;1 1" dur="0.2s" repeatCount="indefinite" additive="sum"/>
+      </ellipse>
+
+      <!-- ── SPEED LINES ── -->
+      <line x1="12" y1="55" x2="215" y2="55" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.35">
+        <animate attributeName="x1" values="12;45;12" dur="0.33s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.35;0.75;0.35" dur="0.33s" repeatCount="indefinite"/>
+      </line>
+      <line x1="25" y1="47" x2="218" y2="47" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.3">
+        <animate attributeName="x1" values="25;52;25" dur="0.4s" repeatCount="indefinite"/>
+      </line>
+      <line x1="25" y1="63" x2="218" y2="63" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.3">
+        <animate attributeName="x1" values="25;48;25" dur="0.37s" repeatCount="indefinite"/>
+      </line>
+
+      <!-- ── RING OF FIRE AROUND BALL ── -->
+      <!-- Glowing ring halo -->
+      <circle cx="264" cy="55" r="36" fill="url(#ring)" filter="url(#glow1)">
+        <animate attributeName="r" values="36;38;35;37;36" dur="0.45s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0.85;1;0.9;1" dur="0.45s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Top wrap arc - fire curling over the top of the ball -->
+      <path d="M 236,26 C 244,18 258,14 272,16 C 284,18 294,26 298,36 C 292,28 280,22 268,22 C 256,22 244,28 236,36 Z"
+        fill="url(#arcTop)" opacity="0.85">
+        <animateTransform attributeName="transform" type="rotate" values="0 264 55;4 264 55;-4 264 55;0 264 55" dur="0.48s" repeatCount="indefinite" additive="sum"/>
+        <animate attributeName="opacity" values="0.85;0.6;0.9;0.75;0.85" dur="0.48s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- Bottom wrap arc - fire curling under the ball -->
+      <path d="M 236,84 C 244,92 258,96 272,94 C 284,92 294,84 298,74 C 292,82 280,88 268,88 C 256,88 244,82 236,74 Z"
+        fill="url(#arcBot)" opacity="0.8">
+        <animateTransform attributeName="transform" type="rotate" values="0 244 55;-4 264 55;4 264 55;0 264 55" dur="0.52s" repeatCount="indefinite" additive="sum"/>
+        <animate attributeName="opacity" values="0.8;0.95;0.65;0.85;0.8" dur="0.52s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- Left-side flame tongues connecting trail to ring -->
+      <path d="M 225,38 C 232,32 240,28 248,30 C 240,34 236,40 234,48 C 230,42 226,38 225,38 Z"
+        fill="#fbbf24" opacity="0.7">
+        <animate attributeName="opacity" values="0.7;0.4;0.8;0.55;0.7" dur="0.38s" repeatCount="indefinite"/>
+      </path>
+      <path d="M 225,72 C 232,78 240,82 248,80 C 240,76 236,70 234,62 C 230,68 226,72 225,72 Z"
+        fill="#f97316" opacity="0.65">
+        <animate attributeName="opacity" values="0.65;0.9;0.45;0.75;0.65" dur="0.42s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- ── PARTICLES ── -->
+      <circle cx="160" cy="52" r="2.2" fill="#fde68a" opacity="0.85">
+        <animate attributeName="cx" values="160;120;160" dur="1.0s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.85;0.1;0.85" dur="1.0s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="185" cy="57" r="1.8" fill="#fb923c" opacity="0.8">
+        <animate attributeName="cx" values="185;145;185" dur="0.88s" begin="0.22s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0.1;0.8" dur="0.88s" begin="0.22s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="175" cy="48" r="1.5" fill="#fbbf24" opacity="0.75">
+        <animate attributeName="cx" values="175;138;175" dur="0.95s" begin="0.44s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.75;0.1;0.75" dur="0.95s" begin="0.44s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="200" cy="53" r="1.3" fill="#ffffff" opacity="0.9">
+        <animate attributeName="cx" values="200;166;200" dur="0.75s" begin="0.1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.9;0.1;0.9" dur="0.75s" begin="0.1s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Sparks flying off the ring -->
+      <circle cx="264" cy="20" r="1.8" fill="#fde68a">
+        <animateMotion dur="0.9s" repeatCount="indefinite" path="M0,0 C2,-10 0,-20 4,-28"/>
+        <animate attributeName="opacity" values="0;1;0.8;0" dur="0.9s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="288" cy="28" r="1.4" fill="#fb923c">
+        <animateMotion dur="0.72s" begin="0.25s" repeatCount="indefinite" path="M0,0 C8,-6 14,-10 18,-16"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.72s" begin="0.25s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="264" cy="90" r="1.6" fill="#facc15">
+        <animateMotion dur="0.82s" begin="0.5s" repeatCount="indefinite" path="M0,0 C2,10 0,20 4,28"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.82s" begin="0.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="290" cy="80" r="1.2" fill="#f97316">
+        <animateMotion dur="0.68s" begin="0.15s" repeatCount="indefinite" path="M0,0 C8,6 14,10 18,16"/>
+        <animate attributeName="opacity" values="0;0.9;0" dur="0.68s" begin="0.15s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="296" cy="55" r="1.5" fill="#fbbf24">
+        <animateMotion dur="0.78s" begin="0.35s" repeatCount="indefinite" path="M0,0 C12,0 20,2 28,0"/>
+        <animate attributeName="opacity" values="0;1;0" dur="0.78s" begin="0.35s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+
+            <!-- Soccer ball -->
+            <div class="soccer-shell-v5">
+              <span class="ball-aura-v5"></span>
+              <span class="soccer-ball-v5">&#9917;</span>
+            </div>
+
+          </div>
+
+          <div class="loader-text">Connecting to Attendance App...</div>
+          <p class="loader-subtext">Please wait while we log you in.</p>
         </div>
-      </div>
-      ${players.length === 0
-        ? `<div style="color:#999;font-size:13px;padding:8px 0;">No players found.</div>`
-        : `<div style="max-height:280px;overflow-y:auto;">${players.map(formatPlayer).join("")}</div>`
-      }
-    </div>
-  `;
-}
 
-function setupDashboardDetailClickHandlers() {
-  [dashboardPlayerAlerts, dashboardGoodPlayers, dashboardPerfectPlayers, dashboardExceptionalPlayers].forEach(container => {
-    if (!container || container.dataset.detailListenerAttached) return;
+        <p id="loginMessage" class="message"></p>
+      </section>
 
-    container.dataset.detailListenerAttached = "1";
-    container.addEventListener("click", async event => {
-      const button = event.target.closest(".dashboard-category-btn");
-      if (!button) return;
+      <!-- LOGGED-IN APP SCREEN -->
+      <section id="appScreen" class="card hidden">
 
-      const nextKey = button.dataset.dashboardDetailKey || "";
-      dashboardOpenDetailKey = dashboardOpenDetailKey === nextKey ? "" : nextKey;
+        <!-- USER WELCOME INFO -->
+        <h2 id="welcomeText">Welcome</h2>
+        <p id="roleText" class="subtext"></p>
 
-      // Load missed dates if opening a category
-      if (dashboardOpenDetailKey) {
-        const parts = dashboardOpenDetailKey.split("-");
-        const playerId = parts[1];
-        const category = parts[2];
-        const eventTypeMap = { practice: "Practice", game: "Game", teamEvent: "Team Event" };
-        const eventType = eventTypeMap[category] || null;
+        <!-- GROUP FILTER -->
+        <div class="form-row">
+          <label for="groupSelect">Group</label>
+          <select id="groupSelect">
+            <option value="">All Groups</option>
+          </select>
+        </div>
 
-        if (playerId && eventType) {
-          const monthParam = dashboardSelectedMonth ? `&month=${dashboardSelectedMonth}` : "";
-          try {
-            const res = await fetch(`${API_BASE}/dashboard/player-dates/${playerId}?eventType=${encodeURIComponent(eventType)}${monthParam}`, {
-              credentials: "include"
-            });
-            const data = await res.json();
-            if (data.success) {
-              dashboardPlayerDates[`${playerId}-${category}`] = data.dates;
-            }
-          } catch (e) {
-            console.error("Failed to load player dates:", e);
-          }
-        }
-      }
+        <!-- TABS -->
+        <div class="tabs">
+          <button id="dashboardTab" class="tab active"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dash</button>
+          <button id="practiceTab" class="tab"><i class="ti ti-run" aria-hidden="true"></i>Practice</button>
+          <button id="gamesTab" class="tab"><i class="ti ti-ball-football" aria-hidden="true"></i>Games</button>
+          <button id="teamEventsTab" class="tab"><i class="ti ti-calendar-event" aria-hidden="true"></i>Events</button>
+          <button id="playerManagementTab" class="tab"><i class="ti ti-users" aria-hidden="true"></i>Players</button>
+          <button id="reportsTab" class="tab hidden"><i class="ti ti-file-analytics" aria-hidden="true"></i>Reports</button>
+          <button id="userManagementTab" class="tab hidden"><i class="ti ti-shield-lock" aria-hidden="true"></i>Users</button>
+          <button id="helpTab" class="tab"><i class="ti ti-help-circle" aria-hidden="true"></i>Help</button>
+        </div>
 
-      if (typeof loadDashboard === "function") {
-        loadDashboard();
-      }
-    });
-  });
-}
+        <!-- DASHBOARD / REPORTS SECTION
+             Shows club totals, paperwork/snack counts, birthdays,
+             monthly attendance summaries, and player attendance reports.
+        -->
+        <section id="dashboardSection" class="dashboard-section">
+          <div class="dashboard-header">
+            <div>
+              <h3>Dashboard</h3>
+              <p class="subtext">Quick reports for attendance, roster status, paperwork, snacks, and birthdays.</p>
+            </div>
 
-async function loadDashboard() {
-  if (!dashboardSection) return;
+            <div class="dashboard-header-actions">
+              <label class="dashboard-month-filter-label" for="dashboardMonthFilter">
+                Month
+                <select id="dashboardMonthFilter">
+                  <option value="">All Months</option>
+                </select>
+              </label>
 
-  try {
-    setMessage(dashboardMessage, "Loading dashboard...", false);
+              <button id="refreshDashboardBtn" type="button" class="btn btn-secondary">
+                Refresh Dashboard
+              </button>
+            </div>
+          </div>
 
-    if (refreshDashboardBtn) {
-      refreshDashboardBtn.disabled = true;
-      refreshDashboardBtn.textContent = "Loading...";
-    }
+          <p id="dashboardMessage" class="message"></p>
+          <p id="dashboardLastUpdated" class="dashboard-last-updated">Last updated: -</p>
 
-    ensureDashboardMonthFilterOptions();
-    setupDashboardDetailClickHandlers();
+          <div id="dashboardSummaryCards" class="dashboard-card-grid"></div>
 
-    const dashboardParams = new URLSearchParams();
-    if (dashboardSelectedMonth) dashboardParams.set("month", dashboardSelectedMonth);
+          <div class="dashboard-report-section dashboard-birthday-section">
+            <h3 id="dashboardBirthdaysHeading">Birthdays</h3>
+            <div id="dashboardBirthdays" class="dashboard-mini-list"></div>
+          </div>
 
-    const dashboardUrl = dashboardParams.toString()
-      ? `${API_BASE}/dashboard?${dashboardParams.toString()}`
-      : `${API_BASE}/dashboard`;
+          <div class="dashboard-report-section dashboard-upcoming-snapshot-section">
+            <h3>Upcoming Games / Snack Snapshot</h3>
+            <p class="subtext dashboard-section-note">Quick look at game and team-event dates, times, locations, and snack assignment status.</p>
+            <div id="dashboardUpcomingSnapshot" class="dashboard-upcoming-snapshot-list"></div>
+          </div>
 
-    const res = await fetch(dashboardUrl, {
-      credentials: "include",
-      cache: "no-store"
-    });
+          <div class="dashboard-report-section">
+            <h3>Monthly Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Shows total practices, games, team events, and attendance percentages for the selected month.</p>
+            <div id="dashboardMonthlySummary" class="dashboard-table-wrap"></div>
+          </div>
 
-    const data = await res.json();
+          <div class="dashboard-report-section">
+            <h3>Practice Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Quick practice-only view for the selected month.</p>
+            <div id="dashboardPracticeSummary" class="dashboard-card-grid"></div>
+          </div>
 
-    if (!res.ok || !data.success) {
-      setMessage(dashboardMessage, data.message || "Could not load dashboard.", true);
-      return;
-    }
+          <div class="dashboard-report-section">
+            <h3>Game Attendance Summary</h3>
+            <p class="subtext dashboard-section-note">Quick game-only view for the selected month.</p>
+            <div id="dashboardGameSummary" class="dashboard-card-grid"></div>
+          </div>
 
-    renderDashboardSummaryCards(data);
-    renderBirthdays(data.birthdays || {});
-    renderUpcomingSnapshot(data.upcomingSnapshot || []);
-    renderMonthlySummary(data.monthlySummary || []);
-    renderPracticeSummary(data.practiceSummary || {});
-    renderGameSummary(data.gameSummary || {});
-    renderEventSummary(data.eventSummary || {});
-    renderPlayerAlerts(data.playerAlerts || []);
-    renderGoodPlayers(data.goodPlayers || []);
-    renderExceptionalPlayers(data.exceptionalPlayers || []);
-    renderPerfectPlayers(data.perfectPlayers || []);
+          <div class="dashboard-report-section">
+            <h3>Event Summary</h3>
+            <p class="subtext dashboard-section-note">Quick team-event, scrimmage, and get-together view for the selected month.</p>
+            <div id="dashboardEventSummary" class="dashboard-card-grid"></div>
+          </div>
 
-    // Wire stat card scroll-to handlers for Practice/Game/Event summaries
-    [dashboardPracticeSummary, dashboardGameSummary, dashboardEventSummary].forEach(container => {
-      if (!container) return;
-      container.querySelectorAll("[data-dash-action]").forEach(card => {
-        card.addEventListener("click", () => {
-          const action = card.dataset.dashAction;
-          let target = null;
-          if (action === "scroll-attention") target = dashboardPlayerAlerts;
-          if (action === "scroll-exceptional") target = dashboardExceptionalPlayers;
-          if (action === "scroll-upcoming") target = document.getElementById("dashboardUpcomingSnapshotSection") || dashboardSection;
-          if (target) {
-            // Open the collapsible if closed
-            const details = target.closest("details");
-            if (details && !details.open) details.open = true;
-            target.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardPlayerAlertsDetails">
+            <summary>Players Needing Attention: <span id="dashboardPlayerAlertsCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows players at 70% or lower for practices or games. Click Practice, Game, or Team Event to view details.</p>
+            <div id="dashboardPlayerAlerts" class="dashboard-alert-list"></div>
+          </details>
+
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardGoodPlayersDetails">
+            <summary>Good Attendance: <span id="dashboardGoodPlayersCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Players at 71%–84% attendance for the selected month.</p>
+            <div id="dashboardGoodPlayers" class="dashboard-alert-list dashboard-good-list"></div>
+          </details>
+
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardExceptionalPlayersDetails">
+            <summary>Outstanding Attendance: <span id="dashboardExceptionalPlayersCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows outstanding players at 85% or higher for practices or games, excluding Perfect Attendance Club players.</p>
+            <div id="dashboardExceptionalPlayers" class="dashboard-alert-list dashboard-exceptional-list"></div>
+          </details>
+
+          <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardPerfectPlayersDetails">
+            <summary>Perfect Attendance Club: <span id="dashboardPerfectPlayersCount">0 players</span></summary>
+            <p class="subtext dashboard-section-note">Shows players with 100% attendance for both practices and games in the selected month.</p>
+            <div id="dashboardPerfectPlayers" class="dashboard-alert-list dashboard-perfect-list"></div>
+          </details>
+        </section>
+
+        <!-- EVENT SELECTOR ROW + DOTS MENU -->
+        <div id="practiceTabHeader" class="practice-tab-header hidden">
+          <h3>Practice</h3>
+          <button id="generateScheduleBtn" class="btn-schedule" type="button">
+            <i class="ti ti-calendar-plus" aria-hidden="true"></i> Schedule
+          </button>
+        </div>
+
+        <!-- PRACTICE SHOW ALL TOGGLE — visible to all roles on Practice tab -->
+        <div id="practiceFilterBar" class="hidden" style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;cursor:pointer;">
+            <input type="checkbox" id="practiceShowAllToggle" style="width:auto;margin:0;padding:0;" />
+            Show all dates
+          </label>
+        </div>
+
+        <div class="event-selector-row">
+          <select id="eventSelect">
+            <option value="">Select event</option>
+          </select>
+          <button id="eventDotsBtn" type="button" class="event-dots-btn hidden" aria-label="Event actions">
+            <i class="ti ti-dots-vertical" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <!-- DOTS DROPDOWN MENU -->
+        <div id="eventDotsMenu" class="event-dots-menu hidden">
+          <button id="cancelEventBtn" type="button" class="hidden dots-menu-danger">
+            <i class="ti ti-ban" aria-hidden="true"></i> Cancel event
+          </button>
+          <button id="restoreEventBtn" type="button" class="hidden">
+            <i class="ti ti-refresh" aria-hidden="true"></i> Restore event
+          </button>
+          <button id="deleteEventBtn" type="button" class="dots-menu-delete hidden">
+            <i class="ti ti-trash" aria-hidden="true"></i> Delete event
+          </button>
+        </div>
+
+        <!-- COMPACT EVENT STATUS BAR -->
+        <div id="eventCompactBar" class="event-compact-bar hidden">
+          <div class="event-compact-info">
+            <span id="eventCompactDate" class="event-compact-time"></span>
+            <span class="event-compact-dot">·</span>
+            <span id="eventCompactTime"></span>
+            <span id="eventCompactLocationWrap"><span class="event-compact-dot">·</span><span id="eventCompactLocation"></span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span id="eventCompactStatus" class="event-compact-status"></span>
+            <span id="eventCompactCount" class="event-compact-count hidden"></span>
+          </div>
+        </div>
+
+        <!-- HIDDEN SPANS kept for JS compatibility -->
+        <span id="eventDetailDate" class="hidden"></span>
+        <span id="eventDetailType" class="hidden"></span>
+        <span id="eventDetailTeams" class="hidden"></span>
+        <span id="eventDetailStatus" class="hidden"></span>
+        <span id="eventDetailStartTime" class="hidden"></span>
+        <span id="eventDetailEndTime" class="hidden"></span>
+        <span id="eventDetailLocation" class="hidden"></span>
+        <span id="eventDetailNotes" class="hidden"></span>
+        <div id="eventDetailsSection" class="hidden"></div>
+        <div id="eventActionButtons" class="hidden"></div>
+
+        <!-- TEAM EVENT WORKFLOW BUTTON
+             Appears when an existing Team Event is selected so
+             creating a new event does not stay mixed with roster work.
+        -->
+        <div id="teamEventWorkflowBar" class="event-workflow-bar hidden">
+          <button id="showTeamEventFormBtn" type="button" class="btn btn-secondary">
+            + Add New Team Event
+          </button>
+        </div>
+
+        <!-- MANAGE EVENT ROSTER SECTION
+             Only shown for selected Games and Team Events.
+             Practices stay group-based and do not use custom rosters.
+        -->
+        <div id="eventRosterSection" class="form-row hidden">
+          <h3>Manage Event Roster</h3>
+
+          <p id="eventRosterHelp" class="subtext roster-help"></p>
+
+          <div class="roster-tools">
+            <div id="eventRosterSummary" class="roster-summary">
+              Selected Players: 0
+            </div>
+
+            <div class="roster-action-buttons">
+              <button id="selectAllRosterBtn" type="button" class="btn btn-secondary">
+                Select All
+              </button>
+              <button id="clearRosterBtn" type="button" class="btn btn-secondary">
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          <div id="eventRosterList" class="event-roster-list"></div>
+
+          <div class="roster-footer-actions">
+            <button id="saveRosterBtn" type="button" class="btn btn-primary">
+              Save Roster
+            </button>
+
+            <button id="continueToAttendanceBtn" type="button" class="btn btn-secondary hidden">
+              Continue to Attendance
+            </button>
+          </div>
+
+          <p id="eventRosterMessage" class="message"></p>
+        </div>
+
+        <!-- ADD TEAM EVENT SECTION
+             Only shown when the Team Events tab is selected.
+        -->
+        <div id="teamEventSection" class="form-row hidden">
+          <h3>Add Team Event</h3>
+
+          <!-- MULTI-GROUP SELECTOR -->
+          <label>Teams Included</label>
+          <div class="team-event-group-box">
+            <label class="team-event-group-option">
+              <input type="checkbox" id="teamEventAllGroups" />
+              All Groups
+            </label>
+
+            <div id="teamEventGroupCheckboxes"></div>
+          </div>
+
+          <label for="newTeamEventName">Event Name</label>
+          <input
+            id="newTeamEventName"
+            type="text"
+            placeholder="Event name, such as Scrimmage"
+          />
+
+          <label for="newTeamEventDate">Event Date</label>
+          <input id="newTeamEventDate" type="date" />
+
+          <label for="newTeamEventStartTime">Start Time</label>
+          <input id="newTeamEventStartTime" type="time" />
+
+          <label for="newTeamEventEndTime">End Time</label>
+          <input id="newTeamEventEndTime" type="time" />
+
+          <label for="newTeamEventLocation">Location</label>
+          <input
+            id="newTeamEventLocation"
+            type="text"
+            placeholder="Location"
+          />
+
+          <label for="newTeamEventNotes">Notes</label>
+          <textarea
+            id="newTeamEventNotes"
+            placeholder="Notes"
+          ></textarea>
+
+          <button id="addTeamEventBtn" type="button" class="btn btn-primary">
+            Add Team Event
+          </button>
+
+          <p id="teamEventMessage" class="message"></p>
+        </div>
+
+        <!-- ATTENDANCE SECTION
+             For Games and Team Events this stays hidden while
+             staff are still building the roster.
+        -->
+        <section id="attendanceSection">
+          <div class="attendance-mode-header">
+            <button id="editRosterBtn" type="button" class="btn btn-outline hidden" style="margin-top:8px;">
+              Edit Roster
+            </button>
+          </div>
+
+          <!-- PLAYER ATTENDANCE LIST -->
+          <div class="form-row">
+            <h3>Players</h3>
+
+          <!-- COMPACT ATTENDANCE TOOLBAR -->
+            <div class="attendance-compact-toolbar">
+              <div class="attendance-compact-search-row">
+                <i class="ti ti-search" style="font-size:16px;color:#9ca3af;flex-shrink:0;" aria-hidden="true"></i>
+                <input
+                  id="attendanceSearchInputCompact"
+                  type="text"
+                  placeholder="Search players..."
+                  autocomplete="off"
+                />
+                <button id="attendanceFilterIconBtn" class="attendance-filter-icon-btn" type="button" aria-label="Filters">
+                  <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="attendance-compact-meta-row">
+                <div id="attendanceSummary" class="attendance-compact-summary">
+                  Present: 0 · Absent: 0 · Remaining: 0
+                </div>
+                <label class="attendance-compact-hide-toggle">
+                  <input type="checkbox" id="hideMarkedToggle" checked />
+                  Hide marked
+                </label>
+              </div>
+            </div>
+
+            <!-- ATTENDANCE SUMMARY / HIDE COMPLETED TOOLS (legacy, hidden) -->
+            <div class="attendance-tools hidden" aria-hidden="true">
+              <button id="showCompletedBtn" type="button" class="btn btn-secondary">
+                Show Completed Attendance (0)
+              </button>
+            </div>
+
+            <!-- PLAYERS STILL NEEDING ATTENDANCE -->
+            <div id="playerList"></div>
+
+            <!-- COMPLETED / MARKED PLAYERS -->
+            <div id="completedPlayerList" class="completed-player-list hidden"></div>
+          </div>
+
+          <!-- SUBMIT ATTENDANCE -->
+          <button id="saveAttendanceBtn" class="btn btn-primary">
+            Submit Attendance
+          </button>
+          <p id="attendanceMessage" class="message"></p>
+        </section>
+
+        <hr />
+
+        <!-- PLAYER MANAGEMENT SECTION
+             Player admin work lives here instead of always showing
+             under the attendance/event flow.
+        -->
+        <section id="playerManagementSection" class="hidden">
+          <h3>Player Management</h3>
+          <p class="subtext">Search players, review active/inactive status, and add new players.</p>
+
+          <div class="player-management-tools">
+            <label for="playerSearchInput">Search Players</label>
+            <input
+              id="playerSearchInput"
+              type="text"
+              placeholder="Search by name, group, or player number"
+            />
+
+            <label class="hide-marked-toggle player-management-toggle">
+              <input type="checkbox" id="showInactivePlayersToggle" />
+              Show inactive players
+            </label>
+
+            <button id="refreshPlayersBtn" type="button" class="btn btn-secondary">
+              Refresh Players
+            </button>
+          </div>
+
+          <div id="playerManagementSummary" class="attendance-summary">
+            Active: 0 | Inactive: 0
+          </div>
+
+          <div id="playerManagementList" class="player-management-list"></div>
+
+          <hr />
+
+          <!-- ADD PLAYER SECTION -->
+          <div id="addPlayerSection" class="form-row">
+            <h3>Add Player</h3>
+
+            <input id="newFirstName" type="text" placeholder="First name" />
+            <input id="newLastName" type="text" placeholder="Last name" />
+
+            <select id="newBirthYear">
+              <option value="">Select birth year</option>
+              <option value="2012">2012</option>
+              <option value="2013">2013</option>
+              <option value="2014">2014</option>
+              <option value="2015">2015</option>
+              <option value="2016">2016</option>
+              <option value="2017">2017</option>
+              <option value="2018">2018</option>
+              <option value="2019">2019</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+            </select>
+
+            <button id="addPlayerBtn" class="btn btn-primary">
+              Add Player
+            </button>
+
+            <p id="addPlayerMessage" class="message"></p>
+          </div>
+        </section>
+
+        <!-- APP VERSION -->
+        <div class="app-version">
+          <div>Web App: <span id="webVersionText">loading...</span></div>
+          <div>API: <span id="apiVersionText">loading...</span></div>
+        </div>
+
+        <!-- REPORTS SECTION -->
+        <section id="reportsSection" class="hidden">
+          <div id="reportsContainer"></div>
+        </section>
+
+        <!-- HELP SECTION -->
+        <section id="helpSection" class="hidden">
+          <div id="helpContainer"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <!-- AUTOMATIC VERSION LOADER
+       - Reads app/version.json created by push-website.bat.
+       - Adds that version to style.css and each split JS file.
+       - Loads split files in order so bootstrap runs last.
+  -->
+  <script>
+    (async function loadVersionedAssets() {
+      let versionInfo = {
+        webVersion: "web-dev",
+        buildDate: null
+      };
+
+      try {
+        const response = await fetch("version.json?ts=" + Date.now(), {
+          cache: "no-store"
         });
+
+        if (response.ok) {
+          versionInfo = await response.json();
+        }
+      } catch (err) {
+        console.warn("Could not load version.json. Using fallback version.", err);
+      }
+
+      window.WEB_APP_VERSION = versionInfo;
+
+      const assetVersion = encodeURIComponent(
+        versionInfo.webVersion || String(Date.now())
+      );
+
+      const stylesheets = document.querySelectorAll("link.appStylesheet");
+      stylesheets.forEach((stylesheet) => {
+        const baseHref = stylesheet.getAttribute("href");
+        if (baseHref) {
+          stylesheet.href = baseHref + "?v=" + assetVersion;
+        }
       });
-    });
 
-    const filterLabel = dashboardSelectedMonth
-      ? formatDashboardMonthLabel(dashboardSelectedMonth)
-      : "All Months";
+      const scripts = [
+        "split/app.01.core.js",
+        "split/app.02.attendance.js",
+        "split/app.03.team_events.js",
+        "split/app.04.games.js",
+        "split/app.05.player_management.js",
+        "split/app.06.auth_and_misc.js",
+        "split/app.07.dashboard.js",
+        "split/app.08.user_management.js",
+        "split/app.09.reports.js",
+        "split/app.10.help.js",
+        "split/app.99.bootstrap.js"
+      ];
 
-    if (dashboardLastUpdated) {
-      dashboardLastUpdated.textContent = `Last updated: ${new Date().toLocaleString()} | Filter: ${filterLabel}`;
-    }
+      for (const src of scripts) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src + "?v=" + assetVersion;
 
-    setMessage(dashboardMessage, `Dashboard updated. Showing: ${filterLabel}.`, false);
-  } catch (err) {
-    console.error("Dashboard load error:", err);
-    setMessage(dashboardMessage, "Could not load dashboard.", true);
-  } finally {
-    if (refreshDashboardBtn) {
-      refreshDashboardBtn.disabled = false;
-      refreshDashboardBtn.textContent = "Refresh Dashboard";
-    }
-  }
-}
+          script.onload = () => {
+            console.log("Loaded:", src);
+            resolve();
+          };
 
-ensureDashboardMonthFilterOptions();
-setupDashboardDetailClickHandlers();
+          script.onerror = () => {
+            console.error("Failed to load:", src);
+            reject(new Error("Failed to load " + src));
+          };
 
+          document.body.appendChild(script);
+        });
+      }
+    })();
+  </script>
+<!-- GENERATE PRACTICE SCHEDULE MODAL -->
+<div id="generateScheduleModal" class="schedule-modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Generate practice schedule">
+  <div class="schedule-modal">
+    <div class="schedule-modal-header">
+      <i class="ti ti-calendar-plus" style="font-size:20px;color:#f57c00;" aria-hidden="true"></i>
+      <h3>Generate practice schedule</h3>
+      <button class="schedule-modal-close" id="scheduleModalCloseBtn" type="button" aria-label="Close">
+        <i class="ti ti-x" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="form-row">
+      <label for="scheduleStartDate">Start date</label>
+      <input type="date" id="scheduleStartDate" />
+    </div>
+
+    <div class="form-row">
+      <label for="scheduleEndDate">End date</label>
+      <input type="date" id="scheduleEndDate" />
+    </div>
+
+    <div class="form-row">
+      <label>Practice days</label>
+      <div class="schedule-day-grid">
+        <button type="button" class="schedule-day-btn" data-day="0">Sun</button>
+        <button type="button" class="schedule-day-btn day-selected" data-day="1">Mon</button>
+        <button type="button" class="schedule-day-btn" data-day="2">Tue</button>
+        <button type="button" class="schedule-day-btn day-selected" data-day="3">Wed</button>
+        <button type="button" class="schedule-day-btn" data-day="4">Thu</button>
+        <button type="button" class="schedule-day-btn" data-day="5">Fri</button>
+        <button type="button" class="schedule-day-btn" data-day="6">Sat</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-row" style="margin-bottom:0;">
+        <label for="scheduleStartTime">Start time</label>
+        <input type="time" id="scheduleStartTime" value="18:00" />
+      </div>
+      <div class="form-row" style="margin-bottom:0;">
+        <label for="scheduleEndTime">End time</label>
+        <input type="time" id="scheduleEndTime" value="20:00" />
+      </div>
+    </div>
+
+    <div class="form-row" style="margin-top:14px;">
+      <label for="scheduleSkipDates">Skip dates <span style="font-weight:400;color:#888;">(optional, comma-separated)</span></label>
+      <input type="text" id="scheduleSkipDates" placeholder="e.g. 2026-11-23, 2026-12-25" />
+    </div>
+
+    <div id="schedulePreviewBox" class="schedule-preview-box hidden"></div>
+    <p id="scheduleModalMessage" class="message"></p>
+
+    <div class="schedule-modal-actions">
+      <button id="scheduleGenerateBtn" type="button" class="btn btn-primary">Generate schedule</button>
+      <button id="scheduleCancelBtn" type="button" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
 /* =========================
-   DASHBOARD → REPORTS NAVIGATION
-   Opens the Reports tab and pre-applies filters.
-   Called from dashboard card "→ View Report" buttons.
-   config: { report: 'attendance'|'paperwork'|'emergency'|'roster', month, below }
+   MOBILE KEYBOARD SCROLL FIX
+   When a text input is focused on mobile, scroll it into view
+   so the keyboard doesn't cover it.
    ========================= */
-window.openReportFromDashboard = function (config) {
-  if (!config) return;
-
-  // Switch to Reports tab
-  currentTab = "Reports";
-  if (typeof setActiveTab === "function") setActiveTab();
-  if (typeof updateMainModeVisibility === "function") updateMainModeVisibility();
-
-  // Give the Reports tab a moment to initialise, then apply filters + open accordion
-  setTimeout(() => {
-    const key = config.report || "attendance";
-
-    // Open the accordion
-    if (typeof toggleReportAccordion === "function") {
-      const body = document.getElementById(`body-${key}`);
-      if (body && body.style.display === "none") {
-        toggleReportAccordion(key);
-      }
-    }
-
-    // Apply attendance filters if specified
-    if (key === "attendance") {
-      const monthSel = document.getElementById("att-month");
-      if (monthSel && config.month) {
-        monthSel.value = config.month;
-      }
-
-      const belowSel = document.getElementById("att-below");
-      if (belowSel) {
-        belowSel.value = config.below ? String(config.below) : "";
-      }
-
-      // Trigger filter reload
-      if (typeof onAttFilterChange === "function") {
-        onAttFilterChange();
-      }
-    }
-  }, 150);
-};
+document.addEventListener("focusin", function(e) {
+  if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") && e.target.type !== "checkbox" && e.target.type !== "radio") {
+    setTimeout(function() {
+      e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 320);
+  }
+});
+</script>
+</body>
+</html>
