@@ -826,6 +826,11 @@ function ensurePlayerManagementForm() {
           </label>
 
           <label>
+            ZIP Code
+            <input id="pmZipCode" type="text" placeholder="ZIP code (auto-fills City &amp; State)" />
+          </label>
+
+          <label>
             City
             <input id="pmCity" type="text" placeholder="City" />
           </label>
@@ -833,11 +838,6 @@ function ensurePlayerManagementForm() {
           <label>
             State
             <input id="pmState" type="text" placeholder="State" />
-          </label>
-
-          <label>
-            ZIP Code
-            <input id="pmZipCode" type="text" placeholder="ZIP code" />
           </label>
         </div>
       </div>
@@ -898,8 +898,8 @@ function ensurePlayerManagementForm() {
             Photo Release Status
             <select id="pmPhotoReleaseStatus">
               <option value="Not Received">Not Received</option>
-              <option value="Yes">Yes (Signed)</option>
-              <option value="No">No (Opted Out)</option>
+              <option value="Yes">Yes (Received)</option>
+              <option value="No">No (Declined)</option>
             </select>
           </label>
 
@@ -1511,6 +1511,12 @@ function renderPlayerManagementList(players) {
             <button type="button" class="btn btn-secondary player-status-toggle" data-player-id="${player.PlayerID}" data-is-active="${player.IsActive ? "1" : "0"}">
               ${player.IsActive ? "Make Inactive" : "Make Active"}
             </button>
+
+            ${currentUser && currentUser.RoleName === "Admin"
+              ? `<button type="button" class="btn btn-danger player-delete-btn" data-player-id="${player.PlayerID}" data-player-name="${escapeHtml(player.FirstName + " " + player.LastName)}" style="background:#c62828;color:#fff;font-size:12px;padding:8px 12px;">
+                  Delete
+                </button>`
+              : ""}
           `
           : ""}
       </div>
@@ -1566,8 +1572,19 @@ function renderPlayerManagementList(players) {
     button.addEventListener("click", async () => {
       const playerId = Number(button.dataset.playerId);
       const isCurrentlyActive = button.dataset.isActive === "1";
-
       await updatePlayerActiveStatus(playerId, !isCurrentlyActive);
+    });
+  });
+
+  playerManagementList.querySelectorAll(".player-delete-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+      const playerId = Number(button.dataset.playerId);
+      const playerName = button.dataset.playerName || "this player";
+      const confirmed = confirm(
+        `⚠️ Permanently delete ${playerName}?\n\nThis will also delete ALL attendance records for this player and cannot be undone.\n\nClick OK to confirm.`
+      );
+      if (!confirmed) return;
+      await deletePlayerPermanently(playerId, playerName);
     });
   });
 }
@@ -1607,6 +1624,26 @@ async function updatePlayerActiveStatus(playerId, makeActive) {
   } catch (err) {
     console.error("Update player status error:", err);
     alert("Could not update player status.");
+  }
+}
+
+async function deletePlayerPermanently(playerId, playerName) {
+  if (!playerId) return;
+  try {
+    const res = await fetch(`${API_BASE}/players/${playerId}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      alert(data.message || "Could not delete player.");
+      return;
+    }
+    alert(`${playerName} has been permanently deleted.`);
+    await loadPlayerManagementList();
+  } catch (err) {
+    console.error("Delete player error:", err);
+    alert("Could not delete player.");
   }
 }
 

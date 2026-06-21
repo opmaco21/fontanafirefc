@@ -10,30 +10,21 @@
    - handles extra spaces
    - keeps player number searchable with or without #
    ========================= */
+// Search utilities — delegated to app.11.search.js
 function normalizeAttendanceSearchText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/#/g, " ")
-    .replace(/[^a-z0-9,]+/g, " ")  // preserve commas, strip other special chars
-    .replace(/\s*,\s*/g, ",")       // remove spaces around commas: "a , b" → "a,b"
-    .replace(/\s+/g, " ")
-    .trim();
+  return typeof normalizeSearchText === "function"
+    ? normalizeSearchText(value)
+    : String(value || "").toLowerCase().trim();
 }
 
 function parseAttendanceSearchTerms(searchText) {
-  if (!searchText) return [];
-  // Split on commas only — each comma-separated chunk is one term
-  // Spaces within a chunk are kept (e.g. "de la cruz" is one term)
-  return searchText
-    .split(",")
-    .map(t => t.trim())
-    .filter(Boolean);
+  return typeof parseSearchTerms === "function"
+    ? parseSearchTerms(searchText)
+    : (searchText ? [searchText.toLowerCase().trim()] : []);
 }
 
 function termMatchesRow(term, rowSearchText) {
   if (!term) return true;
-  // Try exact substring first (handles names and partial matches)
-  // Then try whole-word match to prevent "11" matching "2011"
   const tokens = rowSearchText.split(" ");
   return tokens.includes(term) || rowSearchText.includes(term);
 }
