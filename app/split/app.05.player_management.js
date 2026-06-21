@@ -19,6 +19,14 @@ function getPlayerStatusLabel(player) {
   return player.IsActive ? "Active" : "Inactive";
 }
 
+function canDeletePlayer() {
+  if (typeof window.userPermissions !== "undefined" && window.userPermissions) {
+    return !!window.userPermissions.canDeletePlayer;
+  }
+  // Fallback: Admin only
+  return !!(currentUser && currentUser.RoleName === "Admin");
+}
+
 function formatDateForInput(value) {
   if (!value) return "";
 
@@ -1457,6 +1465,7 @@ function renderPlayerManagementList(players) {
 
     const statusLabel = getPlayerStatusLabel(player);
     const canToggle = canManagePlayers();
+    const canDelete = canDeletePlayer();
     const genderLabel = formatGenderShort(player.Gender);
     const parent1Name = player.ParentName || "No parent name entered";
     const parent1Phone = formatPhoneNumberForDisplay(player.ParentPhone) || "No phone entered";
@@ -1512,7 +1521,7 @@ function renderPlayerManagementList(players) {
               ${player.IsActive ? "Make Inactive" : "Make Active"}
             </button>
 
-            ${currentUser && currentUser.RoleName === "Admin"
+            ${canDelete
               ? `<button type="button" class="btn btn-danger player-delete-btn" data-player-id="${player.PlayerID}" data-player-name="${escapeHtml(player.FirstName + " " + player.LastName)}" style="background:#c62828;color:#fff;font-size:12px;padding:8px 12px;">
                   Delete
                 </button>`

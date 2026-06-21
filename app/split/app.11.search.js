@@ -53,10 +53,17 @@ function searchTermMatchesPlayer(term, playerSearchText) {
 
 /**
  * Check if ALL search terms match a player (AND logic between terms)
+ * Exception: if ALL terms are numeric, use OR logic (e.g. "21, 99, 10" shows any of those numbers)
  */
 function playerMatchesSearch(player, searchTerms) {
   if (!searchTerms || searchTerms.length === 0) return true;
   const text = buildPlayerSearchText(player);
+  const allNumeric = searchTerms.every(t => /^\d+$/.test(t));
+  if (allNumeric) {
+    // OR logic: player matches if ANY term matches
+    return searchTerms.some(term => searchTermMatchesPlayer(term, text));
+  }
+  // AND logic: player must match ALL terms
   return searchTerms.every(term => searchTermMatchesPlayer(term, text));
 }
 
