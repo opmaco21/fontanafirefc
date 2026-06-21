@@ -854,31 +854,39 @@ function ensurePlayerManagementForm() {
         <h4>Emergency Contact</h4>
         <p class="player-form-note">Emergency information stays inside Edit Player and View Details.</p>
 
-        <div class="player-form-grid">
-          <label>
-            Emergency Contact Name
-            <input id="pmEmergencyContactName" type="text" placeholder="Emergency contact name" />
-          </label>
+        <div id="pmEmergencyContactToggleRow" style="margin-bottom:8px;">
+          <button type="button" id="pmEmergencyContactToggleBtn" class="btn btn-secondary" style="font-size:13px;padding:6px 14px;">
+            + Add Emergency Contact
+          </button>
+        </div>
 
-          <label>
-            Emergency Contact Relationship
-            <input id="pmEmergencyContactRelationship" type="text" placeholder="Relationship" />
-          </label>
+        <div id="pmEmergencyContactFields" style="display:none;">
+          <div class="player-form-grid">
+            <label>
+              Emergency Contact Name
+              <input id="pmEmergencyContactName" type="text" placeholder="Emergency contact name" />
+            </label>
 
-          <label>
-            Emergency Contact Phone
-            <input id="pmEmergencyContactPhone" type="tel" placeholder="Emergency phone" />
-          </label>
+            <label>
+              Emergency Contact Relationship
+              <input id="pmEmergencyContactRelationship" type="text" placeholder="Relationship" />
+            </label>
 
-          <label>
-            Emergency Contact Alt Phone
-            <input id="pmEmergencyContactAltPhone" type="tel" placeholder="Alternate phone" />
-          </label>
+            <label>
+              Emergency Contact Phone
+              <input id="pmEmergencyContactPhone" type="tel" placeholder="Emergency phone" />
+            </label>
 
-          <label class="player-form-wide">
-            Emergency Notes
-            <textarea id="pmEmergencyNotes" placeholder="Emergency notes, medical notes, or important instructions"></textarea>
-          </label>
+            <label>
+              Emergency Contact Alt Phone
+              <input id="pmEmergencyContactAltPhone" type="tel" placeholder="Alternate phone" />
+            </label>
+
+            <label class="player-form-wide">
+              Emergency Notes
+              <textarea id="pmEmergencyNotes" placeholder="Emergency notes, medical notes, or important instructions"></textarea>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -979,6 +987,19 @@ function ensurePlayerManagementForm() {
 
   setupPlayerAddressAutoFill();
   setupPlayerPhoneFormatting();
+
+  // Wire emergency contact toggle button (safe to re-call; uses flag to avoid double-binding)
+  const ecToggleBtn = document.getElementById("pmEmergencyContactToggleBtn");
+  if (ecToggleBtn && !ecToggleBtn.dataset.listenerAttached) {
+    ecToggleBtn.dataset.listenerAttached = "1";
+    ecToggleBtn.addEventListener("click", () => {
+      const ecFields = document.getElementById("pmEmergencyContactFields");
+      if (!ecFields) return;
+      const isHidden = ecFields.style.display === "none" || ecFields.style.display === "";
+      ecFields.style.display = isHidden ? "block" : "none";
+      ecToggleBtn.textContent = isHidden ? "- Hide Emergency Contact" : "+ Add Emergency Contact";
+    });
+  }
 
   if (playerManagementMode !== "edit") {
   resetPlayerManagementForm(false);
@@ -1215,6 +1236,12 @@ function resetPlayerManagementForm(clearMessage = true) {
     }
   });
 
+  // Collapse emergency section on form reset
+  const ecFieldsReset = document.getElementById("pmEmergencyContactFields");
+  const ecBtnReset = document.getElementById("pmEmergencyContactToggleBtn");
+  if (ecFieldsReset) ecFieldsReset.style.display = "none";
+  if (ecBtnReset) ecBtnReset.textContent = "+ Add Emergency Contact";
+
   if (clearMessage) {
     setPlayerManagementMessage("", false);
     ensurePlayerManagementForm();
@@ -1312,6 +1339,24 @@ editingPlayerId = player.PlayerID;
   setupPlayerAddressAutoFill();
   setupPlayerPhoneFormatting();
   applyPlayerAddressDefaults(false);
+
+  // Auto-expand emergency contact section if player already has data
+  const ecFields = document.getElementById("pmEmergencyContactFields");
+  const ecBtn = document.getElementById("pmEmergencyContactToggleBtn");
+  const hasEC = !!(
+    (player.EmergencyContactName && player.EmergencyContactName.trim()) ||
+    (player.EmergencyContactPhone && player.EmergencyContactPhone.trim()) ||
+    (player.EmergencyNotes && player.EmergencyNotes.trim())
+  );
+  if (ecFields && ecBtn) {
+    if (hasEC) {
+      ecFields.style.display = "";
+      ecBtn.textContent = "- Hide Emergency Contact";
+    } else {
+      ecFields.style.display = "none";
+      ecBtn.textContent = "+ Add Emergency Contact";
+    }
+  }
 
   setPlayerManagementMessage(
     "Editing player. Make changes, then click Save Changes.",
