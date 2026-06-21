@@ -190,10 +190,10 @@ async function restoreSession() {
   // Show a friendly message while the backend wakes up.
   // Render free tier can take 30-50s on cold start - this avoids
   // "Session expired" flashing during normal startup.
-  if (loginMessage) {
-    loginMessage.style.color = "#f57c00";
-    loginMessage.textContent = "Connecting to server, please wait...";
-  }
+  // Show soccer ball animation while connecting
+  const loginLoading = document.getElementById("loginLoading");
+  if (loginLoading) loginLoading.classList.remove("hidden");
+  if (loginMessage) loginMessage.textContent = "";
 
   try {
     const res = await fetch(`${API_BASE}/auth/me`, {
@@ -202,12 +202,14 @@ async function restoreSession() {
 
     const data = await res.json();
 
+    if (loginLoading) loginLoading.classList.add("hidden");
+
     if (res.ok && data.success) {
       currentUser = data.user;
       currentPermissions = data.permissions || {};
       localStorage.setItem("attendanceUser", JSON.stringify(currentUser));
       if (loginMessage) loginMessage.textContent = "";
-      
+
       // Check if user must change password
       if (data.mustChangePassword) {
         await showForcedPasswordChangeModal(currentUser.FullName);
@@ -223,6 +225,7 @@ async function restoreSession() {
 
   } catch (err) {
     console.error("Restore session error:", err);
+    if (loginLoading) loginLoading.classList.add("hidden");
     localStorage.removeItem("attendanceUser");
     if (loginMessage) {
       loginMessage.style.color = "#c62828";
