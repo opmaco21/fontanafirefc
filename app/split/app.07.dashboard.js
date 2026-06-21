@@ -1,182 +1,213 @@
-// app.07b.dashboard-summary.js — Summary cards, monthly table, birthdays, snapshot
+// app.07.dashboard.js — Core dashboard: state vars, formatters, loadDashboard()
 
-function renderDashboardSummaryCards(data) {
-  if (!dashboardSummaryCards) return;
-  const totals = data.playerTotals || {};
-  const snack = data.snackTotals || {};
-  const paperwork = data.paperworkTotals || {};
-  const photo = data.photoReleaseTotals || {};
-  const emergency = data.emergencyTotals || {};
-  const cards = [
-    renderDashboardCard("Inactive Players", totals.InactivePlayers || 0, `${totals.ActivePlayers || 0} active`, "active"),
-    renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, `${paperwork.CompletePaperwork || 0} complete`, "paperwork"),
-    renderDashboardCard("Photo Release Missing", photo.MissingPhotoRelease || 0, `${photo.ReceivedPhotoRelease || 0} received`, "photo"),
-    renderDashboardCard("Emergency Info Missing", emergency.MissingEmergencyInfo || 0, `${emergency.CompleteEmergencyInfo || 0} complete`, "emergency"),
-    renderDashboardCard("Bring Snack", snack.BringSnackPlayers || 0, "Parent snack rotation", "snack"),
-    renderDashboardCard("Paid Out", snack.PaidOutPlayers || 0, "Coach provides snacks", "paidout")
-  ].join("");
-  dashboardSummaryCards.innerHTML = cards + `<div id="dashboardSummaryPanel" style="grid-column:1/-1;"></div>`;
-  dashboardSummaryCards.querySelectorAll("[data-dash-card]").forEach(card => {
-    card.addEventListener("click", async () => {
-      const category = card.dataset.dashCard;
-      if (dashboardOpenSummaryCard === category) {
-        dashboardOpenSummaryCard = "";
-        renderSummaryPanel(null);
-        return;
-      }
-      dashboardOpenSummaryCard = category;
-      const panel = document.getElementById("dashboardSummaryPanel");
-      if (panel) panel.innerHTML = `<div style="padding:12px;color:#999;font-size:13px;">Loading...</div>`;
-      if (!dashboardSummaryPlayerCache[category]) {
-        try {
-          const res = await fetch(`${API_BASE}/dashboard/summary-players?category=${encodeURIComponent(category)}`, { credentials: "include" });
-          const d = await res.json();
-          if (d.success) dashboardSummaryPlayerCache[category] = d.players;
-        } catch (e) { console.error("Failed to load summary players:", e); }
-      }
-      renderSummaryPanel(category);
-    });
-  });
-  if (dashboardOpenSummaryCard) renderSummaryPanel(dashboardOpenSummaryCard);
+/* =========================
+   DASHBOARD STATE
+   ========================= */
+let dashboardSelectedMonth = "";
+let dashboardOpenSummaryCard = "";
+let dashboardSummaryPlayerCache = {};
+let dashboardOpenDetailKey = "";
+let dashboardPlayerDates = {};
+
+/* =========================
+   FORMATTERS
+   ========================= */
+function escapeDashboardHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-function renderMonthlySummary(rows) {
-  if (!dashboardMonthlySummary) return;
-  if (!rows || rows.length === 0) {
-    dashboardMonthlySummary.innerHTML = `<div class="roster-empty-message">No attendance records found yet.</div>`;
-    return;
-  }
-  dashboardMonthlySummary.innerHTML = `
-    <table class="dashboard-table dashboard-monthly-table dashboard-monthly-simple-table dashboard-monthly-six-table">
-      <thead><tr><th>Month</th><th>Practices</th><th>Practice %</th><th>Games</th><th>Game %</th><th>Events</th><th>Event %</th></tr></thead>
-      <tbody>
-        ${rows.map(row => `<tr>
-          <td><strong>${escapeDashboardHtml(row.AttendanceMonth || "-")}</strong></td>
-          <td>${row.PracticeTotal || 0}</td>
-          <td><strong>${formatDashboardPercent(row.PracticePercent)}</strong></td>
-          <td>${row.GameTotal || 0}</td>
-          <td><strong>${formatDashboardPercent(row.GamePercent)}</strong></td>
-          <td>${row.EventTotal || 0}</td>
-          <td><strong>${formatDashboardPercent(row.EventPercent)}</strong></td>
-        </tr>`).join("")}
-      </tbody>
-    </table>`;
+function formatDashboardPercent(value) {
+  if (value == null || value === "") return "--";
+  const num = parseFloat(value);
+  if (isNaN(num)) return "--";
+  return num.toFixed(1) + "%";
 }
 
-function renderBirthdays(data) {
-  if (!dashboardBirthdays) return;
-  const thisMonth = data.thisMonth || [];
-  const nextMonth = data.nextMonth || [];
-  function list(items, emptyText) {
-    if (!items.length) return `<p class="subtext">${escapeDashboardHtml(emptyText)}</p>`;
-    return `<ul class="birthday-player-list">${items.map(p => `
-      <li class="birthday-player-item">
-        <strong class="birthday-player-name">${escapeDashboardHtml(p.FirstName)} ${escapeDashboardHtml(p.LastName)}</strong>
-        <span class="birthday-player-date">${formatDashboardBirthday(p.DateOfBirth)}${p.BirthYear ? ` &nbsp;|&nbsp; ${escapeDashboardHtml(p.BirthYear)}` : ""}</span>
-      </li>`).join("")}</ul>`;
-  }
-  const selectedLabel = dashboardSelectedMonth ? formatDashboardMonthLabel(dashboardSelectedMonth) : "This Month";
-  const nextMonth2 = dashboardSelectedMonth ? getNextDashboardMonthValue(dashboardSelectedMonth) : "";
-  const nextLabel = nextMonth2 ? formatDashboardMonthLabel(nextMonth2) : "Next Month";
-  const birthdayHeading = document.getElementById("dashboardBirthdaysHeading");
-  if (birthdayHeading) birthdayHeading.textContent = "Birthdays";
-  dashboardBirthdays.innerHTML = `
-    <div class="dashboard-mini-card dashboard-birthday-current">
-      <h4>${escapeDashboardHtml(selectedLabel)} <span class="birthday-count-badge">${thisMonth.length} player${thisMonth.length !== 1 ? "s" : ""}</span></h4>
-      ${list(thisMonth, `No birthdays for ${selectedLabel}.`)}
-    </div>
-    <div class="dashboard-mini-card dashboard-birthday-next">
-      <h4>${escapeDashboardHtml(nextLabel)} <span class="birthday-count-badge">${nextMonth.length} player${nextMonth.length !== 1 ? "s" : ""}</span></h4>
-      ${list(nextMonth, `No birthdays for ${nextLabel}.`)}
+function formatDashboardDate(dateStr) {
+  if (!dateStr) return "--";
+  const s = String(dateStr).substring(0, 10);
+  const parts = s.split("-");
+  if (parts.length !== 3) return s;
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+}
+
+function formatDashboardTime(timeStr) {
+  if (!timeStr) return "--";
+  const s = String(timeStr).substring(0, 5);
+  const [h, m] = s.split(":");
+  const hour = parseInt(h, 10);
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${m} ${suffix}`;
+}
+
+function formatDashboardBirthday(dateStr) {
+  if (!dateStr) return "--";
+  const s = String(dateStr).substring(0, 10);
+  const parts = s.split("-");
+  if (parts.length !== 3) return s;
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+}
+
+function formatDashboardMonthLabel(monthVal) {
+  if (!monthVal) return "";
+  const parts = monthVal.split("-");
+  if (parts.length !== 2) return monthVal;
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function getNextDashboardMonthValue(monthVal) {
+  if (!monthVal) return "";
+  const parts = monthVal.split("-");
+  if (parts.length !== 2) return "";
+  let year = Number(parts[0]);
+  let month = Number(parts[1]);
+  month++;
+  if (month > 12) { month = 1; year++; }
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+function getDashboardPercentClass(percent, counted) {
+  if (percent == null || counted == null || Number(counted) === 0) return "dashboard-percent-none";
+  const p = parseFloat(percent);
+  if (isNaN(p)) return "dashboard-percent-none";
+  if (p >= 100) return "dashboard-percent-perfect";
+  if (p >= 85) return "dashboard-percent-high";
+  if (p >= 71) return "dashboard-percent-mid";
+  return "dashboard-percent-low";
+}
+
+/* =========================
+   CARD RENDERER
+   ========================= */
+function renderDashboardCard(label, value, subtext, actionKey, reportOpts) {
+  const hasAction = !!actionKey;
+  const arrow = hasAction ? `<span class="dashboard-card-arrow">&#9660;</span>` : "";
+  const dataAttr = actionKey ? `data-dash-card="${escapeDashboardHtml(actionKey)}"` : "";
+  const clickable = hasAction ? "dashboard-card--clickable" : "";
+  return `
+    <div class="dashboard-stat-card ${clickable}" ${dataAttr}>
+      <div class="dashboard-card-label">${escapeDashboardHtml(label)} ${arrow}</div>
+      <div class="dashboard-card-value">${escapeDashboardHtml(String(value))}</div>
+      ${subtext ? `<div class="dashboard-card-subtext">${escapeDashboardHtml(subtext)}</div>` : ""}
     </div>`;
 }
 
-function renderUpcomingSnapshot(rows) {
-  const container = typeof dashboardUpcomingSnapshot !== "undefined"
-    ? dashboardUpcomingSnapshot : document.getElementById("dashboardUpcomingSnapshot");
-  if (!container) return;
-  if (!rows || rows.length === 0) {
-    container.innerHTML = `<div class="roster-empty-message">No games or team events found for this view.</div>`;
-    return;
+/* =========================
+   OPEN REPORT FROM DASHBOARD
+   ========================= */
+function openReportFromDashboard(report) {
+  const reportsTab = document.getElementById("reportsTab");
+  if (reportsTab) reportsTab.click();
+  if (report && typeof window.onAttFilterChange === "function") {
+    setTimeout(() => {
+      const sel = document.getElementById("reportTypeSelect");
+      if (sel) { sel.value = report; window.onAttFilterChange(); }
+    }, 300);
   }
-  const snapshotCount = rows.length;
-  const snapshotNote = dashboardSelectedMonth
-    ? `${snapshotCount} ${snapshotCount === 1 ? "game/event" : "games/events"} found for ${formatDashboardMonthLabel(dashboardSelectedMonth)}.`
-    : `Showing next ${snapshotCount} upcoming ${snapshotCount === 1 ? "game/event" : "games/events"}.`;
-  const cardsHtml = rows.map(event => {
-    const eventType    = event.EventType  || "Event";
-    const eventName    = event.EventName  || eventType;
-    const dateText     = formatDashboardDate(event.EventDate);
-    const timeText     = formatDashboardTime(event.StartTime);
-    const locationText = event.LocationName || "Location TBD";
-    const snackText    = event.AssignedSnackFamily || event.SnackStatus || "Not assigned yet";
-    const status       = event.EventStatus || "Scheduled";
-    const typeClass = eventType === "Game" ? "snapshot-card--game"
-      : eventType === "Team Event" ? "snapshot-card--team-event" : "snapshot-card--practice";
-    const cancelledClass = status === "Cancelled" ? "snapshot-card--cancelled" : "";
-    const statusPillClass = status === "Completed" ? "snapshot-status--completed"
-      : status === "Cancelled" ? "snapshot-status--cancelled" : "snapshot-status--scheduled";
-    const statusIcon = status === "Completed" ? "&#10003; " : "";
-    const snackChip = eventType === "Game"
-      ? `<div class="snapshot-snack-chip">&#127822; Snack: ${escapeDashboardHtml(snackText)}</div>` : "";
-    const nameStyle = status === "Cancelled" ? ' style="text-decoration:line-through;color:#999;"' : "";
-    return `
-      <article class="dashboard-upcoming-card snapshot-card ${typeClass} ${cancelledClass}">
-        <div class="snapshot-topline">
-          <div class="snapshot-name-block">
-            <div class="snapshot-name"${nameStyle}>${escapeDashboardHtml(eventName)}</div>
-            <div class="snapshot-datetime">${escapeDashboardHtml(dateText)} &middot; ${escapeDashboardHtml(timeText)}</div>
-          </div>
-          <span class="snapshot-status-pill ${statusPillClass}">${statusIcon}${escapeDashboardHtml(status)}</span>
-        </div>
-        <div class="snapshot-meta">
-          <span><strong>Location:</strong> ${escapeDashboardHtml(locationText)}</span>
-          <span><strong>Type:</strong> ${escapeDashboardHtml(eventType)}</span>
-        </div>
-        ${snackChip}
-      </article>`;
-  }).join("");
-  container.innerHTML = cardsHtml;
-  const snapshotSection = container.closest(".dashboard-upcoming-snapshot-section") || container.parentElement;
-  const existingNote = snapshotSection ? snapshotSection.querySelector(".dashboard-upcoming-count") : null;
-  if (existingNote) existingNote.remove();
-  const noteEl = document.createElement("div");
-  noteEl.className = "dashboard-upcoming-count";
-  noteEl.textContent = snapshotNote;
-  if (snapshotSection) snapshotSection.insertBefore(noteEl, container);
 }
 
-function renderPracticeSummary(summary) {
-  if (!dashboardPracticeSummary) return;
-  const practice = summary || {};
-  dashboardPracticeSummary.innerHTML = [
-    renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month", "scroll-upcoming"),
-    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention"),
-    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance")
-  ].join("");
+/* =========================
+   MONTH FILTER OPTIONS
+   ========================= */
+function ensureDashboardMonthFilterOptions() {
+  const select = dashboardMonthFilter;
+  if (!select) return;
+  if (select.options.length > 1) return;
+  const now = new Date();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    const opt = document.createElement("option");
+    opt.value = val;
+    opt.textContent = label;
+    select.appendChild(opt);
+  }
 }
 
-function renderGameSummary(summary) {
-  if (!dashboardGameSummary) return;
-  const game = summary || {};
-  dashboardGameSummary.innerHTML = [
-    renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month", "scroll-upcoming"),
-    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention"),
-    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance"),
-    renderDashboardCard("Cancelled Games", game.CancelledGames || 0, "Selected month")
-  ].join("");
+/* =========================
+   LOAD DASHBOARD
+   ========================= */
+async function loadDashboard() {
+  ensureDashboardMonthFilterOptions();
+  setupDashboardDetailClickHandlers();
+
+  dashboardSummaryPlayerCache = {};
+  dashboardOpenSummaryCard = "";
+  dashboardOpenDetailKey = "";
+  dashboardPlayerDates = {};
+
+  const month = dashboardSelectedMonth || "";
+  const monthParam = month ? `?month=${encodeURIComponent(month)}` : "";
+
+  if (dashboardMessage) {
+    dashboardMessage.textContent = "Loading dashboard...";
+    dashboardMessage.style.color = "#999";
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/dashboard${monthParam}`, { credentials: "include" });
+    if (!res.ok) {
+      if (dashboardMessage) {
+        dashboardMessage.textContent = "Could not load dashboard. Please refresh.";
+        dashboardMessage.style.color = "#c62828";
+      }
+      return;
+    }
+
+    const data = await res.json();
+    if (!data.success) {
+      if (dashboardMessage) {
+        dashboardMessage.textContent = data.message || "Dashboard error.";
+        dashboardMessage.style.color = "#c62828";
+      }
+      return;
+    }
+
+    if (dashboardMessage) dashboardMessage.textContent = "";
+    if (dashboardLastUpdated) {
+      dashboardLastUpdated.textContent = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    }
+
+    // Render all sections
+    if (typeof renderDashboardSummaryCards === "function") renderDashboardSummaryCards(data);
+    if (typeof renderMonthlySummary === "function")        renderMonthlySummary(data.monthlySummary);
+    if (typeof renderBirthdays === "function")             renderBirthdays(data.birthdays || {});
+    if (typeof renderUpcomingSnapshot === "function")      renderUpcomingSnapshot(data.upcomingSnapshot);
+    if (typeof renderPracticeSummary === "function")       renderPracticeSummary(data.practiceSummary);
+    if (typeof renderGameSummary === "function")           renderGameSummary(data.gameSummary);
+    if (typeof renderEventSummary === "function")          renderEventSummary(data.eventSummary);
+    if (typeof renderPlayerAlerts === "function")          renderPlayerAlerts(data.playerAlerts);
+    if (typeof renderGoodPlayers === "function")           renderGoodPlayers(data.goodPlayers);
+    if (typeof renderExceptionalPlayers === "function")    renderExceptionalPlayers(data.exceptionalPlayers);
+    if (typeof renderPerfectPlayers === "function")        renderPerfectPlayers(data.perfectPlayers);
+
+  } catch (err) {
+    console.error("Dashboard load error:", err);
+    if (dashboardMessage) {
+      dashboardMessage.textContent = "Could not reach server.";
+      dashboardMessage.style.color = "#c62828";
+    }
+  }
 }
 
-function renderEventSummary(summary) {
-  if (!dashboardEventSummary) return;
-  const event = summary || {};
-  dashboardEventSummary.innerHTML = [
-    renderDashboardCard("Total Events", event.TotalEvents || 0, "Team events / scrimmages", "scroll-upcoming"),
-    renderDashboardCard("Event Att %", formatDashboardPercent(event.EventAttendancePercent), "Excused and cancelled do not count"),
-    renderDashboardCard("70% or Lower", event.LowEventPlayers || 0, "Players needing attention"),
-    renderDashboardCard("85% or Higher", event.HighEventPlayers || 0, "Strong attendance"),
-    renderDashboardCard("Cancelled Events", event.CancelledEvents || 0, "Selected month")
-  ].join("");
+/* =========================
+   MONTH FILTER WIRING
+   Called after DOM is ready (from app.99.bootstrap.js via loadDashboard)
+   ========================= */
+if (dashboardMonthFilter) {
+  dashboardMonthFilter.addEventListener("change", async () => {
+    dashboardSelectedMonth = dashboardMonthFilter.value || "";
+    await loadDashboard();
+  });
 }
