@@ -149,24 +149,22 @@ function renderUpcomingSnapshot(rows) {
 function renderPracticeSummary(summary) {
   if (!dashboardPracticeSummary) return;
   const practice = summary || {};
-  const month = dashboardSelectedMonth || "";
   dashboardPracticeSummary.innerHTML = [
     renderDashboardCard("Total Practices", practice.TotalPractices || 0, "Selected month", "scroll-upcoming"),
-    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
-    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention", "", {report:"attendance",month,below:70}),
-    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance", "", {report:"attendance",month})
+    renderDashboardCard("Practice Att %", formatDashboardPercent(practice.PracticeAttendancePercent), "Excused and cancelled do not count"),
+    renderDashboardCard("70% or Lower", practice.LowPracticePlayers || 0, "Players needing attention"),
+    renderDashboardCard("85% or Higher", practice.HighPracticePlayers || 0, "Strong attendance")
   ].join("");
 }
 
 function renderGameSummary(summary) {
   if (!dashboardGameSummary) return;
   const game = summary || {};
-  const month = dashboardSelectedMonth || "";
   dashboardGameSummary.innerHTML = [
     renderDashboardCard("Total Games", game.TotalGames || 0, "Selected month", "scroll-upcoming"),
-    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count", "", {report:"attendance",month}),
-    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention", "", {report:"attendance",month,below:70}),
-    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance", "", {report:"attendance",month}),
+    renderDashboardCard("Game Att %", formatDashboardPercent(game.GameAttendancePercent), "Excused and cancelled do not count"),
+    renderDashboardCard("70% or Lower", game.LowGamePlayers || 0, "Players needing attention"),
+    renderDashboardCard("85% or Higher", game.HighGamePlayers || 0, "Strong attendance"),
     renderDashboardCard("Cancelled Games", game.CancelledGames || 0, "Selected month")
   ].join("");
 }
