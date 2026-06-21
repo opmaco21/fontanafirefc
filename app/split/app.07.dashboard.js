@@ -170,8 +170,10 @@ async function loadDashboard() {
   }
 }
 
-ensureDashboardMonthFilterOptions();
-setupDashboardDetailClickHandlers();
+// Note: ensureDashboardMonthFilterOptions() and setupDashboardDetailClickHandlers()
+// are called inside loadDashboard() — do NOT call them here at file load time
+// because app.07c.dashboard-players.js (which defines setupDashboardDetailClickHandlers)
+// hasn't loaded yet at this point.
 
 window.openReportFromDashboard = function (config) {
   if (!config) return;
