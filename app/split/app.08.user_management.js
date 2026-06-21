@@ -577,6 +577,7 @@ const PERMISSION_LABELS = {
   canMarkAttendance:     { label: "Mark Attendance",       desc: "Take roll call for practices, games, and events" },
   canManageEvents:       { label: "Manage Events",         desc: "Create, edit, cancel, restore games and events; manage rosters" },
   canManagePlayers:      { label: "Manage Players",        desc: "Add, edit, and view full player profiles and contact info" },
+  canDeletePlayer:       { label: "Delete Players",         desc: "Permanently delete players and their attendance records" },
   canGenerateSchedule:   { label: "Generate Schedule",     desc: "Bulk-create practice events from the Practice tab" },
   canViewDashboard:      { label: "View Dashboard",        desc: "Access attendance reports and player summaries" },
   canViewUserManagement: { label: "View User Management",  desc: "See the user list (Admin can also edit users)" }
