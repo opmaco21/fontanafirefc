@@ -58,21 +58,18 @@ function isPaperworkMissing(player) {
 }
 
 function isPhotoReleaseMissing(player) {
+  // Only flag if paperwork is complete but photo release is not Yes
+  // Players without complete paperwork are already flagged under Missing Paperwork
+  const paperwork = player.PaperworkStatus || "Not Received";
+  if (paperwork !== "Complete") return false;
   const status = getPhotoReleaseLabel(player);
-  // Missing = not received yet. "No"/"Opt Out" = deliberately opted out (not missing).
-  return status === "Not Received" || status === "";
+  return status !== "Yes";
 }
 
 function hasEmergencyInfo(player) {
-  return Boolean(
-    player.StreetAddress ||
-    player.City ||
-    player.State ||
-    player.ZipCode ||
-    player.EmergencyContactName ||
-    player.EmergencyContactPhone ||
-    player.EmergencyContactAltPhone
-  );
+  // Only check EmergencyContactName — phone is optional, address is separate
+  const name = (player.EmergencyContactName || "").trim().toLowerCase();
+  return name !== "" && name !== "n/a";
 }
 
 function isEmergencyInfoMissing(player) {
