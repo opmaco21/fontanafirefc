@@ -160,7 +160,7 @@ function renderDashboardSummaryCards(data) {
   const cards = [
     renderDashboardCard("Active Players", totals.ActivePlayers || 0, `${totals.InactivePlayers || 0} inactive`, "active"),
     renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, `${paperwork.CompletePaperwork || 0} complete`, "paperwork"),
-    renderDashboardCard("Photo Release Missing", photo.MissingPhotoRelease || 0, `${photo.ReceivedPhotoRelease || 0} received`, "photo"),
+    renderDashboardCard("Photo Release", photo.OptInPhotoRelease || 0, `${photo.OptInPhotoRelease || 0} opted in &middot; ${photo.OptOutPhotoRelease || 0} opted out &middot; ${photo.MissingPhotoRelease || 0} missing`, "photo"),
     renderDashboardCard("Emergency Info Missing", emergency.MissingEmergencyInfo || 0, `${emergency.CompleteEmergencyInfo || 0} complete`, "emergency"),
     renderDashboardCard("Bring Snack", snack.BringSnackPlayers || 0, "Parent snack rotation", "snack"),
     renderDashboardCard("Paid Out", snack.PaidOutPlayers || 0, "Coach provides snacks", "paidout")
@@ -619,7 +619,7 @@ function renderSummaryPanel(category) {
   const titles = {
     active:    "Active Players",
     paperwork: "Missing Paperwork",
-    photo:     "Missing Photo Release",
+    photo:     "Photo Release",
     emergency: "Missing Emergency Info",
     snack:     "Bring Snack Players",
     paidout:   "Paid Out Players"
@@ -628,7 +628,7 @@ function renderSummaryPanel(category) {
   const subtitles = {
     active:    "All currently active players",
     paperwork: "These players need paperwork completed",
-    photo:     "These players have not returned photo release",
+    photo:     "Opted out or missing photo release (opted-in players not shown)",
     emergency: "These players are missing emergency contact name or phone",
     snack:     "These families are in the snack rotation",
     paidout:   "Coach provides snacks for these players"
@@ -638,7 +638,7 @@ function renderSummaryPanel(category) {
     const num = p.PlayerNumber ? `#${p.PlayerNumber}` : "";
     const extra = {
       paperwork: p.PaperworkStatus ? ` · ${p.PaperworkStatus}` : " · Not Received",
-      photo:     p.PhotoReleaseStatus ? ` · ${p.PhotoReleaseStatus}` : " · Not Received",
+      photo:     p.PhotoReleaseStatus === "No" ? " &middot; Opted Out" : " &middot; Missing",
       emergency: (p.EmergencyContactName ? "" : " · No contact name") + (p.EmergencyContactPhone ? "" : " · No phone"),
       active:    p.BirthYear ? ` · ${p.BirthYear}` : "",
       snack:     "",
