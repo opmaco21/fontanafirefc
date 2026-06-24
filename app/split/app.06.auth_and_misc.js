@@ -1,4 +1,75 @@
 /* =========================
+   AUTO LOGOUT (20 min inactivity)
+   Resets on: click, keypress, scroll, touchstart
+   Shows 60s warning before logging out
+   ========================= */
+(function setupAutoLogout() {
+  const TIMEOUT_MS  = 20 * 60 * 1000; // 20 minutes
+  const WARNING_MS  = 60 * 1000;       // warn 1 min before
+  let logoutTimer   = null;
+  let warningTimer  = null;
+  let warningBanner = null;
+
+  function removeWarning() {
+    if (warningBanner) { warningBanner.remove(); warningBanner = null; }
+  }
+
+  function showWarning() {
+    if (warningBanner) return;
+    warningBanner = document.createElement("div");
+    warningBanner.id = "autoLogoutWarning";
+    warningBanner.style.cssText = [
+      "position:fixed", "bottom:20px", "left:50%", "transform:translateX(-50%)",
+      "background:#c62828", "color:#fff", "padding:12px 24px", "border-radius:10px",
+      "font-size:14px", "font-weight:700", "z-index:99999",
+      "box-shadow:0 4px 12px rgba(0,0,0,0.3)", "text-align:center"
+    ].join(";");
+    warningBanner.innerHTML = "&#9888; No activity detected &mdash; you will be logged out in 60 seconds.";
+    const stayBtn = document.createElement("button");
+    stayBtn.textContent = "Stay Logged In";
+    stayBtn.style.cssText = "margin-left:12px;padding:4px 12px;background:#fff;color:#c62828;border:none;border-radius:6px;font-weight:700;cursor:pointer;";
+    stayBtn.addEventListener("click", resetTimers);
+    warningBanner.appendChild(stayBtn);
+    document.body.appendChild(warningBanner);
+  }
+
+  function resetTimers() {
+    // Only run if user is logged in
+    if (!currentUser) return;
+    clearTimeout(logoutTimer);
+    clearTimeout(warningTimer);
+    removeWarning();
+
+    warningTimer = setTimeout(() => {
+      showWarning();
+    }, TIMEOUT_MS - WARNING_MS);
+
+    logoutTimer = setTimeout(async () => {
+      removeWarning();
+      try {
+        await fetch(`${API_BASE}/auth/logout`, { method: "POST", credentials: "include" });
+      } catch (e) { /* ignore */ }
+      currentUser = null;
+      currentPermissions = {};
+      localStorage.removeItem("attendanceUser");
+      if (typeof showLoginScreen === "function") showLoginScreen();
+      if (loginMessage) {
+        loginMessage.style.color = "#c62828";
+        loginMessage.textContent = "You were logged out due to inactivity.";
+      }
+    }, TIMEOUT_MS);
+  }
+
+  // Reset on any user activity
+  ["click", "keydown", "scroll", "touchstart", "mousemove"].forEach(evt => {
+    document.addEventListener(evt, resetTimers, { passive: true });
+  });
+
+  // Expose so login flow can start the timer after login
+  window.resetAutoLogoutTimer = resetTimers;
+})();
+
+/* =========================
    LOAD VERSION DISPLAY
 
    Web version:
@@ -216,6 +287,8 @@ async function restoreSession() {
       } else {
         await showApp();
       }
+      // Start inactivity timer after successful login
+      if (typeof window.resetAutoLogoutTimer === "function") window.resetAutoLogoutTimer();
       return;
     }
 
