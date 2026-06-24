@@ -314,43 +314,43 @@
 
           <div class="dashboard-report-section">
             <h3>Practice Attendance Summary</h3>
-            <p class="subtext dashboard-section-note">Quick practice-only view for the selected month.</p>
+            <p class="subtext dashboard-section-note">Quick practice-only view for the selected month. <strong>Practice Att %</strong> = team average (excused &amp; cancelled don't count). <strong>70% or Lower</strong> = players missing too many practices. <strong>85% or Higher</strong> = strong practice attenders.</p>
             <div id="dashboardPracticeSummary" class="dashboard-card-grid"></div>
           </div>
 
           <div class="dashboard-report-section">
             <h3>Game Attendance Summary</h3>
-            <p class="subtext dashboard-section-note">Quick game-only view for the selected month.</p>
+            <p class="subtext dashboard-section-note">Quick game-only view for the selected month. <strong>Game Att %</strong> = team average for rostered players only (excused &amp; cancelled don't count). <strong>70% or Lower</strong> = players missing too many games. <strong>85% or Higher</strong> = strong game attenders.</p>
             <div id="dashboardGameSummary" class="dashboard-card-grid"></div>
           </div>
 
           <div class="dashboard-report-section">
             <h3>Event Summary</h3>
-            <p class="subtext dashboard-section-note">Quick team-event, scrimmage, and get-together view for the selected month.</p>
+            <p class="subtext dashboard-section-note">Quick team-event, scrimmage, and get-together view for the selected month. Only players rostered for each event are counted.</p>
             <div id="dashboardEventSummary" class="dashboard-card-grid"></div>
           </div>
 
           <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardPlayerAlertsDetails">
             <summary>Players Needing Attention: <span id="dashboardPlayerAlertsCount">0 players</span></summary>
-            <p class="subtext dashboard-section-note">Shows players at 70% or lower for practices or games. Click Practice, Game, or Team Event to view details.</p>
+            <p class="subtext dashboard-section-note"><strong>Needs action:</strong> Players at 70% or lower practice attendance, OR players with incomplete paperwork. Click a player's Practice / Game / Team Event button to see missed dates. Contact parents to address attendance or paperwork.</p>
             <div id="dashboardPlayerAlerts" class="dashboard-alert-list"></div>
           </details>
 
           <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardGoodPlayersDetails">
             <summary>Good Attendance: <span id="dashboardGoodPlayersCount">0 players</span></summary>
-            <p class="subtext dashboard-section-note">Players at 71%–84% attendance for the selected month.</p>
+            <p class="subtext dashboard-section-note"><strong>On track:</strong> Players attending 71%&ndash;84% of practices. Attendance is acceptable but could improve. No action required &mdash; keep encouraging these players.</p>
             <div id="dashboardGoodPlayers" class="dashboard-alert-list dashboard-good-list"></div>
           </details>
 
           <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardExceptionalPlayersDetails">
             <summary>Outstanding Attendance: <span id="dashboardExceptionalPlayersCount">0 players</span></summary>
-            <p class="subtext dashboard-section-note">Shows outstanding players at 85% or higher for practices or games, excluding Perfect Attendance Club players.</p>
+            <p class="subtext dashboard-section-note"><strong>Great job:</strong> Players attending 85%&ndash;99% of practices. These players are highly committed. Consider recognizing their effort.</p>
             <div id="dashboardExceptionalPlayers" class="dashboard-alert-list dashboard-exceptional-list"></div>
           </details>
 
           <details class="dashboard-report-section dashboard-collapsible-report" id="dashboardPerfectPlayersDetails">
             <summary>Perfect Attendance Club: <span id="dashboardPerfectPlayersCount">0 players</span></summary>
-            <p class="subtext dashboard-section-note">Shows players with 100% attendance for both practices and games in the selected month.</p>
+            <p class="subtext dashboard-section-note"><strong>Perfect attendance:</strong> Players who have not missed a single practice or game in the selected month AND have complete paperwork. Recognize and celebrate these players!</p>
             <div id="dashboardPerfectPlayers" class="dashboard-alert-list dashboard-perfect-list"></div>
           </details>
         </section>
