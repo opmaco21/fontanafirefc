@@ -751,8 +751,9 @@ async function loadDashboard() {
     renderGameSummary(data.gameSummary || {});
     renderEventSummary(data.eventSummary || {});
     renderPlayerAlerts(data.playerAlerts || []);
-    renderPerfectPlayers(data.perfectPlayers || []);
+    if (typeof renderGoodPlayers === "function") renderGoodPlayers(data.goodPlayers || []);
     renderExceptionalPlayers(data.exceptionalPlayers || []);
+    renderPerfectPlayers(data.perfectPlayers || []);
 
     // Wire stat card scroll-to handlers for Practice/Game/Event summaries
     [dashboardPracticeSummary, dashboardGameSummary, dashboardEventSummary].forEach(container => {
