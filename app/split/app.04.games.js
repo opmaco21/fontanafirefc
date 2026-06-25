@@ -328,11 +328,18 @@ async function addGame() {
 
 /* =========================
    GAME IMPORT MODAL
-   Paste schedule text -> Claude parses -> editable preview -> create games
+   Text paste OR image upload -> Claude parses -> editable preview -> create games
    ========================= */
+
+let gameImportMode = "text"; // "text" or "image"
+let gameImportImageBase64 = null;
+let gameImportImageType = null;
 
 function openGameImportModal() {
   if (document.getElementById("gameImportModal")) return;
+  gameImportMode = "text";
+  gameImportImageBase64 = null;
+  gameImportImageType = null;
 
   const modal = document.createElement("div");
   modal.id = "gameImportModal";
@@ -346,9 +353,31 @@ function openGameImportModal() {
       </div>
 
       <div id="gameImportStep1">
-        <p style="font-size:14px;color:#555;margin-bottom:12px;">Paste your game schedule text below. Claude will extract the game details automatically.</p>
-        <textarea id="gameImportText" placeholder="Paste schedule text here&#10;&#10;Example:&#10;Saturday June 28 @ 9:00am vs FC Galaxy&#10;Location: Fontana Sports Complex&#10;&#10;Sunday June 29 @ 11:00am vs Strikers FC&#10;Location: Central Park Field 3"
-          style="width:100%;height:160px;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+        <p style="font-size:14px;color:#555;margin-bottom:12px;">Paste schedule text <strong>or upload a photo</strong> of the schedule. Claude will extract the game details automatically.</p>
+
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <button id="gameImportModeText" style="flex:1;padding:8px;border:2px solid #f57c00;border-radius:8px;background:#fff7ed;color:#c2410c;font-weight:700;font-size:13px;cursor:pointer;">&#128203; Paste Text</button>
+          <button id="gameImportModeImage" style="flex:1;padding:8px;border:2px solid #d1d5db;border-radius:8px;background:#fff;color:#6b7280;font-weight:700;font-size:13px;cursor:pointer;">&#128247; Upload Photo</button>
+        </div>
+
+        <div id="gameImportTextArea">
+          <textarea id="gameImportText" placeholder="Paste schedule text here&#10;&#10;Example:&#10;Saturday June 28 @ 9:00am vs FC Galaxy&#10;Location: Fontana Sports Complex&#10;&#10;Sunday June 29 @ 11:00am vs Strikers FC&#10;Location: Central Park Field 3"
+            style="width:100%;height:150px;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+        </div>
+
+        <div id="gameImportImageArea" style="display:none;">
+          <div id="gameImportDropZone" style="border:2px dashed #d1d5db;border-radius:8px;padding:28px;text-align:center;cursor:pointer;background:#f9fafb;">
+            <div style="font-size:36px;margin-bottom:8px;">&#128247;</div>
+            <div style="font-size:14px;color:#374151;font-weight:600;">Tap to select a photo</div>
+            <div style="font-size:12px;color:#9ca3af;margin-top:4px;">JPG, PNG, GIF supported</div>
+            <input type="file" id="gameImportImageInput" accept="image/*" style="display:none;" />
+          </div>
+          <div id="gameImportImagePreview" style="margin-top:10px;display:none;text-align:center;">
+            <img id="gameImportImageThumb" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid #e1e5ea;" />
+            <div style="font-size:12px;color:#6b7280;margin-top:4px;" id="gameImportImageName"></div>
+          </div>
+        </div>
+
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
           <button id="gameImportCancelBtn" class="btn btn-secondary">Cancel</button>
           <button id="gameImportParseBtn" class="btn btn-primary">&#9889; Parse Schedule</button>
@@ -370,10 +399,49 @@ function openGameImportModal() {
 
   document.body.appendChild(modal);
 
+  // Close handlers
   document.getElementById("gameImportCloseBtn").addEventListener("click", closeGameImportModal);
   document.getElementById("gameImportCancelBtn").addEventListener("click", closeGameImportModal);
   modal.addEventListener("click", e => { if (e.target === modal) closeGameImportModal(); });
-  document.getElementById("gameImportParseBtn").addEventListener("click", parseGameImportText);
+
+  // Mode toggle
+  document.getElementById("gameImportModeText").addEventListener("click", () => {
+    gameImportMode = "text";
+    document.getElementById("gameImportTextArea").style.display = "";
+    document.getElementById("gameImportImageArea").style.display = "none";
+    document.getElementById("gameImportModeText").style.cssText = "flex:1;padding:8px;border:2px solid #f57c00;border-radius:8px;background:#fff7ed;color:#c2410c;font-weight:700;font-size:13px;cursor:pointer;";
+    document.getElementById("gameImportModeImage").style.cssText = "flex:1;padding:8px;border:2px solid #d1d5db;border-radius:8px;background:#fff;color:#6b7280;font-weight:700;font-size:13px;cursor:pointer;";
+  });
+  document.getElementById("gameImportModeImage").addEventListener("click", () => {
+    gameImportMode = "image";
+    document.getElementById("gameImportTextArea").style.display = "none";
+    document.getElementById("gameImportImageArea").style.display = "";
+    document.getElementById("gameImportModeImage").style.cssText = "flex:1;padding:8px;border:2px solid #f57c00;border-radius:8px;background:#fff7ed;color:#c2410c;font-weight:700;font-size:13px;cursor:pointer;";
+    document.getElementById("gameImportModeText").style.cssText = "flex:1;padding:8px;border:2px solid #d1d5db;border-radius:8px;background:#fff;color:#6b7280;font-weight:700;font-size:13px;cursor:pointer;";
+  });
+
+  // Image upload
+  const dropZone = document.getElementById("gameImportDropZone");
+  const imageInput = document.getElementById("gameImportImageInput");
+  dropZone.addEventListener("click", () => imageInput.click());
+  imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      gameImportImageType = file.type || "image/jpeg";
+      gameImportImageBase64 = dataUrl.split(",")[1];
+      document.getElementById("gameImportImageThumb").src = dataUrl;
+      document.getElementById("gameImportImageName").textContent = file.name;
+      document.getElementById("gameImportImagePreview").style.display = "";
+      dropZone.style.borderColor = "#f57c00";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Parse + back + create
+  document.getElementById("gameImportParseBtn").addEventListener("click", parseGameImportInput);
   document.getElementById("gameImportBackBtn").addEventListener("click", () => {
     document.getElementById("gameImportStep1").style.display = "";
     document.getElementById("gameImportStep2").style.display = "none";
@@ -384,17 +452,42 @@ function openGameImportModal() {
 function closeGameImportModal() {
   const modal = document.getElementById("gameImportModal");
   if (modal) modal.remove();
+  gameImportImageBase64 = null;
+  gameImportImageType = null;
 }
 
-async function parseGameImportText() {
-  const text = document.getElementById("gameImportText").value.trim();
+async function parseGameImportInput() {
   const msgEl = document.getElementById("gameImportParseMsg");
   const btn = document.getElementById("gameImportParseBtn");
+  const today = new Date().toISOString().slice(0, 10);
 
-  if (!text) {
-    msgEl.style.color = "#c62828";
-    msgEl.textContent = "Please paste some schedule text first.";
-    return;
+  const systemPrompt = `Today is ${today}. Extract all soccer games from the provided schedule and return ONLY a JSON array. Each game object must have these exact fields:
+- "name": opponent name or game name (string)
+- "date": date in YYYY-MM-DD format (string)
+- "time": start time in HH:MM 24-hour format (string)
+- "location": location name (string, use "Ralph M. Lewis Sports Complex" if unknown)
+Return ONLY the JSON array, no other text, no markdown, no backticks.`;
+
+  let messageContent;
+
+  if (gameImportMode === "image") {
+    if (!gameImportImageBase64) {
+      msgEl.style.color = "#c62828";
+      msgEl.textContent = "Please select an image first.";
+      return;
+    }
+    messageContent = [
+      { type: "image", source: { type: "base64", media_type: gameImportImageType, data: gameImportImageBase64 } },
+      { type: "text", text: systemPrompt }
+    ];
+  } else {
+    const text = document.getElementById("gameImportText").value.trim();
+    if (!text) {
+      msgEl.style.color = "#c62828";
+      msgEl.textContent = "Please paste some schedule text first.";
+      return;
+    }
+    messageContent = `${systemPrompt}\n\nSchedule text:\n${text}`;
   }
 
   btn.disabled = true;
@@ -403,37 +496,24 @@ async function parseGameImportText() {
   msgEl.textContent = "Sending to Claude AI...";
 
   try {
-    const today = new Date().toISOString().slice(0, 10);
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 1000,
-        messages: [{
-          role: "user",
-          content: `Today is ${today}. Extract all soccer games from this schedule text and return ONLY a JSON array. Each game object must have these exact fields:
-- "name": opponent name or game name (string)
-- "date": date in YYYY-MM-DD format (string)
-- "time": start time in HH:MM 24-hour format (string)
-- "location": location name (string, use "Ralph M. Lewis Sports Complex" if unknown)
-
-Return ONLY the JSON array, no other text, no markdown, no backticks.
-
-Schedule text:
-${text}`
-        }]
+        messages: [{ role: "user", content: messageContent }]
       })
     });
 
     const data = await response.json();
-    const raw = data.content && data.content[0] && data.content[0].text ? data.content[0].text.trim() : "";
+    const raw = data.content && data.content[0] && data.content[0].text
+      ? data.content[0].text.trim() : "";
 
     let games;
     try {
       games = JSON.parse(raw);
     } catch (e) {
-      // Try to extract JSON array from response
       const match = raw.match(/\[[\s\S]*\]/);
       if (match) games = JSON.parse(match[0]);
       else throw new Error("Could not parse response");
@@ -441,7 +521,7 @@ ${text}`
 
     if (!Array.isArray(games) || games.length === 0) {
       msgEl.style.color = "#c62828";
-      msgEl.textContent = "No games found in the text. Try adding more details like dates and times.";
+      msgEl.textContent = "No games found. Make sure the schedule has dates and times visible.";
       return;
     }
 
@@ -466,23 +546,19 @@ function renderGameImportPreview(games) {
     <div style="border:1px solid #e1e5ea;border-radius:10px;padding:14px;margin-bottom:12px;background:#fafafa;">
       <div style="font-size:12px;font-weight:700;color:#f57c00;margin-bottom:8px;">GAME ${i + 1}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <label style="font-size:12px;font-weight:600;color:#374151;">
-          Opponent / Game Name
+        <label style="font-size:12px;font-weight:600;color:#374151;">Opponent / Game Name
           <input type="text" data-field="name" data-index="${i}" value="${escapeHtml(game.name || "")}"
             style="display:block;width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-top:3px;box-sizing:border-box;" />
         </label>
-        <label style="font-size:12px;font-weight:600;color:#374151;">
-          Date
+        <label style="font-size:12px;font-weight:600;color:#374151;">Date
           <input type="date" data-field="date" data-index="${i}" value="${escapeHtml(game.date || "")}"
             style="display:block;width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-top:3px;box-sizing:border-box;" />
         </label>
-        <label style="font-size:12px;font-weight:600;color:#374151;">
-          Start Time
+        <label style="font-size:12px;font-weight:600;color:#374151;">Start Time
           <input type="time" data-field="time" data-index="${i}" value="${escapeHtml(game.time || "")}"
             style="display:block;width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-top:3px;box-sizing:border-box;" />
         </label>
-        <label style="font-size:12px;font-weight:600;color:#374151;">
-          Location
+        <label style="font-size:12px;font-weight:600;color:#374151;">Location
           <input type="text" data-field="location" data-index="${i}" value="${escapeHtml(game.location || "")}"
             style="display:block;width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-top:3px;box-sizing:border-box;" />
         </label>
@@ -495,22 +571,17 @@ async function createImportedGames() {
   const btn = document.getElementById("gameImportCreateBtn");
   const msgEl = document.getElementById("gameImportCreateMsg");
 
-  // Collect edited values from preview
   const games = [];
-  const container = document.getElementById("gameImportPreview");
-  const cards = container.querySelectorAll("[data-field]");
   const byIndex = {};
-  cards.forEach(input => {
+  document.getElementById("gameImportPreview").querySelectorAll("[data-field]").forEach(input => {
     const idx = input.dataset.index;
     if (!byIndex[idx]) byIndex[idx] = {};
     byIndex[idx][input.dataset.field] = input.value.trim();
   });
   Object.values(byIndex).forEach(g => games.push(g));
 
-  // Validate
   for (let i = 0; i < games.length; i++) {
-    const g = games[i];
-    if (!g.name || !g.date || !g.time) {
+    if (!games[i].name || !games[i].date || !games[i].time) {
       msgEl.style.color = "#c62828";
       msgEl.textContent = `Game ${i + 1} is missing name, date, or time.`;
       return;
@@ -545,21 +616,19 @@ async function createImportedGames() {
       const data = await res.json();
       if (res.ok && data.success) created++;
       else failed++;
-    } catch (e) {
-      failed++;
-    }
+    } catch (e) { failed++; }
   }
 
   msgEl.style.color = failed > 0 ? "#c62828" : "#2e7d32";
   msgEl.textContent = failed > 0
     ? `Created ${created} game(s). ${failed} failed.`
-    : `&#10003; ${created} game(s) created successfully! Go to the Games tab to add rosters.`;
+    : `\u2713 ${created} game(s) created! Go to Games tab to add rosters.`;
 
   btn.disabled = false;
-  btn.textContent = "&#10003; Create Games";
+  btn.textContent = "\u2713 Create Games";
 
   if (created > 0) {
     await loadEvents();
-    setTimeout(() => closeGameImportModal(), 2000);
+    setTimeout(() => closeGameImportModal(), 2500);
   }
 }
