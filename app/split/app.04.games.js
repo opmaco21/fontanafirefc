@@ -496,40 +496,33 @@ Return ONLY the JSON array, no other text, no markdown, no backticks.`;
   msgEl.textContent = "Sending to Claude AI...";
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const body = gameImportMode === "image"
+      ? { imageBase64: gameImportImageBase64, imageType: gameImportImageType }
+      : { text: document.getElementById("gameImportText").value.trim() };
+
+    const response = await fetch(`${API_BASE}/import/parse-schedule`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: messageContent }]
-      })
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
     });
 
     const data = await response.json();
-    const raw = data.content && data.content[0] && data.content[0].text
-      ? data.content[0].text.trim() : "";
 
-    let games;
-    try {
-      games = JSON.parse(raw);
-    } catch (e) {
-      const match = raw.match(/\[[\s\S]*\]/);
-      if (match) games = JSON.parse(match[0]);
-      else throw new Error("Could not parse response");
+    if (!response.ok || !data.success) {
+      msgEl.style.color = "#c62828";
+      msgEl.textContent = data.message || "Error parsing schedule. Please try again.";
+      return;
     }
 
-    if (!Array.isArray(games) || games.length === 0) {
+    if (!data.games || data.games.length === 0) {
       msgEl.style.color = "#c62828";
       msgEl.textContent = "No games found. Make sure the schedule has dates and times visible.";
       return;
     }
 
     msgEl.textContent = "";
-    renderGameImportPreview(games);
+    renderGameImportPreview(data.games);
     document.getElementById("gameImportStep1").style.display = "none";
     document.getElementById("gameImportStep2").style.display = "";
 
