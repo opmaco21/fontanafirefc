@@ -380,7 +380,7 @@ function openGameImportModal() {
 
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
           <button id="gameImportCancelBtn" class="btn btn-secondary">Cancel</button>
-          <button id="gameImportParseBtn" class="btn btn-primary">&#9889; Parse Schedule</button>
+          <button id="gameImportParseBtn" class="btn btn-primary">⚡ Parse Schedule</button>
         </div>
         <div id="gameImportParseMsg" style="margin-top:8px;font-size:13px;"></div>
       </div>
@@ -389,8 +389,8 @@ function openGameImportModal() {
         <p style="font-size:14px;color:#555;margin-bottom:12px;">Review and edit the games below before creating them.</p>
         <div id="gameImportPreview"></div>
         <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
-          <button id="gameImportBackBtn" class="btn btn-secondary">&#8592; Back</button>
-          <button id="gameImportCreateBtn" class="btn btn-primary">&#10003; Create Games</button>
+          <button id="gameImportBackBtn" class="btn btn-secondary">← Back</button>
+          <button id="gameImportCreateBtn" class="btn btn-primary">✓ Create Games</button>
         </div>
         <div id="gameImportCreateMsg" style="margin-top:8px;font-size:13px;"></div>
       </div>
@@ -498,7 +498,10 @@ Return ONLY the JSON array, no other text, no markdown, no backticks.`;
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: 1000,
@@ -536,7 +539,7 @@ Return ONLY the JSON array, no other text, no markdown, no backticks.`;
     msgEl.textContent = "Error parsing schedule. Please try again.";
   } finally {
     btn.disabled = false;
-    btn.textContent = "&#9889; Parse Schedule";
+    btn.textContent = "⚡ Parse Schedule";
   }
 }
 
