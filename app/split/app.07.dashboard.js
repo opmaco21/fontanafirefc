@@ -1,6 +1,6 @@
 ﻿/* =========================================================
    FONTANA FIRE FC ATTENDANCE APP
-   MASTER DASHBOARD - FULL HD RESTORED
+   MASTER DASHBOARD - FULL HD VERSION (CLEARER TITLES)
    Updated: June 25, 2026
    ========================================================= */
 
@@ -150,7 +150,7 @@ function renderSummaryPanel(category) {
   const panel = document.getElementById("dashboardSummaryPanel");
   if (!panel || !category) { if(panel) panel.innerHTML = ""; return; }
   const players = dashboardSummaryPlayerCache[category] || [];
-  const titles = { active: "Inactive Players", paperwork: "Missing Paperwork", photo: "Photo Release Action Needed", snack: "Snack Rotation List", paidout: "Coach Provided Snacks" };
+  const titles = { active: "Inactive Players", paperwork: "Missing Paperwork", photo: "Photo Release Needed", snack: "Snack Rotation", paidout: "Coach Snacks" };
 
   const formatPlayer = (p, idx) => {
     const extra = {
@@ -158,26 +158,19 @@ function renderSummaryPanel(category) {
       photo: p.PhotoReleaseStatus === "No" ? "DENIED" : "MISSING",
       active: p.BirthYear || ""
     }[category] || "";
-    
-    return `
-      <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
-        <span style="font-weight:600; color:#111;">${escapeDashboardHtml(p.FirstName + " " + p.LastName)}</span>
-        <span style="font-size:12px; color:#f57c00; font-weight:700;">${escapeDashboardHtml(extra)}</span>
-      </div>`;
+    return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
+      <span style="font-weight:600;">${escapeDashboardHtml(p.FirstName + " " + p.LastName)}</span>
+      <span style="color:#f57c00; font-weight:700; font-size:12px;">${escapeDashboardHtml(extra)}</span>
+    </div>`;
   };
 
   panel.innerHTML = `
     <div style="margin: 15px 0; background:#fff; border:1px solid #ddd; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
       <div style="background:#f8f9fa; padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <div style="font-weight:800; font-size:16px; color:#111;">${titles[category]}</div>
-          <div style="font-size:12px; color:#666;">${players.length} players found</div>
-        </div>
-        <button onclick="dashboardOpenSummaryCard=''; renderSummaryPanel(null);" style="background:#eee; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-weight:bold;">×</button>
+        <div style="font-weight:800;">${titles[category]} (${players.length})</div>
+        <button onclick="dashboardOpenSummaryCard=''; renderSummaryPanel(null);" style="background:#eee; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">X</button>
       </div>
-      <div style="max-height:350px; overflow-y:auto;">
-        ${players.length === 0 ? '<div style="padding:30px; text-align:center; color:#999;">No players found.</div>' : players.map((p, i) => formatPlayer(p, i)).join("")}
-      </div>
+      <div style="max-height:300px; overflow-y:auto;">${players.map((p, i) => formatPlayer(p, i)).join("")}</div>
     </div>`;
 }
 
@@ -192,14 +185,12 @@ function renderBirthdays(data) {
   function list(items, label, color) {
     return `
       <div class="dashboard-mini-card" style="border-left: 5px solid ${color}; flex:1; min-width:280px;">
-        <h4 style="color:${color}; margin-bottom:10px; display:flex; justify-content:space-between;">
-          ${label} <span class="birthday-count-badge" style="background:${color}; color:#fff;">${items.length}</span>
+        <h4 style="color:${color}; display:flex; justify-content:space-between;">
+          ${label} <span class="birthday-count-badge" style="background:${color};">${items.length}</span>
         </h4>
         ${items.length ? `<ul class="birthday-player-list">
-          ${items.map(p => `<li class="birthday-player-item" style="padding:6px 0; border-bottom:1px solid #f0f0f0;">
-            <strong>${p.FirstName} ${p.LastName}</strong> <span style="float:right; font-size:12px; color:#666;">${formatDashboardBirthday(p.DateOfBirth)}</span>
-          </li>`).join("")}
-        </ul>` : `<p class="subtext">No birthdays found.</p>`}
+          ${items.map(p => `<li class="birthday-player-item"><strong>${p.FirstName} ${p.LastName}</strong> <span>${formatDashboardBirthday(p.DateOfBirth)}</span></li>`).join("")}
+        </ul>` : `<p class="subtext">No birthdays.</p>`}
       </div>`;
   }
   dashboardBirthdays.style.display = "flex";
@@ -208,7 +199,7 @@ function renderBirthdays(data) {
   dashboardBirthdays.innerHTML = list(thisMonth, selectedLabel, "#f57c00") + list(nextMonth, "Next Month", "#6366f1");
 }
 
-// --- UPCOMING GAMES SNAPSHOT ---
+// --- UPCOMING SNAPSHOT ---
 
 function renderUpcomingSnapshot(rows) {
   const container = document.getElementById("dashboardUpcomingSnapshot");
@@ -229,7 +220,7 @@ function renderUpcomingSnapshot(rows) {
         <div class="snapshot-topline">
           <div class="snapshot-name-block">
             <div class="snapshot-name" ${status === "Cancelled" ? 'style="text-decoration:line-through;"' : ""}>${escapeDashboardHtml(event.EventName || event.EventType)}</div>
-            <div class="snapshot-datetime">${formatDashboardDate(event.EventDate)} · ${formatDashboardTime(event.StartTime)}</div>
+            <div class="snapshot-datetime">${formatDashboardDate(event.EventDate)} . ${formatDashboardTime(event.StartTime)}</div>
           </div>
           <span class="snapshot-status-pill ${pillClass}">${check}${status}</span>
         </div>
@@ -244,13 +235,18 @@ function renderUpcomingSnapshot(rows) {
 function getDashboardCategoryDetail(row, cat) {
   const cfg = { practice: "Practice", game: "Game", teamEvent: "Event" }[cat];
   const dates = dashboardPlayerDates[row.PlayerID + "-" + cat] || [];
-  const missed = dates.filter(d => d.AttendanceStatus === "Absent" || d.AttendanceStatus === "No Record").map(d => 
+  
+  // Logic to identify missed dates
+  const missedDates = dates.filter(d => d.AttendanceStatus === "Absent" || d.AttendanceStatus === "No Record");
+  const missedCount = missedDates.length;
+
+  const missedHtml = missedDates.map(d => 
     `<div style="padding:4px 0; border-bottom:1px solid #eee; font-size:12px; color:#c62828;">${formatDashboardDate(d.EventDate)}</div>`).join("");
   
   return `
     <div class="dashboard-player-detail-box" style="margin-top:10px; padding:12px; background:#fff9f0; border-radius:10px; border:1px solid #ffe0b2;">
-      <div style="font-weight:800; font-size:12px; margin-bottom:5px; color:#111;">${cfg} History</div>
-      <div>${missed || "<span style='color:#2e7d32; font-weight:700;'>Perfect record!</span>"}</div>
+      <div style="font-weight:800; font-size:13px; margin-bottom:5px; color:#111;">${cfg} History - ${missedCount} Missed</div>
+      <div>${missedHtml || "<span style='color:#2e7d32; font-weight:700;'>Perfect record!</span>"}</div>
     </div>`;
 }
 
@@ -284,7 +280,7 @@ function renderPlayerAlertCard(row, cardType) {
         ${activeCat === 'game' ? getDashboardCategoryDetail(row, 'game') : ""}
 
         <button type="button" class="dashboard-category-row ${activeCat === 'teamEvent' ? 'active' : ''}" data-dashboard-detail-key="${prefix}teamEvent" style="display:flex; justify-content:space-between; padding:10px; border-radius:8px; background:#f9f9f9; border:1px solid #eee; cursor:pointer;">
-          <span style="font-weight:700; font-size:12px;">Team Event</span> <strong class="dashboard-percent-badge ${getDashboardPercentClass(tPct, row.TeamEventCounted)}">${formatDashboardPercent(tPct)}</strong>
+          <span style="font-weight:700; font-size:12px;">Events</span> <strong class="dashboard-percent-badge ${getDashboardPercentClass(tPct, row.TeamEventCounted)}">${formatDashboardPercent(tPct)}</strong>
         </button>
         ${activeCat === 'teamEvent' ? getDashboardCategoryDetail(row, 'teamEvent') : ""}
       </div>
