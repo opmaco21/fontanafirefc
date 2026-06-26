@@ -1593,13 +1593,13 @@ async function updateEventRosterSection() {
           : "Choose the exact players expected for this multi-group Team Event.";
   }
 
-  // Games use ?edit=1 so the backend returns ALL active players with
-  // IsExpected checked/unchecked, not just the rostered subset.
+  // Games and Team Events use ?edit=1 so the backend returns ALL active
+  // players with IsExpected checked/unchecked, not just the rostered subset.
   const rosterParam =
     eventType === "Game"
       ? "?edit=1"
-      : !selectedGroupId && eventType === "Team Event"
-        ? "?allMatching=1&edit=1"
+      : eventType === "Team Event"
+        ? "?edit=1"
         : "";
 
   try {
