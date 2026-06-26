@@ -10,10 +10,8 @@ function renderDashboardSummaryCards(data) {
   const cards = [
     renderDashboardCard("Inactive Players", totals.InactivePlayers || 0, `${totals.ActivePlayers || 0} active`, "active"),
     renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, `${paperwork.CompletePaperwork || 0} complete`, "paperwork"),
-    renderDashboardCard("Photo Release Missing", photo.MissingPhotoRelease || 0, `${photo.ReceivedPhotoRelease || 0} received`, "photo"),
-    renderDashboardCard("Emergency Info Missing", emergency.MissingEmergencyInfo || 0, `${emergency.CompleteEmergencyInfo || 0} complete`, "emergency"),
-    renderDashboardCard("Bring Snack", snack.BringSnackPlayers || 0, "Parent snack rotation", "snack"),
-    renderDashboardCard("Paid Out", snack.PaidOutPlayers || 0, "Coach provides snacks", "paidout")
+    renderDashboardCard("Photo Release", photo.OptInPhotoRelease || 0, `${photo.OptInPhotoRelease || 0} opted in &middot; ${photo.OptOutPhotoRelease || 0} opted out &middot; ${photo.MissingPhotoRelease || 0} missing`, "photo"),
+    renderDashboardCard("Bring Snack", snack.BringSnackPlayers || 0, "Parent snack rotation", "snack")
   ].join("");
   dashboardSummaryCards.innerHTML = cards + `<div id="dashboardSummaryPanel" style="grid-column:1/-1;"></div>`;
   dashboardSummaryCards.querySelectorAll("[data-dash-card]").forEach(card => {
