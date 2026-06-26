@@ -360,9 +360,126 @@ function setupDashboardDetailClickHandlers() {
   });
 }
 
-function renderPracticeSummary(s) { if(dashboardPracticeSummary) dashboardPracticeSummary.innerHTML = [renderDashboardCard("Total Practices", s.TotalPractices || 0, "Selected month"), renderDashboardCard("Practice Att %", formatDashboardPercent(s.PracticeAttendancePercent), "Excused not counted"), renderDashboardCard("70% or Lower", s.LowPracticePlayers || 0, "Needs attention"), renderDashboardCard("85% or Higher", s.HighPracticePlayers || 0, "Strong attendance")].join(""); }
-function renderGameSummary(s) { if(dashboardGameSummary) dashboardGameSummary.innerHTML = [renderDashboardCard("Total Games", s.TotalGames || 0, "Selected month"), renderDashboardCard("Game Att %", formatDashboardPercent(s.GameAttendancePercent), "Excused not counted"), renderDashboardCard("70% or Lower", s.LowGamePlayers || 0, "Needs attention"), renderDashboardCard("85% or Higher", s.HighGamePlayers || 0, "Strong attendance")].join(""); }
-function renderEventSummary(s) { if(dashboardEventSummary) dashboardEventSummary.innerHTML = [renderDashboardCard("Total Events", s.TotalEvents || 0, "Scrimmages/Events"), renderDashboardCard("Event Att %", formatDashboardPercent(s.EventAttendancePercent), "Excused not counted"), renderDashboardCard("70% or Lower", s.LowEventPlayers || 0, "Needs attention"), renderDashboardCard("85% or Higher", s.HighEventPlayers || 0, "Strong attendance")].join(""); }
+function renderPracticeSummary(practice) {
+  if (!dashboardPracticeSummary) return;
+  const p = practice || {};
+  const low = p.LowPracticePlayers || 0;
+  const good = p.GoodPracticePlayers || 0;
+  const high = p.HighPracticePlayers || 0;
+  const noData = p.NoDataPracticePlayers || 0;
+  const total = low + good + high + noData;
+  dashboardPracticeSummary.innerHTML = `
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-label">TOTAL PRACTICES</div>
+      <div class="dashboard-stat-value">${p.TotalPractices || 0}</div>
+      <div class="dashboard-stat-note">Selected month</div>
+    </div>
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-label">PRACTICE ATT %</div>
+      <div class="dashboard-stat-value">${formatDashboardPercent(p.PracticeAttendancePercent)}</div>
+      <div class="dashboard-stat-note">Team average &middot; excused not counted</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #ef4444;">
+      <div class="dashboard-stat-label" style="color:#c62828;">&#128308; NEEDS ATTENTION</div>
+      <div class="dashboard-stat-value">${low}</div>
+      <div class="dashboard-stat-note">Practice &le;70%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #f59e0b;">
+      <div class="dashboard-stat-label" style="color:#b45309;">&#128993; GOOD</div>
+      <div class="dashboard-stat-value">${good}</div>
+      <div class="dashboard-stat-note">Practice 71&ndash;84%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #22c55e;">
+      <div class="dashboard-stat-label" style="color:#166534;">&#128994; STRONG</div>
+      <div class="dashboard-stat-value">${high}</div>
+      <div class="dashboard-stat-note">Practice &ge;85%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
+      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NO DATA</div>
+      <div class="dashboard-stat-value">${noData}</div>
+      <div class="dashboard-stat-note">No practice marked &middot; Total: ${total}</div>
+    </div>`;
+}
+function renderGameSummary(game) {
+  if (!dashboardGameSummary) return;
+  const g = game || {};
+  const low = g.LowGamePlayers || 0;
+  const good = g.GoodGamePlayers || 0;
+  const high = g.HighGamePlayers || 0;
+  const noData = g.NoDataGamePlayers || 0;
+  const total = low + good + high + noData;
+  dashboardGameSummary.innerHTML = `
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-label">TOTAL GAMES</div>
+      <div class="dashboard-stat-value">${g.TotalGames || 0}</div>
+      <div class="dashboard-stat-note">Selected month &middot; ${g.CancelledGames || 0} cancelled</div>
+    </div>
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-label">GAME ATT %</div>
+      <div class="dashboard-stat-value">${formatDashboardPercent(g.GameAttendancePercent)}</div>
+      <div class="dashboard-stat-note">Rostered players &middot; excused not counted</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #ef4444;">
+      <div class="dashboard-stat-label" style="color:#c62828;">&#128308; NEEDS ATTENTION</div>
+      <div class="dashboard-stat-value">${low}</div>
+      <div class="dashboard-stat-note">Game &le;70%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #f59e0b;">
+      <div class="dashboard-stat-label" style="color:#b45309;">&#128993; GOOD</div>
+      <div class="dashboard-stat-value">${good}</div>
+      <div class="dashboard-stat-note">Game 71&ndash;84%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #22c55e;">
+      <div class="dashboard-stat-label" style="color:#166534;">&#128994; STRONG</div>
+      <div class="dashboard-stat-value">${high}</div>
+      <div class="dashboard-stat-note">Game &ge;85%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
+      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NO DATA</div>
+      <div class="dashboard-stat-value">${noData}</div>
+      <div class="dashboard-stat-note">Not rostered &middot; Total: ${total}</div>
+    </div>`;
+}
+function renderEventSummary(event) {
+  if (!dashboardEventSummary) return;
+  const ev = event || {};
+  const low = ev.LowEventPlayers || 0;
+  const good = ev.GoodEventPlayers || 0;
+  const high = ev.HighEventPlayers || 0;
+  const noData = ev.NoDataEventPlayers || 0;
+  const total = low + good + high + noData;
+  dashboardEventSummary.innerHTML = `
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-label">TOTAL EVENTS</div>
+      <div class="dashboard-stat-value">${ev.TotalEvents || 0}</div>
+      <div class="dashboard-stat-note">Scrimmages / team events &middot; ${ev.CancelledEvents || 0} cancelled</div>
+    </div>
+    <div class="dashboard-stat-card">
+      <div class="dashboard-stat-label">EVENT ATT %</div>
+      <div class="dashboard-stat-value">${formatDashboardPercent(ev.EventAttendancePercent)}</div>
+      <div class="dashboard-stat-note">Rostered players &middot; excused not counted</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #ef4444;">
+      <div class="dashboard-stat-label" style="color:#c62828;">&#128308; NEEDS ATTENTION</div>
+      <div class="dashboard-stat-value">${low}</div>
+      <div class="dashboard-stat-note">Event &le;70%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #f59e0b;">
+      <div class="dashboard-stat-label" style="color:#b45309;">&#128993; GOOD</div>
+      <div class="dashboard-stat-value">${good}</div>
+      <div class="dashboard-stat-note">Event 71&ndash;84%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #22c55e;">
+      <div class="dashboard-stat-label" style="color:#166534;">&#128994; STRONG</div>
+      <div class="dashboard-stat-value">${high}</div>
+      <div class="dashboard-stat-note">Event &ge;85%</div>
+    </div>
+    <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
+      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NO DATA</div>
+      <div class="dashboard-stat-value">${noData}</div>
+      <div class="dashboard-stat-note">Not rostered &middot; Total: ${total}</div>
+    </div>`;
+}
 
 ensureDashboardMonthFilterOptions();
 setupDashboardDetailClickHandlers();
