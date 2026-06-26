@@ -1,6 +1,6 @@
-/* =========================================================
+﻿/* =========================================================
    FONTANA FIRE FC ATTENDANCE APP
-   MASTER DASHBOARD - FULL HD VERSION (RESTORED)
+   MASTER DASHBOARD - FULL HD RESTORED
    Updated: June 25, 2026
    ========================================================= */
 
@@ -87,7 +87,7 @@ function renderCollapsiblePlayerSection(container, countEl, rows, cardType, empt
 
 function renderDashboardCard(label, value, note, clickAction) {
   const isOpen = clickAction && dashboardOpenSummaryCard === clickAction;
-  const arrow = isOpen ? "?" : "?";
+  const arrow = isOpen ? "▲" : "▼";
   return `
     <div class="dashboard-stat-card" data-dash-card="${escapeDashboardHtml(clickAction)}" 
          style="cursor:pointer; ${isOpen ? 'border-color:#f57c00; box-shadow:0 4px 12px rgba(245,124,0,0.1);' : ''}">
@@ -114,8 +114,8 @@ function renderDashboardSummaryCards(data) {
     renderDashboardCard("Inactive Players", totals.InactivePlayers || 0, activeCount + " active players", "active"),
     renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, (paperwork.CompletePaperwork || 0) + " complete roster", "paperwork"),
     renderDashboardCard("Photo Release", optIn, "<b>" + optIn + " Allowed</b> . " + optOut + " Denied<br>" + missingPhoto + " Missing Response", "photo"),
-    renderDashboardCard("Bring Snack ??", snack.BringSnackPlayers || 0, "Rotation families", "snack"),
-    renderDashboardCard("Paid Out ??", snack.PaidOutPlayers || 0, "Coach provides snack", "paidout")
+    renderDashboardCard("Bring Snack 🍎", snack.BringSnackPlayers || 0, "Rotation families", "snack"),
+    renderDashboardCard("Paid Out 💰", snack.PaidOutPlayers || 0, "Coach provides snack", "paidout")
   ].join("");
 
   dashboardSummaryCards.innerHTML = cards + `<div id="dashboardSummaryPanel" style="grid-column: 1 / -1;"></div>`;
@@ -150,7 +150,7 @@ function renderSummaryPanel(category) {
   const panel = document.getElementById("dashboardSummaryPanel");
   if (!panel || !category) { if(panel) panel.innerHTML = ""; return; }
   const players = dashboardSummaryPlayerCache[category] || [];
-  const titles = { active: "Inactive Players", paperwork: "Missing Paperwork", photo: "Photo Release Needed", snack: "Snack Rotation", paidout: "Coach Snacks" };
+  const titles = { active: "Inactive Players", paperwork: "Missing Paperwork", photo: "Photo Release Action Needed", snack: "Snack Rotation List", paidout: "Coach Provided Snacks" };
 
   const formatPlayer = (p, idx) => {
     const extra = {
@@ -158,19 +158,26 @@ function renderSummaryPanel(category) {
       photo: p.PhotoReleaseStatus === "No" ? "DENIED" : "MISSING",
       active: p.BirthYear || ""
     }[category] || "";
-    return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
-      <span style="font-weight:600;">${escapeDashboardHtml(p.FirstName + " " + p.LastName)}</span>
-      <span style="color:#f57c00; font-weight:700; font-size:12px;">${escapeDashboardHtml(extra)}</span>
-    </div>`;
+    
+    return `
+      <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
+        <span style="font-weight:600; color:#111;">${escapeDashboardHtml(p.FirstName + " " + p.LastName)}</span>
+        <span style="font-size:12px; color:#f57c00; font-weight:700;">${escapeDashboardHtml(extra)}</span>
+      </div>`;
   };
 
   panel.innerHTML = `
     <div style="margin: 15px 0; background:#fff; border:1px solid #ddd; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
       <div style="background:#f8f9fa; padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-        <div style="font-weight:800;">${titles[category]} (${players.length})</div>
-        <button onclick="dashboardOpenSummaryCard=''; renderSummaryPanel(null);" style="background:#eee; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">X</button>
+        <div>
+          <div style="font-weight:800; font-size:16px; color:#111;">${titles[category]}</div>
+          <div style="font-size:12px; color:#666;">${players.length} players found</div>
+        </div>
+        <button onclick="dashboardOpenSummaryCard=''; renderSummaryPanel(null);" style="background:#eee; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-weight:bold;">×</button>
       </div>
-      <div style="max-height:300px; overflow-y:auto;">${players.map((p, i) => formatPlayer(p, i)).join("")}</div>
+      <div style="max-height:350px; overflow-y:auto;">
+        ${players.length === 0 ? '<div style="padding:30px; text-align:center; color:#999;">No players found.</div>' : players.map((p, i) => formatPlayer(p, i)).join("")}
+      </div>
     </div>`;
 }
 
@@ -185,12 +192,14 @@ function renderBirthdays(data) {
   function list(items, label, color) {
     return `
       <div class="dashboard-mini-card" style="border-left: 5px solid ${color}; flex:1; min-width:280px;">
-        <h4 style="color:${color}; display:flex; justify-content:space-between;">
-          ${label} <span class="birthday-count-badge" style="background:${color};">${items.length}</span>
+        <h4 style="color:${color}; margin-bottom:10px; display:flex; justify-content:space-between;">
+          ${label} <span class="birthday-count-badge" style="background:${color}; color:#fff;">${items.length}</span>
         </h4>
         ${items.length ? `<ul class="birthday-player-list">
-          ${items.map(p => `<li class="birthday-player-item"><strong>${p.FirstName} ${p.LastName}</strong> <span>${formatDashboardBirthday(p.DateOfBirth)}</span></li>`).join("")}
-        </ul>` : `<p class="subtext">No birthdays.</p>`}
+          ${items.map(p => `<li class="birthday-player-item" style="padding:6px 0; border-bottom:1px solid #f0f0f0;">
+            <strong>${p.FirstName} ${p.LastName}</strong> <span style="float:right; font-size:12px; color:#666;">${formatDashboardBirthday(p.DateOfBirth)}</span>
+          </li>`).join("")}
+        </ul>` : `<p class="subtext">No birthdays found.</p>`}
       </div>`;
   }
   dashboardBirthdays.style.display = "flex";
@@ -199,7 +208,7 @@ function renderBirthdays(data) {
   dashboardBirthdays.innerHTML = list(thisMonth, selectedLabel, "#f57c00") + list(nextMonth, "Next Month", "#6366f1");
 }
 
-// --- UPCOMING SNAPSHOT (Age Groups Restored) ---
+// --- UPCOMING GAMES SNAPSHOT ---
 
 function renderUpcomingSnapshot(rows) {
   const container = document.getElementById("dashboardUpcomingSnapshot");
@@ -213,19 +222,19 @@ function renderUpcomingSnapshot(rows) {
     const status = event.EventStatus || "Scheduled";
     const groupText = event.GroupCode || event.GroupName || "All Teams";
     const pillClass = status === "Completed" ? "snapshot-status--completed" : (status === "Cancelled" ? "snapshot-status--cancelled" : "snapshot-status--scheduled");
-    const check = status === "Completed" ? "? " : "";
+    const check = status === "Completed" ? "✓ " : "";
     
     return `
       <article class="dashboard-upcoming-card snapshot-card ${isGame ? 'snapshot-card--game' : 'snapshot-card--team-event'} ${status === 'Cancelled' ? 'snapshot-card--cancelled' : ''}">
         <div class="snapshot-topline">
           <div class="snapshot-name-block">
             <div class="snapshot-name" ${status === "Cancelled" ? 'style="text-decoration:line-through;"' : ""}>${escapeDashboardHtml(event.EventName || event.EventType)}</div>
-            <div class="snapshot-datetime">${formatDashboardDate(event.EventDate)} . ${formatDashboardTime(event.StartTime)}</div>
+            <div class="snapshot-datetime">${formatDashboardDate(event.EventDate)} · ${formatDashboardTime(event.StartTime)}</div>
           </div>
           <span class="snapshot-status-pill ${pillClass}">${check}${status}</span>
         </div>
         <div style="font-size:11px; color:#666; margin-top:4px;"><b>Team:</b> ${escapeDashboardHtml(groupText)} | <b>Loc:</b> ${escapeDashboardHtml(event.LocationName || "TBD")}</div>
-        ${isGame ? `<div class="snapshot-snack-chip" style="margin-top:8px; font-size:12px; color:#f57c00;">?? Snack: ${escapeDashboardHtml(event.AssignedSnackFamily || "Not assigned")}</div>` : ""}
+        ${isGame ? `<div class="snapshot-snack-chip" style="margin-top:8px; font-size:12px; color:#f57c00;">🍎 Snack: ${escapeDashboardHtml(event.AssignedSnackFamily || "Not assigned")}</div>` : ""}
       </article>`;
   }).join("");
 }
@@ -240,7 +249,7 @@ function getDashboardCategoryDetail(row, cat) {
   
   return `
     <div class="dashboard-player-detail-box" style="margin-top:10px; padding:12px; background:#fff9f0; border-radius:10px; border:1px solid #ffe0b2;">
-      <div style="font-weight:800; font-size:12px; margin-bottom:5px;">${cfg} Missed (${dates.filter(d=>d.AttendanceStatus!=="Present").length})</div>
+      <div style="font-weight:800; font-size:12px; margin-bottom:5px; color:#111;">${cfg} History</div>
       <div>${missed || "<span style='color:#2e7d32; font-weight:700;'>Perfect record!</span>"}</div>
     </div>`;
 }
@@ -275,7 +284,7 @@ function renderPlayerAlertCard(row, cardType) {
         ${activeCat === 'game' ? getDashboardCategoryDetail(row, 'game') : ""}
 
         <button type="button" class="dashboard-category-row ${activeCat === 'teamEvent' ? 'active' : ''}" data-dashboard-detail-key="${prefix}teamEvent" style="display:flex; justify-content:space-between; padding:10px; border-radius:8px; background:#f9f9f9; border:1px solid #eee; cursor:pointer;">
-          <span style="font-weight:700; font-size:12px;">Events</span> <strong class="dashboard-percent-badge ${getDashboardPercentClass(tPct, row.TeamEventCounted)}">${formatDashboardPercent(tPct)}</strong>
+          <span style="font-weight:700; font-size:12px;">Team Event</span> <strong class="dashboard-percent-badge ${getDashboardPercentClass(tPct, row.TeamEventCounted)}">${formatDashboardPercent(tPct)}</strong>
         </button>
         ${activeCat === 'teamEvent' ? getDashboardCategoryDetail(row, 'teamEvent') : ""}
       </div>
@@ -290,7 +299,8 @@ async function loadDashboard() {
     setMessage(dashboardMessage, "Updating Dashboard...", false);
     if (refreshDashboardBtn) { refreshDashboardBtn.disabled = true; refreshDashboardBtn.textContent = "Loading..."; }
     
-    const res = await fetch(API_BASE + "/dashboard" + (dashboardSelectedMonth ? '?month=' + dashboardSelectedMonth : ''), { credentials: "include" });
+    const url = API_BASE + "/dashboard" + (dashboardSelectedMonth ? '?month=' + dashboardSelectedMonth : '');
+    const res = await fetch(url, { credentials: "include" });
     const data = await res.json();
     
     renderDashboardSummaryCards(data);
