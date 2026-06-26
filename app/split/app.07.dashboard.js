@@ -366,3 +366,152 @@ function renderEventSummary(s) { if(dashboardEventSummary) dashboardEventSummary
 
 ensureDashboardMonthFilterOptions();
 setupDashboardDetailClickHandlers();
+
+function renderMonthlySummary(rows) {
+  if (!dashboardMonthlySummary) return;
+
+  if (!rows || rows.length === 0) {
+    dashboardMonthlySummary.innerHTML = `<div class="roster-empty-message">No attendance records found yet.</div>`;
+    return;
+  }
+
+  dashboardMonthlySummary.innerHTML = `
+    <table class="dashboard-table dashboard-monthly-table dashboard-monthly-simple-table dashboard-monthly-six-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Practices</th>
+          <th>Practice %</th>
+          <th>Games</th>
+          <th>Game %</th>
+          <th>Events</th>
+          <th>Event %</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(row => `
+          <tr>
+            <td><strong>${escapeDashboardHtml(row.AttendanceMonth || "-")}</strong></td>
+            <td>${row.PracticeTotal || 0}</td>
+            <td><strong>${formatDashboardPercent(row.PracticePercent)}</strong></td>
+            <td>${row.GameTotal || 0}</td>
+            <td><strong>${formatDashboardPercent(row.GamePercent)}</strong></td>
+            <td>${row.EventTotal || 0}</td>
+            <td><strong>${formatDashboardPercent(row.EventPercent)}</strong></td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function getDashboardCategoryConfig(category) {
+  if (category === "practice") {
+    return {
+      label: "Practice",
+      counted: "PracticeCounted",
+      present: "PracticePresent",
+      absent: "PracticeAbsent",
+      excused: "PracticeExcused",
+      cancelled: "PracticeCancelled",
+      percent: "PracticePercent"
+    };
+  }
+
+  if (category === "game") {
+    return {
+      label: "Game",
+      counted: "GameCounted",
+      present: "GamePresent",
+      absent: "GameAbsent",
+      excused: "GameExcused",
+      cancelled: "GameCancelled",
+      percent: "GamePercent"
+    };
+  }
+
+  return {
+    label: "Team Event",
+    counted: "TeamEventCounted",
+    present: "TeamEventPresent",
+    absent: "TeamEventAbsent",
+    excused: "TeamEventExcused",
+    cancelled: "TeamEventCancelled",
+    percent: "TeamEventPercent"
+  };
+}
+
+function renderDashboardCategoryButtons(row, cardType) {
+  const playerId = row.PlayerID;
+
+  function button(category, label, percentField, countedField) {
+    const detailKey = `${cardType}-${playerId}-${category}`;
+    const active = dashboardOpenDetailKey === detailKey;
+    const badgeClass = getDashboardPercentClass(row[percentField], row[countedField]);
+
+    return `
+      <button type="button" class="dashboard-category-btn ${active ? "active-dashboard-category" : ""}" data-dashboard-detail-key="${detailKey}">
+        <span>${label}</span>
+        <strong class="dashboard-percent-badge ${badgeClass}">${formatDashboardPercent(row[percentField])}</strong>
+      </button>
+    `;
+  }
+
+  return `
+    <div class="dashboard-alert-metrics dashboard-clickable-metrics">
+      ${button("practice", "Practice", "PracticePercent", "PracticeCounted")}
+      ${button("game", "Game", "GamePercent", "GameCounted")}
+      ${button("teamEvent", "Team Event", "TeamEventPercent", "TeamEventCounted")}
+    </div>
+  `;
+}
+
+function getOpenDashboardDetail(row, cardType) {
+  const playerId = row.PlayerID;
+  const prefix = `${cardType}-${playerId}-`;
+
+  if (!dashboardOpenDetailKey || !dashboardOpenDetailKey.startsWith(prefix)) return "";
+
+  const category = dashboardOpenDetailKey.replace(prefix, "");
+  return getDashboardCategoryDetail(row, category);
+}
+
+function renderPlayerAlerts(rows) {
+  renderCollapsiblePlayerSection(
+    dashboardPlayerAlerts,
+    dashboardPlayerAlertsCount,
+    rows,
+    "attention",
+    "No players are at 70% or lower for practices or games in the selected month."
+  );
+}
+
+function renderGoodPlayers(rows) {
+  renderCollapsiblePlayerSection(
+    dashboardGoodPlayers,
+    dashboardGoodPlayersCount,
+    rows,
+    "good",
+    "No players in the 71%-84% attendance range for the selected month."
+  );
+}
+
+function renderPerfectPlayers(rows) {
+  renderCollapsiblePlayerSection(
+    dashboardPerfectPlayers,
+    dashboardPerfectPlayersCount,
+    rows,
+    "perfect",
+    "No players have 100% attendance for both practices and games in the selected month yet."
+  );
+}
+
+function renderExceptionalPlayers(rows) {
+  renderCollapsiblePlayerSection(
+    dashboardExceptionalPlayers,
+    dashboardExceptionalPlayersCount,
+    rows,
+    "exceptional",
+    "No players have outstanding attendance at 85% or higher for both practices and games in the selected month yet."
+  );
+}
