@@ -183,10 +183,12 @@ function renderBirthdays(data) {
   const selectedLabel = dashboardSelectedMonth ? formatDashboardMonthLabel(dashboardSelectedMonth) : "This Month";
   
   function list(items, label, color) {
+    const count = items.length;
     return `
       <div class="dashboard-mini-card" style="border-left: 5px solid ${color}; flex:1; min-width:280px;">
-        <h4 style="color:${color}; display:flex; justify-content:space-between;">
-          ${label} <span class="birthday-count-badge" style="background:${color};">${items.length}</span>
+        <h4 style="color:${color}; display:flex; justify-content:space-between; align-items:center;">
+          ${label}
+          <span style="display:inline-flex; align-items:center; justify-content:center; background:${color}; color:#fff; font-size:13px; font-weight:800; min-width:26px; height:26px; border-radius:13px; padding:0 7px;">${count}</span>
         </h4>
         ${items.length ? `<ul class="birthday-player-list">
           ${items.map(p => `<li class="birthday-player-item"><strong>${p.FirstName} ${p.LastName}</strong> <span>${formatDashboardBirthday(p.DateOfBirth)}</span></li>`).join("")}
@@ -395,7 +397,7 @@ function renderPracticeSummary(practice) {
       <div class="dashboard-stat-note">Practice &ge;85%</div>
     </div>
     <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
-      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NO DATA</div>
+      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NOT ROSTERED</div>
       <div class="dashboard-stat-value">${noData}</div>
       <div class="dashboard-stat-note">No practice marked &middot; Total: ${total}</div>
     </div>`;
@@ -435,7 +437,7 @@ function renderGameSummary(game) {
       <div class="dashboard-stat-note">Game &ge;85%</div>
     </div>
     <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
-      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NO DATA</div>
+      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NOT ROSTERED</div>
       <div class="dashboard-stat-value">${noData}</div>
       <div class="dashboard-stat-note">Not rostered &middot; Total: ${total}</div>
     </div>`;
@@ -475,7 +477,7 @@ function renderEventSummary(event) {
       <div class="dashboard-stat-note">Event &ge;85%</div>
     </div>
     <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
-      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NO DATA</div>
+      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NOT ROSTERED</div>
       <div class="dashboard-stat-value">${noData}</div>
       <div class="dashboard-stat-note">Not rostered &middot; Total: ${total}</div>
     </div>`;
