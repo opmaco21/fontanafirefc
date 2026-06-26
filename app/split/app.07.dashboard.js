@@ -1,7 +1,6 @@
-/* =========================================================
+﻿/* =========================================================
    FONTANA FIRE FC ATTENDANCE APP
-   MASTER DASHBOARD - HIGH-DEFINITION VERSION
-   Includes: Color Badges, 🍎 Icons, & Gold 100% Status
+   MASTER DASHBOARD - FULL HD VERSION (RESTORED)
    Updated: June 25, 2026
    ========================================================= */
 
@@ -67,13 +66,6 @@ function formatDashboardTime(value) {
   return hour + ":" + match[2] + " " + suffix;
 }
 
-/**
- * Returns the CSS class for percentage badges:
- * 100% = Gold
- * 85-99% = Green
- * 71-84% = Blue/Watch
- * <= 70% = Red/Low
- */
 function getDashboardPercentClass(value, counted) {
   const percent = Number(value);
   if (!Number(counted || 0)) return "dashboard-percent-none";
@@ -83,11 +75,19 @@ function getDashboardPercentClass(value, counted) {
   return "dashboard-percent-low";                         // RED
 }
 
-// --- TOP SUMMARY CARDS ---
+// --- RENDERING HELPERS ---
+
+function renderCollapsiblePlayerSection(container, countEl, rows, cardType, emptyText) {
+  if (countEl) countEl.textContent = (rows ? rows.length : 0) + " players";
+  if (!container) return;
+  container.innerHTML = (rows && rows.length) 
+    ? rows.map(row => renderPlayerAlertCard(row, cardType)).join("") 
+    : `<div class="roster-empty-message">${emptyText}</div>`;
+}
 
 function renderDashboardCard(label, value, note, clickAction) {
   const isOpen = clickAction && dashboardOpenSummaryCard === clickAction;
-  const arrow = isOpen ? "▲" : "▼";
+  const arrow = isOpen ? "?" : "?";
   return `
     <div class="dashboard-stat-card" data-dash-card="${escapeDashboardHtml(clickAction)}" 
          style="cursor:pointer; ${isOpen ? 'border-color:#f57c00; box-shadow:0 4px 12px rgba(245,124,0,0.1);' : ''}">
@@ -113,9 +113,9 @@ function renderDashboardSummaryCards(data) {
   const cards = [
     renderDashboardCard("Inactive Players", totals.InactivePlayers || 0, activeCount + " active players", "active"),
     renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, (paperwork.CompletePaperwork || 0) + " complete roster", "paperwork"),
-    renderDashboardCard("Photo Release", optIn, "<b>" + optIn + " Allowed</b> · " + optOut + " Denied<br>" + missingPhoto + " Missing Response", "photo"),
-    renderDashboardCard("Bring Snack 🍎", snack.BringSnackPlayers || 0, "Rotation families", "snack"),
-    renderDashboardCard("Paid Out 💰", snack.PaidOutPlayers || 0, "Coach provides snack", "paidout")
+    renderDashboardCard("Photo Release", optIn, "<b>" + optIn + " Allowed</b> . " + optOut + " Denied<br>" + missingPhoto + " Missing Response", "photo"),
+    renderDashboardCard("Bring Snack ??", snack.BringSnackPlayers || 0, "Rotation families", "snack"),
+    renderDashboardCard("Paid Out ??", snack.PaidOutPlayers || 0, "Coach provides snack", "paidout")
   ].join("");
 
   dashboardSummaryCards.innerHTML = cards + `<div id="dashboardSummaryPanel" style="grid-column: 1 / -1;"></div>`;
@@ -150,13 +150,7 @@ function renderSummaryPanel(category) {
   const panel = document.getElementById("dashboardSummaryPanel");
   if (!panel || !category) { if(panel) panel.innerHTML = ""; return; }
   const players = dashboardSummaryPlayerCache[category] || [];
-  
-  const titles = { active: "Inactive Players", paperwork: "Missing Paperwork", photo: "Photo Release Action Needed", snack: "Snack Rotation List", paidout: "Coach Provided Snacks" };
-  const reportLinks = { paperwork: "paperwork", photo: "paperwork" };
-
-  const actionBtn = category === "active" 
-    ? `<button onclick="playerManagementTab.click();" style="padding:6px 12px; background:#f57c00; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer;">→ PLAYER MGMT</button>`
-    : (reportLinks[category] ? `<button onclick="reportsTab.click();" style="padding:6px 12px; background:#f57c00; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer;">→ VIEW REPORT</button>` : "");
+  const titles = { active: "Inactive Players", paperwork: "Missing Paperwork", photo: "Photo Release Needed", snack: "Snack Rotation", paidout: "Coach Snacks" };
 
   const formatPlayer = (p, idx) => {
     const extra = {
@@ -164,29 +158,19 @@ function renderSummaryPanel(category) {
       photo: p.PhotoReleaseStatus === "No" ? "DENIED" : "MISSING",
       active: p.BirthYear || ""
     }[category] || "";
-    
-    return `
-      <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
-        <span style="font-weight:600; color:#111;">${escapeDashboardHtml(p.FirstName + " " + p.LastName)}</span>
-        <span style="font-size:12px; color:#f57c00; font-weight:700;">${escapeDashboardHtml(extra)}</span>
-      </div>`;
+    return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
+      <span style="font-weight:600;">${escapeDashboardHtml(p.FirstName + " " + p.LastName)}</span>
+      <span style="color:#f57c00; font-weight:700; font-size:12px;">${escapeDashboardHtml(extra)}</span>
+    </div>`;
   };
 
   panel.innerHTML = `
     <div style="margin: 15px 0; background:#fff; border:1px solid #ddd; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
       <div style="background:#f8f9fa; padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <div style="font-weight:800; font-size:16px; color:#111;">${titles[category]}</div>
-          <div style="font-size:12px; color:#666;">${players.length} players listed</div>
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          ${actionBtn}
-          <button onclick="dashboardOpenSummaryCard=''; renderSummaryPanel(null);" style="background:#eee; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-weight:bold;">×</button>
-        </div>
+        <div style="font-weight:800;">${titles[category]} (${players.length})</div>
+        <button onclick="dashboardOpenSummaryCard=''; renderSummaryPanel(null);" style="background:#eee; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer;">X</button>
       </div>
-      <div style="max-height:350px; overflow-y:auto;">
-        ${players.length === 0 ? '<div style="padding:30px; text-align:center; color:#999;">No players found.</div>' : players.map((p, i) => formatPlayer(p, i)).join("")}
-      </div>
+      <div style="max-height:300px; overflow-y:auto;">${players.map((p, i) => formatPlayer(p, i)).join("")}</div>
     </div>`;
 }
 
@@ -201,14 +185,12 @@ function renderBirthdays(data) {
   function list(items, label, color) {
     return `
       <div class="dashboard-mini-card" style="border-left: 5px solid ${color}; flex:1; min-width:280px;">
-        <h4 style="color:${color}; margin-bottom:10px; display:flex; justify-content:space-between;">
-          ${label} <span class="birthday-count-badge" style="background:${color}; color:#fff;">${items.length}</span>
+        <h4 style="color:${color}; display:flex; justify-content:space-between;">
+          ${label} <span class="birthday-count-badge" style="background:${color};">${items.length}</span>
         </h4>
         ${items.length ? `<ul class="birthday-player-list">
-          ${items.map(p => `<li class="birthday-player-item" style="padding:6px 0; border-bottom:1px solid #f0f0f0;">
-            <strong>${p.FirstName} ${p.LastName}</strong> <span style="float:right; font-size:12px; color:#666;">${formatDashboardBirthday(p.DateOfBirth)}</span>
-          </li>`).join("")}
-        </ul>` : `<p class="subtext">No birthdays found.</p>`}
+          ${items.map(p => `<li class="birthday-player-item"><strong>${p.FirstName} ${p.LastName}</strong> <span>${formatDashboardBirthday(p.DateOfBirth)}</span></li>`).join("")}
+        </ul>` : `<p class="subtext">No birthdays.</p>`}
       </div>`;
   }
   dashboardBirthdays.style.display = "flex";
@@ -217,7 +199,7 @@ function renderBirthdays(data) {
   dashboardBirthdays.innerHTML = list(thisMonth, selectedLabel, "#f57c00") + list(nextMonth, "Next Month", "#6366f1");
 }
 
-// --- UPCOMING GAMES SNAPSHOT ---
+// --- UPCOMING SNAPSHOT (Age Groups Restored) ---
 
 function renderUpcomingSnapshot(rows) {
   const container = document.getElementById("dashboardUpcomingSnapshot");
@@ -229,35 +211,37 @@ function renderUpcomingSnapshot(rows) {
   container.innerHTML = rows.map(event => {
     const isGame = event.EventType === "Game";
     const status = event.EventStatus || "Scheduled";
+    const groupText = event.GroupCode || event.GroupName || "All Teams";
     const pillClass = status === "Completed" ? "snapshot-status--completed" : (status === "Cancelled" ? "snapshot-status--cancelled" : "snapshot-status--scheduled");
-    const checkmark = status === "Completed" ? "✓ " : "";
+    const check = status === "Completed" ? "? " : "";
     
     return `
       <article class="dashboard-upcoming-card snapshot-card ${isGame ? 'snapshot-card--game' : 'snapshot-card--team-event'} ${status === 'Cancelled' ? 'snapshot-card--cancelled' : ''}">
         <div class="snapshot-topline">
           <div class="snapshot-name-block">
             <div class="snapshot-name" ${status === "Cancelled" ? 'style="text-decoration:line-through;"' : ""}>${escapeDashboardHtml(event.EventName || event.EventType)}</div>
-            <div class="snapshot-datetime">${formatDashboardDate(event.EventDate)} · ${formatDashboardTime(event.StartTime)}</div>
+            <div class="snapshot-datetime">${formatDashboardDate(event.EventDate)} . ${formatDashboardTime(event.StartTime)}</div>
           </div>
-          <span class="snapshot-status-pill ${pillClass}">${checkmark}${status}</span>
+          <span class="snapshot-status-pill ${pillClass}">${check}${status}</span>
         </div>
-        ${isGame ? `<div class="snapshot-snack-chip" style="margin-top:8px; font-size:12px; color:#f57c00;">🍎 Snack: ${escapeDashboardHtml(event.AssignedSnackFamily || "Not assigned")}</div>` : ""}
+        <div style="font-size:11px; color:#666; margin-top:4px;"><b>Team:</b> ${escapeDashboardHtml(groupText)} | <b>Loc:</b> ${escapeDashboardHtml(event.LocationName || "TBD")}</div>
+        ${isGame ? `<div class="snapshot-snack-chip" style="margin-top:8px; font-size:12px; color:#f57c00;">?? Snack: ${escapeDashboardHtml(event.AssignedSnackFamily || "Not assigned")}</div>` : ""}
       </article>`;
   }).join("");
 }
 
-// --- ATTENDANCE PLAYER CARDS (COLOR CODED) ---
+// --- PLAYER CARDS & ATTENDANCE ---
 
 function getDashboardCategoryDetail(row, cat) {
   const cfg = { practice: "Practice", game: "Game", teamEvent: "Event" }[cat];
   const dates = dashboardPlayerDates[row.PlayerID + "-" + cat] || [];
   const missed = dates.filter(d => d.AttendanceStatus === "Absent" || d.AttendanceStatus === "No Record").map(d => 
-    `<div style="padding:4px 0; border-bottom:1px solid #eee;">${formatDashboardDate(d.EventDate)}</div>`).join("");
+    `<div style="padding:4px 0; border-bottom:1px solid #eee; font-size:12px; color:#c62828;">${formatDashboardDate(d.EventDate)}</div>`).join("");
   
   return `
     <div class="dashboard-player-detail-box" style="margin-top:10px; padding:12px; background:#fff9f0; border-radius:10px; border:1px solid #ffe0b2;">
-      <div style="font-weight:800; font-size:13px; margin-bottom:5px; color:#111;">${cfg} Missed (${dates.filter(d=>d.AttendanceStatus!=="Present").length})</div>
-      <div style="font-size:12px; color:#c62828;">${missed || "Perfect attendance recorded!"}</div>
+      <div style="font-weight:800; font-size:12px; margin-bottom:5px;">${cfg} Missed (${dates.filter(d=>d.AttendanceStatus!=="Present").length})</div>
+      <div>${missed || "<span style='color:#2e7d32; font-weight:700;'>Perfect record!</span>"}</div>
     </div>`;
 }
 
@@ -265,48 +249,40 @@ function renderPlayerAlertCard(row, cardType) {
   const prefix = cardType + "-" + row.PlayerID + "-";
   const activeCat = dashboardOpenDetailKey.startsWith(prefix) ? dashboardOpenDetailKey.replace(prefix, "") : "";
   
-  // Field mapping for calculations
-  const practicePct = row.PracticePercent || 0;
-  const gamePct = row.GamePercent || 0;
-  const eventPct = row.TeamEventPercent || 0;
-
-  // Icons for Alert Types
-  const alertType = row.AlertType || row.HighlightType || "INFO";
-  const alertIcon = alertType.includes("Missing Paperwork") ? "📄 " : "";
+  const pPct = row.PracticePercent || 0;
+  const gPct = row.GamePercent || 0;
+  const tPct = row.TeamEventPercent || 0;
 
   return `
-    <article class="dashboard-alert-card dashboard-${cardType}-card" style="margin-bottom:15px; border:1px solid #eee; padding:15px; border-radius:12px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-      <div class="dashboard-alert-topline" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+    <article class="dashboard-alert-card dashboard-${cardType}-card" style="margin-bottom:15px; padding:15px; border-radius:14px; background:#fff; border:1px solid #eee; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+      <div class="dashboard-alert-topline" style="display:flex; justify-content:space-between; margin-bottom:10px;">
         <div>
-          <h4 style="margin:0; font-size:16px; color:#111;">${row.FirstName} ${row.LastName}</h4>
-          <span style="font-size:11px; color:#666; font-weight:600;">BIRTH YEAR: ${row.BirthYear || "-"}</span>
+          <h4 style="margin:0;">${row.FirstName} ${row.LastName}</h4>
+          <span style="font-size:11px; color:#999; font-weight:700;">BY: ${row.BirthYear || "-"}</span>
         </div>
-        <span class="dashboard-alert-badge dashboard-${cardType}-badge" style="font-size:10px; font-weight:800; border-radius:20px; padding:4px 10px;">${alertIcon}${alertType}</span>
+        <span class="dashboard-alert-badge dashboard-${cardType}-badge">${row.AlertType || row.HighlightType || "INFO"}</span>
       </div>
       
       <div class="dashboard-alert-metrics" style="display:flex; flex-direction:column; gap:6px;">
-        <button type="button" class="dashboard-category-row ${activeCat === 'practice' ? 'active' : ''}" data-dashboard-detail-key="${prefix}practice" style="display:flex; justify-content:space-between; width:100%; padding:10px; border:1px solid #eee; border-radius:8px; background:#f9f9f9; cursor:pointer;">
-          <span style="font-weight:700; font-size:12px; color:#444;">Practice</span> 
-          <strong class="dashboard-percent-badge ${getDashboardPercentClass(practicePct, row.PracticeCounted)}">${formatDashboardPercent(practicePct)}</strong>
+        <button type="button" class="dashboard-category-row ${activeCat === 'practice' ? 'active' : ''}" data-dashboard-detail-key="${prefix}practice" style="display:flex; justify-content:space-between; padding:10px; border-radius:8px; background:#f9f9f9; border:1px solid #eee; cursor:pointer;">
+          <span style="font-weight:700; font-size:12px;">Practice</span> <strong class="dashboard-percent-badge ${getDashboardPercentClass(pPct, row.PracticeCounted)}">${formatDashboardPercent(pPct)}</strong>
         </button>
         ${activeCat === 'practice' ? getDashboardCategoryDetail(row, 'practice') : ""}
 
-        <button type="button" class="dashboard-category-row ${activeCat === 'game' ? 'active' : ''}" data-dashboard-detail-key="${prefix}game" style="display:flex; justify-content:space-between; width:100%; padding:10px; border:1px solid #eee; border-radius:8px; background:#f9f9f9; cursor:pointer;">
-          <span style="font-weight:700; font-size:12px; color:#444;">Game</span> 
-          <strong class="dashboard-percent-badge ${getDashboardPercentClass(gamePct, row.GameCounted)}">${formatDashboardPercent(gamePct)}</strong>
+        <button type="button" class="dashboard-category-row ${activeCat === 'game' ? 'active' : ''}" data-dashboard-detail-key="${prefix}game" style="display:flex; justify-content:space-between; padding:10px; border-radius:8px; background:#f9f9f9; border:1px solid #eee; cursor:pointer;">
+          <span style="font-weight:700; font-size:12px;">Game</span> <strong class="dashboard-percent-badge ${getDashboardPercentClass(gPct, row.GameCounted)}">${formatDashboardPercent(gPct)}</strong>
         </button>
         ${activeCat === 'game' ? getDashboardCategoryDetail(row, 'game') : ""}
 
-        <button type="button" class="dashboard-category-row ${activeCat === 'teamEvent' ? 'active' : ''}" data-dashboard-detail-key="${prefix}teamEvent" style="display:flex; justify-content:space-between; width:100%; padding:10px; border:1px solid #eee; border-radius:8px; background:#f9f9f9; cursor:pointer;">
-          <span style="font-weight:700; font-size:12px; color:#444;">Team Event</span> 
-          <strong class="dashboard-percent-badge ${getDashboardPercentClass(eventPct, row.TeamEventCounted)}">${formatDashboardPercent(eventPct)}</strong>
+        <button type="button" class="dashboard-category-row ${activeCat === 'teamEvent' ? 'active' : ''}" data-dashboard-detail-key="${prefix}teamEvent" style="display:flex; justify-content:space-between; padding:10px; border-radius:8px; background:#f9f9f9; border:1px solid #eee; cursor:pointer;">
+          <span style="font-weight:700; font-size:12px;">Events</span> <strong class="dashboard-percent-badge ${getDashboardPercentClass(tPct, row.TeamEventCounted)}">${formatDashboardPercent(tPct)}</strong>
         </button>
         ${activeCat === 'teamEvent' ? getDashboardCategoryDetail(row, 'teamEvent') : ""}
       </div>
     </article>`;
 }
 
-// --- MAIN LOADER ---
+// --- MAIN CONTROLLER ---
 
 async function loadDashboard() {
   if (!dashboardSection) return;
@@ -314,36 +290,29 @@ async function loadDashboard() {
     setMessage(dashboardMessage, "Updating Dashboard...", false);
     if (refreshDashboardBtn) { refreshDashboardBtn.disabled = true; refreshDashboardBtn.textContent = "Loading..."; }
     
-    const url = API_BASE + "/dashboard" + (dashboardSelectedMonth ? '?month=' + dashboardSelectedMonth : '');
-    const res = await fetch(url, { credentials: "include" });
+    const res = await fetch(API_BASE + "/dashboard" + (dashboardSelectedMonth ? '?month=' + dashboardSelectedMonth : ''), { credentials: "include" });
     const data = await res.json();
     
     renderDashboardSummaryCards(data);
     renderBirthdays(data.birthdays || {});
     renderUpcomingSnapshot(data.upcomingSnapshot || []);
     
-    // Monthly Summary Tables
     if (dashboardMonthlySummary) {
-      const rows = data.monthlySummary || [];
-      dashboardMonthlySummary.innerHTML = `<table class="dashboard-table dashboard-monthly-simple-table"><thead><tr><th>Month</th><th>Prac %</th><th>Game %</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${escapeDashboardHtml(row.AttendanceMonth)}</strong></td><td><strong>${formatDashboardPercent(row.PracticePercent)}</strong></td><td><strong>${formatDashboardPercent(row.GamePercent)}</strong></td></tr>`).join("")}</tbody></table>`;
+      dashboardMonthlySummary.innerHTML = `<table class="dashboard-table"><thead><tr><th>Month</th><th>Prac %</th><th>Game %</th></tr></thead><tbody>${(data.monthlySummary || []).map(r => `<tr><td><strong>${r.AttendanceMonth}</strong></td><td><strong>${formatDashboardPercent(r.PracticePercent)}</strong></td><td><strong>${formatDashboardPercent(r.GamePercent)}</strong></td></tr>`).join("")}</tbody></table>`;
     }
 
     renderPracticeSummary(data.practiceSummary || {});
     renderGameSummary(data.gameSummary || {});
     renderEventSummary(data.eventSummary || {});
     
-    // Collapsible Groups
     renderCollapsiblePlayerSection(dashboardPlayerAlerts, dashboardPlayerAlertsCount, data.playerAlerts, "attention", "No players need attention.");
-    renderCollapsiblePlayerSection(dashboardGoodPlayers, dashboardGoodPlayersCount, data.goodPlayers, "good", "No players found.");
-    renderCollapsiblePlayerSection(dashboardExceptionalPlayers, dashboardExceptionalPlayersCount, data.exceptionalPlayers, "exceptional", "No players found.");
-    renderCollapsiblePlayerSection(dashboardPerfectPlayers, dashboardPerfectPlayersCount, data.perfectPlayers, "perfect", "No players found.");
+    renderCollapsiblePlayerSection(dashboardGoodPlayers, dashboardGoodPlayersCount, data.goodPlayers, "good", "None found.");
+    renderCollapsiblePlayerSection(dashboardExceptionalPlayers, dashboardExceptionalPlayersCount, data.exceptionalPlayers, "exceptional", "None found.");
+    renderCollapsiblePlayerSection(dashboardPerfectPlayers, dashboardPerfectPlayersCount, data.perfectPlayers, "perfect", "None found.");
     
     if (dashboardLastUpdated) dashboardLastUpdated.textContent = "Last updated: " + new Date().toLocaleString();
     setMessage(dashboardMessage, "Dashboard updated.", false);
-  } catch (err) { 
-    console.error("Dashboard error:", err);
-    setMessage(dashboardMessage, "Error loading dashboard data.", true); 
-  }
+  } catch (err) { setMessage(dashboardMessage, "Error loading dashboard.", true); }
   finally { if (refreshDashboardBtn) { refreshDashboardBtn.disabled = false; refreshDashboardBtn.textContent = "Refresh Dashboard"; } }
 }
 
