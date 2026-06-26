@@ -213,7 +213,7 @@ async function addGame() {
     return;
   }
 
-  const eventName = newGameName ? newGameName.value.trim() : "";
+  const eventName = newGameName ? (newGameName.value.trim() || "TBD") : "TBD";
   const eventDate = newGameDate ? newGameDate.value : "";
   const startTime = newGameStartTime ? newGameStartTime.value : "";
   const selectedPlayerIds = getSelectedGamePlayerIds();
@@ -231,10 +231,10 @@ async function addGame() {
       ? customLocation
       : locationType;
 
-  if (!eventName || !eventDate || !startTime) {
+  if (!eventDate || !startTime) {
     setMessage(
       gameMessage,
-      "Enter game name/opponent, date, and start time.",
+      "Enter game date and start time.",
       true
     );
     return;
@@ -242,15 +242,6 @@ async function addGame() {
 
   if (!locationName) {
     setMessage(gameMessage, "Enter a game location.", true);
-    return;
-  }
-
-  if (selectedPlayerIds.length === 0) {
-    setMessage(
-      gameMessage,
-      "Select at least one expected player for this game.",
-      true
-    );
     return;
   }
 
@@ -288,7 +279,9 @@ async function addGame() {
 
     setMessage(
       gameMessage,
-      `✅ Game added. ${data.rosterSavedCount || selectedPlayerIds.length} player(s) expected.`,
+      selectedPlayerIds.length > 0
+        ? `✅ Game added. ${data.rosterSavedCount || selectedPlayerIds.length} player(s) expected.`
+        : `✅ Game added. No roster assigned yet — edit the roster to add players.`,
       false
     );
 

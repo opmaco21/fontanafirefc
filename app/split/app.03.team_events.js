@@ -281,10 +281,10 @@ async function addTeamEvent() {
   const locationName = newTeamEventLocation ? newTeamEventLocation.value.trim() : "";
   const notes = newTeamEventNotes ? newTeamEventNotes.value.trim() : "";
 
-  if (selectedPlayerIds.length === 0 || !eventName || !eventDate) {
+  if (!eventName || !eventDate) {
     setMessage(
       teamEventMessage,
-      "Select at least one player and enter an event name and date.",
+      "Enter an event name and date.",
       true
     );
     return;
