@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    FONTANA FIRE FC ATTENDANCE APP
    MASTER DASHBOARD - FULL HD VERSION (RESTORED)
    Updated: June 25, 2026
