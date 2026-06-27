@@ -395,11 +395,6 @@ function renderPracticeSummary(practice) {
       <div class="dashboard-stat-label" style="color:#166534;">&#128994; STRONG</div>
       <div class="dashboard-stat-value">${high}</div>
       <div class="dashboard-stat-note">Practice &ge;85%</div>
-    </div>
-    <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
-      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NOT ROSTERED</div>
-      <div class="dashboard-stat-value">${noData}</div>
-      <div class="dashboard-stat-note">No practice marked &middot; Total: ${total}</div>
     </div>`;
 }
 function renderGameSummary(game) {
@@ -439,7 +434,7 @@ function renderGameSummary(game) {
     <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
       <div class="dashboard-stat-label" style="color:#475569;">&#9898; NOT ROSTERED</div>
       <div class="dashboard-stat-value">${noData}</div>
-      <div class="dashboard-stat-note">Not rostered &middot; Total: ${total}</div>
+      <div class="dashboard-stat-note">These players have not been rostered for any game this month</div>
     </div>`;
 }
 function renderEventSummary(event) {
@@ -475,11 +470,6 @@ function renderEventSummary(event) {
       <div class="dashboard-stat-label" style="color:#166534;">&#128994; STRONG</div>
       <div class="dashboard-stat-value">${high}</div>
       <div class="dashboard-stat-note">Event &ge;85%</div>
-    </div>
-    <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
-      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NOT ROSTERED</div>
-      <div class="dashboard-stat-value">${noData}</div>
-      <div class="dashboard-stat-note">Not rostered &middot; Total: ${total}</div>
     </div>`;
 }
 
