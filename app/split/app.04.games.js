@@ -245,6 +245,11 @@ async function parseGameImportInput() {
   const isImg = document.getElementById("gameImportImageArea").style.display !== "none";
   const body = isImg ? { images: gameImportImages } : { text: document.getElementById("gameImportText").value };
 
+  console.log("[Import Debug] isImg:", isImg);
+  console.log("[Import Debug] gameImportImages.length:", gameImportImages.length);
+  console.log("[Import Debug] body keys:", Object.keys(body));
+  if (body.images) console.log("[Import Debug] images[0] keys:", body.images[0] ? Object.keys(body.images[0]) : "empty array");
+
   btn.disabled = true; btn.textContent = "AI Reading...";
   msg.textContent = "Claude is scanning for Fontana Fire games...";
 
