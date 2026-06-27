@@ -431,11 +431,65 @@ function renderGameSummary(game) {
       <div class="dashboard-stat-value">${high}</div>
       <div class="dashboard-stat-note">Game &ge;85%</div>
     </div>
-    <div class="dashboard-stat-card" style="border-left:4px solid #94a3b8;">
-      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NOT ROSTERED</div>
+    <div class="dashboard-stat-card" id="gameNotRosteredCard" style="border-left:4px solid #94a3b8; cursor:pointer;" onclick="toggleGameNotRostered()">
+      <div class="dashboard-stat-label" style="color:#475569;">&#9898; NOT ROSTERED <span id="gameNotRosteredArrow" style="font-size:10px; color:#f57c00;">&#9660;</span></div>
       <div class="dashboard-stat-value">${noData}</div>
       <div class="dashboard-stat-note">These players have not been rostered for any game this month</div>
-    </div>`;
+    </div>
+    <div id="gameNotRosteredPanel" style="grid-column: 1 / -1; display:none;"></div>`;
+
+  window._gameNotRosteredOpen = false;
+}
+
+async function toggleGameNotRostered() {
+  const panel = document.getElementById("gameNotRosteredPanel");
+  const arrow = document.getElementById("gameNotRosteredArrow");
+  const card  = document.getElementById("gameNotRosteredCard");
+  if (!panel) return;
+
+  window._gameNotRosteredOpen = !window._gameNotRosteredOpen;
+
+  if (!window._gameNotRosteredOpen) {
+    panel.style.display = "none";
+    if (arrow) arrow.innerHTML = "&#9660;";
+    if (card)  card.style.boxShadow = "";
+    return;
+  }
+
+  if (arrow) arrow.innerHTML = "&#9650;";
+  if (card)  card.style.boxShadow = "0 4px 12px rgba(245,124,0,0.15)";
+  panel.style.display = "block";
+  panel.innerHTML = `<div style="padding:16px; color:#999;">Loading players...</div>`;
+
+  try {
+    const monthParam = dashboardSelectedMonth ? "&month=" + dashboardSelectedMonth : "";
+    const res = await fetch(API_BASE + "/dashboard/summary-players?category=gamenotrostered" + monthParam, { credentials: "include" });
+    const data = await res.json();
+    const players = data.players || [];
+
+    if (!players.length) {
+      panel.innerHTML = `<div style="padding:16px; color:#666;">All active players are rostered for at least one game this month.</div>`;
+      return;
+    }
+
+    const rows = players.map((p, i) => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #eee; background:${i % 2 === 0 ? "#fff" : "#f9f9f9"};">
+        <span style="font-weight:600;">${escapeDashboardHtml(p.FirstName + " " + p.LastName)}${p.PlayerNumber != null ? ' <span style="color:#999;font-size:12px;">#' + p.PlayerNumber + '</span>' : ""}</span>
+        <span style="color:#64748b; font-size:12px; font-weight:600;">${escapeDashboardHtml(p.GroupName || String(p.BirthYear || ""))}</span>
+      </div>`).join("");
+
+    panel.innerHTML = `
+      <div style="margin:8px 0 15px; background:#fff; border:1px solid #ddd; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+        <div style="background:#f8f9fa; padding:14px 16px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-weight:800; font-size:14px;">&#9898; Not Rostered for Any Game (${players.length})</div>
+          <button onclick="toggleGameNotRostered()" style="background:#eee; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:13px;">&#x2715;</button>
+        </div>
+        <div style="max-height:320px; overflow-y:auto;">${rows}</div>
+      </div>`;
+  } catch (err) {
+    console.error("Not rostered load error:", err);
+    panel.innerHTML = `<div style="padding:16px; color:#c00;">Could not load players.</div>`;
+  }
 }
 function renderEventSummary(event) {
   if (!dashboardEventSummary) return;
