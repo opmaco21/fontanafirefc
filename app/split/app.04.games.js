@@ -1,11 +1,11 @@
-/* =========================
-   GAME PLAYER SELECTOR
-   Batch 4B Frontend
+/* =========================================================
+   FONTANA FIRE FC - GAMES MANAGEMENT
+   Full Integrated Version: Manual Creation + AI Multi-Image Import
+   Updated: June 25, 2026
+   ========================================================= */
 
-   Purpose:
-   - Games use exact player selection, similar to Team Events.
-   - Checked players are expected for the game roster.
-   ========================= */
+// --- PART 1: MANUAL GAME ROSTER SELECTION ---
+
 function getSelectedGamePlayerIds() {
   return Array.from(selectedGamePlayerIds)
     .map(value => Number(value))
@@ -14,53 +14,31 @@ function getSelectedGamePlayerIds() {
 
 function updateGamePlayerSummary() {
   if (!gamePlayerSummary) return;
-
-  gamePlayerSummary.textContent =
-    `Selected Players: ${getSelectedGamePlayerIds().length}`;
+  gamePlayerSummary.textContent = `Selected Players: ${getSelectedGamePlayerIds().length}`;
 }
 
 function getFilteredGamePlayers() {
-  const searchText = gamePlayerSearch
-    ? gamePlayerSearch.value.trim().toLowerCase()
-    : "";
-
-  if (!searchText && !gameGenderFilter) {
-    return latestGamePlayers;
-  }
+  const searchText = gamePlayerSearch ? gamePlayerSearch.value.trim().toLowerCase() : "";
+  if (!searchText && !gameGenderFilter) return latestGamePlayers;
 
   return latestGamePlayers.filter(player => {
-    const genderMatches =
-      !gameGenderFilter ||
-      (player.Gender || "") === gameGenderFilter;
-
+    const genderMatches = !gameGenderFilter || (player.Gender || "") === gameGenderFilter;
     const searchable = [
-      player.FirstName,
-      player.LastName,
-      player.FullName,
+      player.FirstName, player.LastName, player.FullName,
       player.PlayerNumber === 0 || player.PlayerNumber ? `#${player.PlayerNumber}` : "",
-      player.GroupName,
-      player.GroupCode,
-      player.Gender,
-      player.BirthYear
+      player.GroupName, player.GroupCode, player.Gender, player.BirthYear
     ].filter(Boolean).join(" ").toLowerCase();
-
     return genderMatches && searchable.includes(searchText);
   });
 }
 
 function renderGamePlayerOptions() {
   if (!gamePlayerList) return;
-
   const players = getFilteredGamePlayers();
-
   gamePlayerList.innerHTML = "";
 
   if (!players.length) {
-    gamePlayerList.innerHTML = `
-      <div class="roster-empty-message">
-        No active players found.
-      </div>
-    `;
+    gamePlayerList.innerHTML = `<div class="roster-empty-message">No active players found.</div>`;
     updateGamePlayerSummary();
     return;
   }
@@ -68,88 +46,49 @@ function renderGamePlayerOptions() {
   players.forEach(player => {
     const label = document.createElement("label");
     label.className = "team-event-player-option";
-
     const playerId = Number(player.PlayerID);
     const groupLabel = player.GroupName || player.GroupCode || player.BirthYear || "No Group";
-    const playerNumber = player.PlayerNumber === 0 || player.PlayerNumber
-      ? `#${player.PlayerNumber}`
-      : "No #";
+    const playerNumber = player.PlayerNumber === 0 || player.PlayerNumber ? `#${player.PlayerNumber}` : "No #";
 
     label.innerHTML = `
-      <input
-        type="checkbox"
-        class="game-player-checkbox"
-        value="${player.PlayerID}"
-        ${selectedGamePlayerIds.has(playerId) ? "checked" : ""}
-      />
+      <input type="checkbox" class="game-player-checkbox" value="${player.PlayerID}" ${selectedGamePlayerIds.has(playerId) ? "checked" : ""}/>
       <span class="team-event-player-info">
         <span class="team-event-player-name">${escapeHtml(player.FirstName)} ${escapeHtml(player.LastName)}</span>
         <span class="team-event-player-meta">${playerNumber} | Group: ${groupLabel}${player.Gender ? ` | Gender: ${formatGenderShort(player.Gender)}` : ""}</span>
-      </span>
-    `;
-
+      </span>`;
     gamePlayerList.appendChild(label);
   });
 
   gamePlayerList.querySelectorAll(".game-player-checkbox").forEach(checkbox => {
     checkbox.addEventListener("change", () => {
       const playerId = Number(checkbox.value);
-
-      if (checkbox.checked) {
-        selectedGamePlayerIds.add(playerId);
-      } else {
-        selectedGamePlayerIds.delete(playerId);
-      }
-
+      if (checkbox.checked) selectedGamePlayerIds.add(playerId);
+      else selectedGamePlayerIds.delete(playerId);
       updateGamePlayerSummary();
     });
   });
-
   updateGamePlayerSummary();
 }
 
 function setAllShownGamePlayerCheckboxes(isChecked) {
-  const visiblePlayers = getFilteredGamePlayers();
-
-  visiblePlayers.forEach(player => {
+  getFilteredGamePlayers().forEach(player => {
     const playerId = Number(player.PlayerID);
-
-    if (isChecked) {
-      selectedGamePlayerIds.add(playerId);
-    } else {
-      selectedGamePlayerIds.delete(playerId);
-    }
+    if (isChecked) selectedGamePlayerIds.add(playerId);
+    else selectedGamePlayerIds.delete(playerId);
   });
-
   renderGamePlayerOptions();
 }
 
 async function loadGamePlayerSelector() {
   if (!gamePlayerList) return;
-
-  gamePlayerList.innerHTML = `
-    <div class="roster-empty-message">Loading active players...</div>
-  `;
-
+  gamePlayerList.innerHTML = `<div class="roster-empty-message">Loading active players...</div>`;
   try {
-    const res = await fetch(`${API_BASE}/players`, {
-      credentials: "include"
-    });
-
+    const res = await fetch(`${API_BASE}/players`, { credentials: "include" });
     const data = await res.json();
-
-    latestGamePlayers = Array.isArray(data)
-      ? data
-      : data.players || [];
-
+    latestGamePlayers = Array.isArray(data) ? data : (data.players || []);
     renderGamePlayerOptions();
-
   } catch (err) {
-    console.error("Could not load players for Game:", err);
-
-    gamePlayerList.innerHTML = `
-      <div class="roster-empty-message">Could not load players.</div>
-    `;
+    gamePlayerList.innerHTML = `<div class="roster-empty-message">Could not load players.</div>`;
   }
 }
 
@@ -157,182 +96,55 @@ function resetGameForm(clearMessage = true) {
   selectedGamePlayerIds = new Set();
   latestGamePlayers = [];
   gameGenderFilter = "";
-
   if (newGameName) newGameName.value = "";
   if (newGameDate) newGameDate.value = "";
   if (newGameStartTime) newGameStartTime.value = "";
   if (newGameLocationType) newGameLocationType.value = "Ralph M. Lewis Sports Complex";
   if (newGameCustomLocation) newGameCustomLocation.value = "";
-
   const customWrapper = document.getElementById("newGameCustomLocationWrapper");
-  if (customWrapper) {
-    customWrapper.classList.add("hidden");
-  }
-
+  if (customWrapper) customWrapper.classList.add("hidden");
   if (gamePlayerSearch) gamePlayerSearch.value = "";
   if (gameGenderFilterSelect) gameGenderFilterSelect.value = "";
   if (gamePlayerList) gamePlayerList.innerHTML = "";
-
   updateGamePlayerSummary();
-
-  if (clearMessage && gameMessage) {
-    gameMessage.textContent = "";
-  }
+  if (clearMessage && gameMessage) gameMessage.textContent = "";
 }
 
-/* =========================
-   ADD TEAM EVENT
-
-   Purpose:
-   - Creates a manual event such as:
-       Scrimmage
-       Team get-together
-       Other team activity
-   - Supports one group or multiple selected groups.
-   ========================= */
-
-/* =========================
-   ADD GAME
-   Batch 4B Frontend
-
-   Purpose:
-   - Creates one real game.
-   - Uses exact player selection for the expected roster.
-   ========================= */
 async function addGame() {
-  if (gameMessage) {
-    gameMessage.textContent = "";
-  }
-
-  if (!canManageEvents()) {
-    setMessage(
-      gameMessage,
-      "Access denied. Only Admin and Team Mom can add games.",
-      true
-    );
-    return;
-  }
-
+  if (!canManageEvents()) return setMessage(gameMessage, "Access denied.", true);
   const eventName = newGameName ? (newGameName.value.trim() || "TBD") : "TBD";
   const eventDate = newGameDate ? newGameDate.value : "";
   const startTime = newGameStartTime ? newGameStartTime.value : "";
   const selectedPlayerIds = getSelectedGamePlayerIds();
+  const locationType = newGameLocationType ? newGameLocationType.value : "Ralph M. Lewis Sports Complex";
+  const locationName = locationType === "Other" ? newGameCustomLocation.value.trim() : locationType;
 
-  const locationType = newGameLocationType
-    ? newGameLocationType.value
-    : "Ralph M. Lewis Sports Complex";
-
-  const customLocation = newGameCustomLocation
-    ? newGameCustomLocation.value.trim()
-    : "";
-
-  const locationName =
-    locationType === "Other"
-      ? customLocation
-      : locationType;
-
-  if (!eventDate || !startTime) {
-    setMessage(
-      gameMessage,
-      "Enter game date and start time.",
-      true
-    );
-    return;
-  }
-
-  if (!locationName) {
-    setMessage(gameMessage, "Enter a game location.", true);
-    return;
-  }
+  if (!eventDate || !startTime) return setMessage(gameMessage, "Enter date and time.", true);
 
   try {
     setMessage(gameMessage, "Saving game...", false);
-
     const res = await fetch(`${API_BASE}/events`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        playerIds: selectedPlayerIds,
-        eventDate,
-        eventType: "Game",
-        eventName,
-        startTime,
-        endTime: null,
-        locationName,
-        notes: null
-      })
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerIds: selectedPlayerIds, eventDate, eventType: "Game", eventName, startTime, locationName })
     });
-
     const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      setMessage(
-        gameMessage,
-        data.error || data.message || "Could not add game.",
-        true
-      );
-      return;
-    }
-
-    setMessage(
-      gameMessage,
-      selectedPlayerIds.length > 0
-        ? `✅ Game added. ${data.rosterSavedCount || selectedPlayerIds.length} player(s) expected.`
-        : `✅ Game added. No roster assigned yet — edit the roster to add players.`,
-      false
-    );
-
-    if (groupSelect) {
-      groupSelect.value = "";
-    }
-
+    if (!res.ok) throw new Error(data.message);
+    
+    setMessage(gameMessage, "✅ Game added successfully!", false);
     await loadEvents();
-
-    if (eventSelect && data.event && data.event.EventID) {
-      const createdEventOption = eventSelect.querySelector(
-        `option[value="${data.event.EventID}"]`
-      );
-
-      if (createdEventOption) {
-        eventSelect.value = String(data.event.EventID);
-        saveSelectedEvent();
-      }
-    }
-
     isGameFormOpen = false;
-    isAttendanceModeActive = true;
-
     updateGameSection();
-    resetWorkflowForSelectedEvent();
-    updateEventActionButtons();
-    await loadSelectedEventDetails();
-    updateAttendanceSectionVisibility();
-    await updateEventRosterSection();
-    await loadPlayers();
-
-  } catch (err) {
-    console.error("Add game error:", err);
-    setMessage(gameMessage, "Server error adding game.", true);
-  }
+  } catch (err) { setMessage(gameMessage, "Error: " + err.message, true); }
 }
 
-/* =========================
-   GAME IMPORT MODAL
-   Text paste OR image upload -> Claude parses -> editable preview -> create games
-   ========================= */
+// --- PART 2: AI GAME IMPORT (MULTI-IMAGE) ---
 
-let gameImportMode = "text"; // "text" or "image"
-let gameImportImageBase64 = null;
-let gameImportImageType = null;
+let gameImportImages = [];
 
 function openGameImportModal() {
   if (document.getElementById("gameImportModal")) return;
-  gameImportMode = "text";
-  gameImportImageBase64 = null;
-  gameImportImageType = null;
+  gameImportImages = []; 
 
   const modal = document.createElement("div");
   modal.id = "gameImportModal";
@@ -341,45 +153,38 @@ function openGameImportModal() {
   modal.innerHTML = `
     <div style="background:#fff;border-radius:14px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h3 style="margin:0;font-size:18px;color:#111827;">&#128203; Import Games from Schedule</h3>
-        <button id="gameImportCloseBtn" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;padding:4px;">&times;</button>
+        <h3 style="margin:0;font-size:18px;color:#111827;">🗓️ Import Games from Schedule</h3>
+        <button id="gameImportCloseBtn" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;">&times;</button>
       </div>
 
       <div id="gameImportStep1">
-        <p style="font-size:14px;color:#555;margin-bottom:12px;">Paste schedule text <strong>or upload a photo</strong> of the schedule. Claude will extract the game details automatically.</p>
-
         <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <button id="gameImportModeText" style="flex:1;padding:8px;border:2px solid #f57c00;border-radius:8px;background:#fff7ed;color:#c2410c;font-weight:700;font-size:13px;cursor:pointer;">&#128203; Paste Text</button>
-          <button id="gameImportModeImage" style="flex:1;padding:8px;border:2px solid #d1d5db;border-radius:8px;background:#fff;color:#6b7280;font-weight:700;font-size:13px;cursor:pointer;">&#128247; Upload Photo</button>
+          <button id="gameImportModeText" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;cursor:pointer;">Paste Text</button>
+          <button id="gameImportModeImage" style="flex:1;padding:10px;border:2px solid #f57c00;background:#fff7ed;color:#c2410c;font-weight:700;border-radius:8px;cursor:pointer;">Upload Photos</button>
         </div>
 
-        <div id="gameImportTextArea">
-          <textarea id="gameImportText" placeholder="Paste schedule text here&#10;&#10;Example:&#10;Saturday June 28 @ 9:00am vs FC Galaxy&#10;Location: Fontana Sports Complex&#10;&#10;Sunday June 29 @ 11:00am vs Strikers FC&#10;Location: Central Park Field 3"
-            style="width:100%;height:150px;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+        <div id="gameImportTextArea" style="display:none;">
+          <textarea id="gameImportText" placeholder="Paste schedule here..." style="width:100%;height:150px;padding:10px;border:1px solid #ddd;border-radius:8px;resize:vertical;"></textarea>
         </div>
 
-        <div id="gameImportImageArea" style="display:none;">
-          <div id="gameImportDropZone" style="border:2px dashed #d1d5db;border-radius:8px;padding:28px;text-align:center;cursor:pointer;background:#f9fafb;">
-            <div style="font-size:36px;margin-bottom:8px;">&#128247;</div>
-            <div style="font-size:14px;color:#374151;font-weight:600;">Tap to select a photo</div>
-            <div style="font-size:12px;color:#9ca3af;margin-top:4px;">JPG, PNG, GIF supported</div>
-            <input type="file" id="gameImportImageInput" accept="image/*" style="display:none;" />
+        <div id="gameImportImageArea">
+          <div id="gameImportDropZone" style="border:2px dashed #d1d5db;border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:#f9fafb;">
+            <div style="font-size:24px;">📸</div>
+            <div style="font-size:13px;font-weight:600;">Tap to add photos</div>
+            <div style="font-size:11px;color:#9ca3af;">Upload multiple photos of the schedule</div>
+            <input type="file" id="gameImportImageInput" accept="image/*" multiple style="display:none;" />
           </div>
-          <div id="gameImportImagePreview" style="margin-top:10px;display:none;text-align:center;">
-            <img id="gameImportImageThumb" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid #e1e5ea;" />
-            <div style="font-size:12px;color:#6b7280;margin-top:4px;" id="gameImportImageName"></div>
-          </div>
+          <div id="gameImportThumbnails" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
         </div>
 
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
-          <button id="gameImportCancelBtn" class="btn btn-secondary">Cancel</button>
+        <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
           <button id="gameImportParseBtn" class="btn btn-primary">⚡ Parse Schedule</button>
         </div>
         <div id="gameImportParseMsg" style="margin-top:8px;font-size:13px;"></div>
       </div>
 
       <div id="gameImportStep2" style="display:none;">
-        <p style="font-size:14px;color:#555;margin-bottom:12px;">Review and edit the games below before creating them.</p>
+        <p style="font-size:13px;color:#666;">Review and edit the games Claude found.</p>
         <div id="gameImportPreview"></div>
         <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
           <button id="gameImportBackBtn" class="btn btn-secondary">← Back</button>
@@ -392,232 +197,108 @@ function openGameImportModal() {
 
   document.body.appendChild(modal);
 
-  // Close handlers
-  document.getElementById("gameImportCloseBtn").addEventListener("click", closeGameImportModal);
-  document.getElementById("gameImportCancelBtn").addEventListener("click", closeGameImportModal);
-  modal.addEventListener("click", e => { if (e.target === modal) closeGameImportModal(); });
+  // Toggle UI
+  const btnT = document.getElementById("gameImportModeText");
+  const btnI = document.getElementById("gameImportModeImage");
+  const areaT = document.getElementById("gameImportTextArea");
+  const areaI = document.getElementById("gameImportImageArea");
 
-  // Mode toggle
-  document.getElementById("gameImportModeText").addEventListener("click", () => {
-    gameImportMode = "text";
-    document.getElementById("gameImportTextArea").style.display = "";
-    document.getElementById("gameImportImageArea").style.display = "none";
-    document.getElementById("gameImportModeText").style.cssText = "flex:1;padding:8px;border:2px solid #f57c00;border-radius:8px;background:#fff7ed;color:#c2410c;font-weight:700;font-size:13px;cursor:pointer;";
-    document.getElementById("gameImportModeImage").style.cssText = "flex:1;padding:8px;border:2px solid #d1d5db;border-radius:8px;background:#fff;color:#6b7280;font-weight:700;font-size:13px;cursor:pointer;";
-  });
-  document.getElementById("gameImportModeImage").addEventListener("click", () => {
-    gameImportMode = "image";
-    document.getElementById("gameImportTextArea").style.display = "none";
-    document.getElementById("gameImportImageArea").style.display = "";
-    document.getElementById("gameImportModeImage").style.cssText = "flex:1;padding:8px;border:2px solid #f57c00;border-radius:8px;background:#fff7ed;color:#c2410c;font-weight:700;font-size:13px;cursor:pointer;";
-    document.getElementById("gameImportModeText").style.cssText = "flex:1;padding:8px;border:2px solid #d1d5db;border-radius:8px;background:#fff;color:#6b7280;font-weight:700;font-size:13px;cursor:pointer;";
-  });
+  btnT.onclick = () => { areaT.style.display = "block"; areaI.style.display = "none"; btnT.style.borderColor = "#f57c00"; btnI.style.borderColor = "#ddd"; };
+  btnI.onclick = () => { areaT.style.display = "none"; areaI.style.display = "block"; btnI.style.borderColor = "#f57c00"; btnT.style.borderColor = "#ddd"; };
 
-  // Image upload
-  const dropZone = document.getElementById("gameImportDropZone");
-  const imageInput = document.getElementById("gameImportImageInput");
-  dropZone.addEventListener("click", () => imageInput.click());
-  imageInput.addEventListener("change", () => {
-    const file = imageInput.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const dataUrl = e.target.result;
-      gameImportImageType = file.type || "image/jpeg";
-      gameImportImageBase64 = dataUrl.split(",")[1];
-      document.getElementById("gameImportImageThumb").src = dataUrl;
-      document.getElementById("gameImportImageName").textContent = file.name;
-      document.getElementById("gameImportImagePreview").style.display = "";
-      dropZone.style.borderColor = "#f57c00";
-    };
-    reader.readAsDataURL(file);
-  });
+  // Photo Handling
+  const input = document.getElementById("gameImportImageInput");
+  document.getElementById("gameImportDropZone").onclick = () => input.click();
+  input.onchange = (e) => {
+    Array.from(e.target.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const id = Date.now() + Math.random();
+        gameImportImages.push({ id, base64: ev.target.result.split(',')[1], type: file.type });
+        renderThumbnails();
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
-  // Parse + back + create
-  document.getElementById("gameImportParseBtn").addEventListener("click", parseGameImportInput);
-  document.getElementById("gameImportBackBtn").addEventListener("click", () => {
-    document.getElementById("gameImportStep1").style.display = "";
+  function renderThumbnails() {
+    document.getElementById("gameImportThumbnails").innerHTML = gameImportImages.map(img => `
+      <div style="position:relative;width:60px;height:60px;border-radius:4px;overflow:hidden;border:1px solid #ddd;">
+        <img src="data:${img.type};base64,${img.base64}" style="width:100%;height:100%;object-fit:cover;" />
+        <button onclick="removeImportImage(${img.id})" style="position:absolute;top:0;right:0;background:rgba(0,0,0,0.6);color:#fff;border:none;font-size:10px;cursor:pointer;">&times;</button>
+      </div>`).join("");
+  }
+  window.removeImportImage = (id) => { gameImportImages = gameImportImages.filter(i => i.id !== id); renderThumbnails(); };
+
+  document.getElementById("gameImportCloseBtn").onclick = () => modal.remove();
+  document.getElementById("gameImportParseBtn").onclick = parseGameImportInput;
+  document.getElementById("gameImportCreateBtn").onclick = createImportedGames;
+  document.getElementById("gameImportBackBtn").onclick = () => {
+    document.getElementById("gameImportStep1").style.display = "block";
     document.getElementById("gameImportStep2").style.display = "none";
-  });
-  document.getElementById("gameImportCreateBtn").addEventListener("click", createImportedGames);
-}
-
-function closeGameImportModal() {
-  const modal = document.getElementById("gameImportModal");
-  if (modal) modal.remove();
-  gameImportImageBase64 = null;
-  gameImportImageType = null;
+  };
 }
 
 async function parseGameImportInput() {
-  const msgEl = document.getElementById("gameImportParseMsg");
+  const msg = document.getElementById("gameImportParseMsg");
   const btn = document.getElementById("gameImportParseBtn");
-  const today = new Date().toISOString().slice(0, 10);
+  const isImg = document.getElementById("gameImportImageArea").style.display !== "none";
+  const body = isImg ? { images: gameImportImages } : { text: document.getElementById("gameImportText").value };
 
-  const systemPrompt = `Today is ${today}. Extract all soccer games from the provided schedule and return ONLY a JSON array. Each game object must have these exact fields:
-- "name": opponent name or game name (string)
-- "date": date in YYYY-MM-DD format (string)
-- "time": start time in HH:MM 24-hour format (string)
-- "location": location name (string, use "Ralph M. Lewis Sports Complex" if unknown)
-Return ONLY the JSON array, no other text, no markdown, no backticks.`;
-
-  let messageContent;
-
-  if (gameImportMode === "image") {
-    if (!gameImportImageBase64) {
-      msgEl.style.color = "#c62828";
-      msgEl.textContent = "Please select an image first.";
-      return;
-    }
-    messageContent = [
-      { type: "image", source: { type: "base64", media_type: gameImportImageType, data: gameImportImageBase64 } },
-      { type: "text", text: systemPrompt }
-    ];
-  } else {
-    const text = document.getElementById("gameImportText").value.trim();
-    if (!text) {
-      msgEl.style.color = "#c62828";
-      msgEl.textContent = "Please paste some schedule text first.";
-      return;
-    }
-    messageContent = `${systemPrompt}\n\nSchedule text:\n${text}`;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Parsing...";
-  msgEl.style.color = "#f57c00";
-  msgEl.textContent = "Sending to Claude AI...";
+  btn.disabled = true; btn.textContent = "AI Reading...";
+  msg.textContent = "Claude is scanning for Fontana Fire games...";
 
   try {
-    const body = gameImportMode === "image"
-      ? { imageBase64: gameImportImageBase64, imageType: gameImportImageType }
-      : { text: document.getElementById("gameImportText").value.trim() };
-
-    const response = await fetch(`${API_BASE}/import/parse-schedule`, {
-      method: "POST",
-      credentials: "include",
+    const res = await fetch(`${API_BASE}/import/parse-schedule`, {
+      method: "POST", credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.success) {
-      msgEl.style.color = "#c62828";
-      msgEl.textContent = data.message || "Error parsing schedule. Please try again.";
-      return;
-    }
-
-    if (!data.games || data.games.length === 0) {
-      msgEl.style.color = "#c62828";
-      msgEl.textContent = "No games found. Make sure the schedule has dates and times visible.";
-      return;
-    }
-
-    msgEl.textContent = "";
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    
     renderGameImportPreview(data.games);
     document.getElementById("gameImportStep1").style.display = "none";
-    document.getElementById("gameImportStep2").style.display = "";
-
-  } catch (err) {
-    console.error("Parse error:", err);
-    msgEl.style.color = "#c62828";
-    msgEl.textContent = "Error parsing schedule. Please try again.";
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "⚡ Parse Schedule";
-  }
+    document.getElementById("gameImportStep2").style.display = "block";
+  } catch (e) { msg.textContent = "Error: " + e.message; msg.style.color = "red"; }
+  finally { btn.disabled = false; btn.textContent = "⚡ Parse Schedule"; }
 }
 
 function renderGameImportPreview(games) {
   const container = document.getElementById("gameImportPreview");
-  container.innerHTML = games.map((game, i) => `
-    <div style="border:1px solid #e1e5ea;border-radius:10px;padding:14px;margin-bottom:12px;background:#fafafa;">
-      <div style="font-size:12px;font-weight:700;color:#f57c00;margin-bottom:8px;">GAME ${i + 1}</div>
+  container.innerHTML = games.map((g, i) => `
+    <div style="border:1px solid #eee;padding:10px;margin-bottom:8px;background:#f9f9f9;border-radius:8px;position:relative;">
+      <button onclick="this.parentElement.remove()" style="position:absolute;top:5px;right:5px;border:none;background:none;cursor:pointer;">🗑️</button>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <label style="font-size:12px;font-weight:600;color:#374151;">Opponent / Game Name
-          <input type="text" data-field="name" data-index="${i}" value="${escapeHtml(game.name || "")}"
-            style="display:block;width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-top:3px;box-sizing:border-box;" />
-        </label>
-        <label style="font-size:12px;font-weight:600;color:#374151;">Date
-          <input type="date" data-field="date" data-index="${i}" value="${escapeHtml(game.date || "")}"
-            style="display:block;width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-top:3px;box-sizing:border-box;" />
-        </label>
-        <label style="font-size:12px;font-weight:600;color:#374151;">Start Time
-          <input type="time" data-field="time" data-index="${i}" value="${escapeHtml(game.time || "")}"
-            style="display:block;width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-top:3px;box-sizing:border-box;" />
-        </label>
-        <label style="font-size:12px;font-weight:600;color:#374151;">Location
-          <input type="text" data-field="location" data-index="${i}" value="${escapeHtml(game.location || "")}"
-            style="display:block;width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-top:3px;box-sizing:border-box;" />
-        </label>
+        <input type="text" data-field="name" value="${escapeHtml(g.name)}" style="width:100%;font-size:12px;padding:4px;">
+        <input type="date" data-field="date" value="${g.date}" style="width:100%;font-size:12px;padding:4px;">
+        <input type="time" data-field="time" value="${g.time}" style="width:100%;font-size:12px;padding:4px;">
+        <input type="text" data-field="location" value="${escapeHtml(g.location)}" style="width:100%;font-size:12px;padding:4px;">
       </div>
-    </div>
-  `).join("");
+    </div>`).join("");
 }
 
 async function createImportedGames() {
-  const btn = document.getElementById("gameImportCreateBtn");
-  const msgEl = document.getElementById("gameImportCreateMsg");
-
+  const rows = document.getElementById("gameImportPreview").children;
   const games = [];
-  const byIndex = {};
-  document.getElementById("gameImportPreview").querySelectorAll("[data-field]").forEach(input => {
-    const idx = input.dataset.index;
-    if (!byIndex[idx]) byIndex[idx] = {};
-    byIndex[idx][input.dataset.field] = input.value.trim();
-  });
-  Object.values(byIndex).forEach(g => games.push(g));
-
-  for (let i = 0; i < games.length; i++) {
-    if (!games[i].name || !games[i].date || !games[i].time) {
-      msgEl.style.color = "#c62828";
-      msgEl.textContent = `Game ${i + 1} is missing name, date, or time.`;
-      return;
-    }
+  for (let row of rows) {
+    const g = {};
+    row.querySelectorAll("input").forEach(inp => g[inp.dataset.field] = inp.value);
+    games.push(g);
   }
+  const btn = document.getElementById("gameImportCreateBtn");
+  btn.disabled = true; btn.textContent = "Creating...";
 
-  btn.disabled = true;
-  btn.textContent = "Creating...";
-  msgEl.style.color = "#f57c00";
-  msgEl.textContent = `Creating ${games.length} game(s)...`;
-
-  let created = 0;
-  let failed = 0;
-
-  for (const game of games) {
-    try {
-      const res = await fetch(`${API_BASE}/events`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          playerIds: [],
-          eventDate: game.date,
-          eventType: "Game",
-          eventName: game.name,
-          startTime: game.time + ":00",
-          endTime: null,
-          locationName: game.location || "Ralph M. Lewis Sports Complex",
-          notes: null
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) created++;
-      else failed++;
-    } catch (e) { failed++; }
+  let count = 0;
+  for (let g of games) {
+    const res = await fetch(`${API_BASE}/events`, {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerIds: [], eventDate: g.date, eventType: "Game", eventName: g.name, startTime: g.time + ":00", locationName: g.location })
+    });
+    if (res.ok) count++;
   }
-
-  msgEl.style.color = failed > 0 ? "#c62828" : "#2e7d32";
-  msgEl.textContent = failed > 0
-    ? `Created ${created} game(s). ${failed} failed.`
-    : `\u2713 ${created} game(s) created! Go to Games tab to add rosters.`;
-
-  btn.disabled = false;
-  btn.textContent = "\u2713 Create Games";
-
-  if (created > 0) {
-    await loadEvents();
-    setTimeout(() => closeGameImportModal(), 2500);
-  }
+  document.getElementById("gameImportCreateMsg").textContent = `✅ Created ${count} games!`;
+  await loadEvents();
+  setTimeout(() => document.getElementById("gameImportModal").remove(), 2000);
 }
