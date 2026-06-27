@@ -174,7 +174,7 @@ const apiVersionText = document.getElementById("apiVersionText");
    APP STATE
    ========================= */
 let currentUser = null;
-let currentPermissions = {};  // loaded from /api/auth/me — DB-driven per role
+let currentPermissions = {};  // loaded from /api/auth/me � DB-driven per role
 let currentTab = "Dashboard";
 let isTeamEventFormOpen = false;
 let isAttendanceModeActive = true;
@@ -366,12 +366,12 @@ function canManageEvents() {
 }
 
 function canManageUsers() {
-  // User management view — Admin always, TeamMom always
+  // User management view � Admin always, TeamMom always
   return hasRole("Admin", "TeamMom");
 }
 
 function canCreateResetUsers() {
-  // Always Admin only — not configurable
+  // Always Admin only � not configurable
   return hasRole("Admin");
 }
 
@@ -382,22 +382,22 @@ function canGenerateSchedule() {
 function applyRolePermissions() {
   if (!currentUser) return;
 
-  // Player Management — Admin and TeamMom only
+  // Player Management � Admin and TeamMom only
   if (addPlayerSection) {
     addPlayerSection.style.display = canManagePlayers() ? "block" : "none";
   }
 
-  // Player Management tab — Admin and TeamMom only
+  // Player Management tab � Admin and TeamMom only
   if (playerManagementTab) {
     playerManagementTab.style.display = canManagePlayers() ? "" : "none";
   }
 
-  // User Management tab — Admin and TeamMom only
+  // User Management tab � Admin and TeamMom only
   if (userManagementTab) {
     userManagementTab.classList.toggle("hidden", !canManageUsers());
   }
 
-  // Reports tab — Admin and TeamMom only
+  // Reports tab � Admin and TeamMom only
   if (reportsTab) {
     reportsTab.classList.toggle("hidden", !canManagePlayers());
   }
@@ -683,7 +683,7 @@ function ensureGameManagementElements() {
         + Add New Game
       </button>
       <button type="button" id="importGamesBtn" class="btn btn-secondary" onclick="openGameImportModal()" style="margin-top:0;font-size:13px;padding:10px 14px;">
-        📋 Import from Post
+        ?? Import from Post
       </button>
     </div>
   `;
@@ -902,7 +902,7 @@ function updateMainModeVisibility() {
   const isHelp            = currentTab === "Help";
   const isNonEventTab     = isDashboard || isPlayerManagement || isReports || isUserManagement || isHelp;
 
-  // ── Reports section ───────────────────────────────────────────────────────
+  // -- Reports section -------------------------------------------------------
   const reportsSection = document.getElementById("reportsSection");
   if (reportsSection) {
     reportsSection.classList.toggle("hidden", !isReports);
@@ -911,7 +911,7 @@ function updateMainModeVisibility() {
     }
   }
 
-  // ── User Management section ───────────────────────────────────────────────
+  // -- User Management section -----------------------------------------------
   const userManagementSection = document.getElementById("userManagementSection");
   if (userManagementSection) {
     userManagementSection.classList.toggle("hidden", !isUserManagement);
@@ -920,7 +920,7 @@ function updateMainModeVisibility() {
     }
   }
 
-  // ── Help section ──────────────────────────────────────────────────────────
+  // -- Help section ----------------------------------------------------------
   const helpSection = document.getElementById("helpSection");
   if (helpSection) {
     helpSection.classList.toggle("hidden", !isHelp);
@@ -929,7 +929,7 @@ function updateMainModeVisibility() {
     }
   }
 
-  // ── Event-flow elements (hidden on non-event tabs) ────────────────────────
+  // -- Event-flow elements (hidden on non-event tabs) ------------------------
   const eventSelectorRow = document.querySelector(".event-selector-row");
   const eventDotsMenuEl = document.getElementById("eventDotsMenu");
 
@@ -1700,8 +1700,8 @@ async function saveEventRoster() {
     setMessage(
       eventRosterMessage,
       savedCount === 0
-        ? `✅ Roster cleared. ${deletedCount} player(s) removed.`
-        : `✅ Roster saved. ${savedCount} player(s) expected.${skippedText}`,
+        ? `? Roster cleared. ${deletedCount} player(s) removed.`
+        : `? Roster saved. ${savedCount} player(s) expected.${skippedText}`,
       false
     );
 
@@ -1803,7 +1803,7 @@ async function loadEvents() {
       const showAll = document.getElementById("practiceShowAllToggle") &&
         document.getElementById("practiceShowAllToggle").checked;
 
-      // Sort ascending — soonest practice at top
+      // Sort ascending � soonest practice at top
       displayEvents = [...filteredEvents].sort((a, b) =>
         new Date(a.EventDate) - new Date(b.EventDate)
       );
@@ -1981,9 +1981,9 @@ async function loadSelectedEventDetails() {
     if (eventCompactBar) {
       const startFmt = formatEventTime(event.StartTime);
       const endFmt = formatEventTime(event.EndTime);
-      const timeStr = (startFmt && startFmt !== "-") ? `${startFmt}${endFmt && endFmt !== "-" ? " – " + endFmt : ""}` : "";
+      const timeStr = (startFmt && startFmt !== "-") ? `${startFmt}${endFmt && endFmt !== "-" ? " � " + endFmt : ""}` : "";
       if (eventCompactDate) eventCompactDate.textContent = dateInfo.localDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-      if (eventCompactTime) eventCompactTime.textContent = timeStr || "–";
+      if (eventCompactTime) eventCompactTime.textContent = timeStr || "�";
       if (eventCompactLocation && eventCompactLocationWrap) {
         const loc = event.LocationName || "";
         eventCompactLocation.textContent = loc;
@@ -2144,7 +2144,7 @@ function updateSchedulePreview() {
   }
   const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const selectedDayNames = days.map(d => dayNames[d]).join(" & ");
-  preview.innerHTML = `<span class="schedule-preview-count">${count}</span> practice${count !== 1 ? "s" : ""} will be created<br><span style="color:#666;font-size:12px;">${selectedDayNames} · ${startDate} to ${endDate}</span>`;
+  preview.innerHTML = `<span class="schedule-preview-count">${count}</span> practice${count !== 1 ? "s" : ""} will be created<br><span style="color:#666;font-size:12px;">${selectedDayNames} � ${startDate} to ${endDate}</span>`;
   preview.classList.remove("hidden");
 }
 
@@ -2202,7 +2202,7 @@ async function submitGenerateSchedule() {
 }
 
 
-// Wire up schedule modal events — called by app.99.bootstrap.js after all scripts load
+// Wire up schedule modal events � called by app.99.bootstrap.js after all scripts load
 function initScheduleModal() {
   if (generateScheduleBtn) {
     generateScheduleBtn.addEventListener("click", openGenerateScheduleModal);
@@ -2248,13 +2248,14 @@ function initScheduleModal() {
    Roster and attendance unchanged.
    ========================= */
 async function openEditEventModal() {
-  if (!selectedEventId) return;
+  const currentEventId = eventSelect ? eventSelect.value : "";
+  if (!currentEventId) return;
   if (document.getElementById("editEventModal")) return;
 
   // Fetch current event details
   let event;
   try {
-    const res = await fetch(`${API_BASE}/events/${selectedEventId}/details`, { credentials: "include" });
+    const res = await fetch(`${API_BASE}/events/${currentEventId}/details`, { credentials: "include" });
     const data = await res.json();
     if (!data.success) return;
     event = data.event;
@@ -2276,7 +2277,7 @@ async function openEditEventModal() {
   modal.innerHTML = `
     <div style="background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <h3 style="margin:0;font-size:18px;color:#111827;">✏️ Edit Event Details</h3>
+        <h3 style="margin:0;font-size:18px;color:#111827;">?? Edit Event Details</h3>
         <button id="editEventCloseBtn" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;">&times;</button>
       </div>
 
@@ -2321,7 +2322,7 @@ async function openEditEventModal() {
 
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
         <button id="editEventCancelBtn" class="btn btn-secondary">Cancel</button>
-        <button id="editEventSaveBtn" class="btn btn-primary">💾 Save Changes</button>
+        <button id="editEventSaveBtn" class="btn btn-primary">?? Save Changes</button>
       </div>
       <div id="editEventMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
     </div>
@@ -2353,7 +2354,7 @@ async function openEditEventModal() {
     msgEl.textContent = "";
 
     try {
-      const res = await fetch(`${API_BASE}/events/${selectedEventId}`, {
+      const res = await fetch(`${API_BASE}/events/${currentEventId}`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -2362,7 +2363,7 @@ async function openEditEventModal() {
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
 
-      msgEl.textContent = "✅ Saved!";
+      msgEl.textContent = "? Saved!";
       msgEl.style.color = "#16a34a";
 
       // Reload events list and close after short delay
@@ -2373,7 +2374,7 @@ async function openEditEventModal() {
       msgEl.textContent = "Error: " + err.message;
       msgEl.style.color = "#dc2626";
       saveBtn.disabled = false;
-      saveBtn.textContent = "💾 Save Changes";
+      saveBtn.textContent = "?? Save Changes";
     }
   };
 }
