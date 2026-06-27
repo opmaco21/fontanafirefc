@@ -236,6 +236,12 @@
         </div>
 
         <p id="loginMessage" class="message"></p>
+
+        <!-- VERSION DISPLAY -->
+        <div id="versionDisplay" style="text-align:center;margin-top:14px;font-size:11px;color:#9ca3af;line-height:1.7;">
+          <span id="versionWeb">web: —</span><br>
+          <span id="versionApi">api: —</span>
+        </div>
       </section>
 
       <!-- LOGGED-IN APP SCREEN -->
@@ -382,6 +388,9 @@
 
         <!-- DOTS DROPDOWN MENU -->
         <div id="eventDotsMenu" class="event-dots-menu hidden">
+          <button id="editEventDetailsBtn" type="button" class="hidden" onclick="openEditEventModal()">
+            <i class="ti ti-pencil" aria-hidden="true"></i> Edit details
+          </button>
           <button id="cancelEventBtn" type="button" class="hidden dots-menu-danger">
             <i class="ti ti-ban" aria-hidden="true"></i> Cancel event
           </button>
@@ -816,5 +825,29 @@ document.addEventListener("focusin", function(e) {
   }
 });
 </script>
+  <script>
+    // Load version info on page load for easy deploy verification
+    (async function loadVersionDisplay() {
+      try {
+        // Frontend version from version.json
+        const webRes = await fetch("version.json?nc=" + Date.now());
+        if (webRes.ok) {
+          const webData = await webRes.json();
+          const webEl = document.getElementById("versionWeb");
+          if (webEl) webEl.textContent = "web: " + (webData.webVersion || "—");
+        }
+      } catch(e) {}
+
+      try {
+        // Backend version from API
+        const apiRes = await fetch("https://attendance-api-xb3v.onrender.com/api/version");
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          const apiEl = document.getElementById("versionApi");
+          if (apiEl) apiEl.textContent = "api: " + (apiData.version || "—");
+        }
+      } catch(e) {}
+    })();
+  </script>
 </body>
 </html>
