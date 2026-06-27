@@ -262,48 +262,84 @@ async function parseGameImportInput() {
     const data = await res.json();
     if (!data.success) throw new Error(data.message);
     
-    renderGameImportPreview(data.games);
+    await renderGameImportPreview(data.games);
     document.getElementById("gameImportStep1").style.display = "none";
     document.getElementById("gameImportStep2").style.display = "block";
   } catch (e) { msg.textContent = "Error: " + e.message; msg.style.color = "red"; }
   finally { btn.disabled = false; btn.textContent = "⚡ Parse Schedule"; }
 }
 
-function renderGameImportPreview(games) {
+async function renderGameImportPreview(games) {
   const container = document.getElementById("gameImportPreview");
-  container.innerHTML = games.map((g, i) => `
-    <div style="border:1px solid #eee;padding:10px;margin-bottom:8px;background:#f9f9f9;border-radius:8px;position:relative;">
-      <button onclick="this.parentElement.remove()" style="position:absolute;top:5px;right:5px;border:none;background:none;cursor:pointer;">🗑️</button>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <input type="text" data-field="name" value="${escapeHtml(g.name)}" style="width:100%;font-size:12px;padding:4px;">
-        <input type="date" data-field="date" value="${g.date}" style="width:100%;font-size:12px;padding:4px;">
-        <input type="time" data-field="time" value="${g.time}" style="width:100%;font-size:12px;padding:4px;">
-        <input type="text" data-field="location" value="${escapeHtml(g.location)}" style="width:100%;font-size:12px;padding:4px;">
+  container.innerHTML = `<div style="font-size:12px;color:#999;margin-bottom:8px;">Loading duplicate check...</div>`;
+
+  // Fetch existing games to check for duplicates
+  let existingGames = [];
+  try {
+    const res = await fetch(`${API_BASE}/events`, { credentials: "include" });
+    const data = await res.json();
+    existingGames = (Array.isArray(data) ? data : (data.events || []))
+      .filter(e => e.EventType === "Game")
+      .map(e => ({ date: (e.EventDate || "").slice(0,10), name: (e.EventName || "").toLowerCase() }));
+  } catch(e) { /* proceed without duplicate check */ }
+
+  const isDuplicate = (g) => {
+    const gDate = (g.date || "").slice(0,10);
+    const gName = (g.name || "").toLowerCase();
+    return existingGames.some(e => e.date === gDate && (
+      e.name === gName ||
+      e.name.includes(gName.slice(0,10)) ||
+      gName.includes(e.name.slice(0,10))
+    ));
+  };
+
+  container.innerHTML = games.map((g, i) => {
+    const dup = isDuplicate(g);
+    return `
+    <div style="border:1px solid ${dup ? "#fca5a5" : "#eee"};padding:10px;margin-bottom:8px;background:${dup ? "#fff5f5" : "#f9f9f9"};border-radius:8px;position:relative;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <input type="checkbox" class="import-game-check" ${dup ? "" : "checked"} style="width:16px;height:16px;cursor:pointer;" />
+        ${dup ? `<span style="font-size:11px;font-weight:700;color:#dc2626;background:#fee2e2;padding:2px 7px;border-radius:10px;">⚠️ Possible duplicate</span>` : `<span style="font-size:11px;color:#16a34a;font-weight:600;">✓ New game</span>`}
+        <button onclick="this.closest('div[style]').remove()" style="margin-left:auto;border:none;background:none;cursor:pointer;font-size:16px;color:#9ca3af;">🗑️</button>
       </div>
-    </div>`).join("");
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <input type="text" data-field="name" value="${escapeHtml(g.name)}" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <input type="date" data-field="date" value="${g.date}" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <input type="time" data-field="time" value="${g.time}" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <input type="text" data-field="location" value="${escapeHtml(g.location)}" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+      </div>
+    </div>`}).join("");
+
+  const dupCount = games.filter(g => isDuplicate(g)).length;
+  if (dupCount > 0) {
+    const note = document.createElement("p");
+    note.style.cssText = "font-size:12px;color:#dc2626;margin:0 0 10px;";
+    note.textContent = `⚠️ ${dupCount} possible duplicate${dupCount > 1 ? "s" : ""} found and unchecked. Review before creating.`;
+    container.insertBefore(note, container.firstChild);
+  }
 }
 
 async function createImportedGames() {
-  const rows = document.getElementById("gameImportPreview").children;
-  const games = [];
-  for (let row of rows) {
-    const g = {};
-    row.querySelectorAll("input").forEach(inp => g[inp.dataset.field] = inp.value);
-    games.push(g);
-  }
+  const rows = document.getElementById("gameImportPreview").querySelectorAll("div[style*='border:1px']");
   const btn = document.getElementById("gameImportCreateBtn");
   btn.disabled = true; btn.textContent = "Creating...";
 
-  let count = 0;
-  for (let g of games) {
+  let count = 0; let skipped = 0;
+  for (let row of rows) {
+    const checked = row.querySelector(".import-game-check");
+    if (!checked || !checked.checked) { skipped++; continue; }
+    const g = {};
+    row.querySelectorAll("input[data-field]").forEach(inp => g[inp.dataset.field] = inp.value);
+    if (!g.date) { skipped++; continue; }
     const res = await fetch(`${API_BASE}/events`, {
       method: "POST", credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playerIds: [], eventDate: g.date, eventType: "Game", eventName: g.name, startTime: g.time + ":00", locationName: g.location })
+      body: JSON.stringify({ playerIds: [], eventDate: g.date, eventType: "Game", eventName: g.name, startTime: (g.time || "00:00") + ":00", locationName: g.location })
     });
     if (res.ok) count++;
   }
-  document.getElementById("gameImportCreateMsg").textContent = `✅ Created ${count} games!`;
+  const msg = `✅ Created ${count} game${count !== 1 ? "s" : ""}${skipped > 0 ? ` · ${skipped} skipped` : ""}`;
+  document.getElementById("gameImportCreateMsg").textContent = msg;
   await loadEvents();
-  setTimeout(() => document.getElementById("gameImportModal").remove(), 2000);
+  setTimeout(() => { const m = document.getElementById("gameImportModal"); if (m) m.remove(); }, 2000);
 }

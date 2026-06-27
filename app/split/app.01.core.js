@@ -160,6 +160,7 @@ const eventRosterMessage = document.getElementById("eventRosterMessage");
 
 const attendanceSection = document.getElementById("attendanceSection");
 const editRosterBtn = document.getElementById("editRosterBtn");
+const editEventDetailsBtn = document.getElementById("editEventDetailsBtn");
 const attendanceSummary = document.getElementById("attendanceSummary");
 let refreshCurrentPlayersBtn = null;
 const hideMarkedToggle = document.getElementById("hideMarkedToggle");
@@ -2032,6 +2033,7 @@ function updateEventActionButtons() {
     if (cancelEventBtn) cancelEventBtn.classList.add("hidden");
     if (restoreEventBtn) restoreEventBtn.classList.add("hidden");
     if (deleteEventBtn) deleteEventBtn.classList.add("hidden");
+    if (editEventDetailsBtn) editEventDetailsBtn.classList.add("hidden");
     return;
   }
 
@@ -2055,6 +2057,15 @@ function updateEventActionButtons() {
       deleteEventBtn.classList.remove("hidden");
     } else {
       deleteEventBtn.classList.add("hidden");
+    }
+  }
+
+  // Show Edit Details button whenever an event is selected and user can manage events
+  if (editEventDetailsBtn) {
+    if (canManageEvents()) {
+      editEventDetailsBtn.classList.remove("hidden");
+    } else {
+      editEventDetailsBtn.classList.add("hidden");
     }
   }
 }
@@ -2228,4 +2239,141 @@ function initScheduleModal() {
       if (typeof loadEvents === "function") loadEvents();
     });
   }
+}
+
+/* =========================
+   EDIT EVENT DETAILS MODAL
+   Works for Practice, Game, and Team Event.
+   Only edits name/date/time/location/notes.
+   Roster and attendance unchanged.
+   ========================= */
+async function openEditEventModal() {
+  if (!selectedEventId) return;
+  if (document.getElementById("editEventModal")) return;
+
+  // Fetch current event details
+  let event;
+  try {
+    const res = await fetch(`${API_BASE}/events/${selectedEventId}/details`, { credentials: "include" });
+    const data = await res.json();
+    if (!data.success) return;
+    event = data.event;
+  } catch (err) {
+    console.error("Could not load event for edit:", err);
+    return;
+  }
+
+  const modal = document.createElement("div");
+  modal.id = "editEventModal";
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;";
+
+  const formatTimeValue = (t) => {
+    if (!t) return "";
+    // Already HH:MM or HH:MM:SS
+    return String(t).slice(0, 5);
+  };
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h3 style="margin:0;font-size:18px;color:#111827;">✏️ Edit Event Details</h3>
+        <button id="editEventCloseBtn" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;">&times;</button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <label style="font-size:13px;font-weight:600;color:#374151;">
+          Event Name
+          <input id="editEventName" type="text" value="${escapeHtml(event.EventName || "")}"
+            style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;" />
+        </label>
+
+        <label style="font-size:13px;font-weight:600;color:#374151;">
+          Date
+          <input id="editEventDate" type="date" value="${event.EventDate ? event.EventDate.slice(0,10) : ""}"
+            style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;" />
+        </label>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <label style="font-size:13px;font-weight:600;color:#374151;">
+            Start Time
+            <input id="editEventStartTime" type="time" value="${formatTimeValue(event.StartTime)}"
+              style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;" />
+          </label>
+          <label style="font-size:13px;font-weight:600;color:#374151;">
+            End Time
+            <input id="editEventEndTime" type="time" value="${formatTimeValue(event.EndTime)}"
+              style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;" />
+          </label>
+        </div>
+
+        <label style="font-size:13px;font-weight:600;color:#374151;">
+          Location
+          <input id="editEventLocation" type="text" value="${escapeHtml(event.LocationName || "")}"
+            style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;" />
+        </label>
+
+        <label style="font-size:13px;font-weight:600;color:#374151;">
+          Notes
+          <textarea id="editEventNotes" rows="3"
+            style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;resize:vertical;">${escapeHtml(event.Notes || "")}</textarea>
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+        <button id="editEventCancelBtn" class="btn btn-secondary">Cancel</button>
+        <button id="editEventSaveBtn" class="btn btn-primary">💾 Save Changes</button>
+      </div>
+      <div id="editEventMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("editEventCloseBtn").onclick = () => modal.remove();
+  document.getElementById("editEventCancelBtn").onclick = () => modal.remove();
+
+  document.getElementById("editEventSaveBtn").onclick = async () => {
+    const saveBtn = document.getElementById("editEventSaveBtn");
+    const msgEl  = document.getElementById("editEventMsg");
+    const eventName    = document.getElementById("editEventName").value.trim();
+    const eventDate    = document.getElementById("editEventDate").value;
+    const startTime    = document.getElementById("editEventStartTime").value;
+    const endTime      = document.getElementById("editEventEndTime").value;
+    const locationName = document.getElementById("editEventLocation").value.trim();
+    const notes        = document.getElementById("editEventNotes").value.trim();
+
+    if (!eventDate) {
+      msgEl.textContent = "Date is required.";
+      msgEl.style.color = "#dc2626";
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+    msgEl.textContent = "";
+
+    try {
+      const res = await fetch(`${API_BASE}/events/${selectedEventId}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventName, eventDate, startTime: startTime || null, endTime: endTime || null, locationName, notes })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+
+      msgEl.textContent = "✅ Saved!";
+      msgEl.style.color = "#16a34a";
+
+      // Reload events list and close after short delay
+      await loadEvents();
+      setTimeout(() => modal.remove(), 800);
+
+    } catch (err) {
+      msgEl.textContent = "Error: " + err.message;
+      msgEl.style.color = "#dc2626";
+      saveBtn.disabled = false;
+      saveBtn.textContent = "💾 Save Changes";
+    }
+  };
 }
