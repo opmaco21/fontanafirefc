@@ -302,11 +302,13 @@ async function renderGameImportPreview(games) {
         ${dup ? `<span style="font-size:11px;font-weight:700;color:#dc2626;background:#fee2e2;padding:2px 7px;border-radius:10px;">⚠️ Possible duplicate</span>` : `<span style="font-size:11px;color:#16a34a;font-weight:600;">✓ New game</span>`}
         <button onclick="this.closest('div[style]').remove()" style="margin-left:auto;border:none;background:none;cursor:pointer;font-size:16px;color:#9ca3af;">🗑️</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <input type="text" data-field="name" value="${escapeHtml(g.name)}" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
-        <input type="date" data-field="date" value="${g.date}" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
-        <input type="time" data-field="time" value="${g.time}" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
-        <input type="text" data-field="location" value="${escapeHtml(g.location)}" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <input type="text" data-field="name" value="${escapeHtml(g.name)}" placeholder="Opponent" title="Opponent" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <input type="date" data-field="date" value="${g.date}" title="Date" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <input type="time" data-field="time" value="${g.time}" title="Time" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <input type="text" data-field="location" value="${escapeHtml(g.location)}" placeholder="Location" title="Location" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <input type="text" data-field="comp" value="${escapeHtml(g.comp || '')}" placeholder="Age Group" title="Age Group (COMP)" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
+        <input type="text" data-field="field" value="${escapeHtml(g.field || '')}" placeholder="Field #" title="Field" style="width:100%;font-size:12px;padding:4px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;">
       </div>
     </div>`}).join("");
 
@@ -331,10 +333,16 @@ async function createImportedGames() {
     const g = {};
     row.querySelectorAll("input[data-field]").forEach(inp => g[inp.dataset.field] = inp.value);
     if (!g.date) { skipped++; continue; }
+    // Build event name: include comp if available (e.g. "vs Elite FC (2015/16)")
+    let gameName = g.name || 'TBD';
+    if (g.comp && !gameName.includes(g.comp)) gameName += ' (' + g.comp + ')';
+    // Build location: append field if available
+    let gameLoc = g.location || '';
+    if (g.field) gameLoc += (gameLoc ? ' - Field ' : 'Field ') + g.field;
     const res = await fetch(`${API_BASE}/events`, {
       method: "POST", credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playerIds: [], eventDate: g.date, eventType: "Game", eventName: g.name, startTime: (g.time || "00:00") + ":00", locationName: g.location })
+      body: JSON.stringify({ playerIds: [], eventDate: g.date, eventType: "Game", eventName: gameName, startTime: (g.time || "00:00") + ":00", locationName: gameLoc })
     });
     if (res.ok) count++;
   }
