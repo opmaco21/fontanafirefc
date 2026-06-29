@@ -20,6 +20,7 @@
     redflags:   { loaded: false, data: null },
     gameday:    { loaded: false, data: null, gameId: null },
     groupstats: { loaded: false, data: null, month: '' },
+    'paperwork-complete': { loaded: false, data: null },
   };
 
   function getCurrentMonthValue() {
@@ -56,6 +57,7 @@
         ${buildAccordion('snacks',     '🍎 Snack Rotation')}
         ${buildAccordion('emergency',  '🚨 Emergency Contacts')}
         ${buildAccordion('roster',     '👥 Full Roster')}
+        ${buildAccordion('paperwork-complete', '✅ Paperwork Complete')}
         ${buildAccordion('redflags',   '🔴 Attendance Red Flags', buildRedFlagControls())}
         ${buildAccordion('gameday',    '⚽ Game Day Roster', buildGameDayControls())}
         ${buildAccordion('groupstats', '📈 Monthly Group Breakdown', buildGroupStatsControls())}
@@ -267,6 +269,16 @@
         el.innerHTML = renderGroupStats(st.data, month);
         return;
       }
+      if (key === 'paperwork-complete') {
+        const res = await fetch(`${API_BASE}/reports/paperwork-complete`, { credentials: 'include' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        st.data = json.data || [];
+        st.loaded = true;
+        el.innerHTML = renderPaperworkComplete(st.data);
+        return;
+      }
+
       // ── End new report loaders ──
 
       let url = `${API_BASE}/reports/${key}`;
@@ -352,6 +364,7 @@
       case 'snacks':     return renderSnacks(data);
       case 'emergency':  return renderEmergency(data);
       case 'roster':     return renderRoster(data);
+      case 'paperwork-complete': return renderPaperworkComplete(data);
       case 'redflags':   return renderRedFlags(data);
       case 'gameday':    return renderGameDay({}, data || []);
       case 'groupstats': return renderGroupStats(data);
@@ -610,17 +623,19 @@
         <span>As of ${new Date().toLocaleDateString()}</span>
       </div>
       <table class="report-table">
-        <thead><tr><th>#</th><th>Jersey</th><th>Player</th><th>DOB</th><th>Parent</th><th>Phone</th><th>Email</th><th>Paperwork</th></tr></thead>
+        <thead><tr><th>#</th><th>Jersey</th><th>Player</th><th>Group</th><th>DOB</th><th>Parent</th><th>Phone</th><th>Coach</th><th>Paperwork</th></tr></thead>
         <tbody>
           ${data.map((r, i) => `
             <tr>
               <td class="col-num">${i + 1}</td>
               <td class="col-num">${r.PlayerNumber ?? '—'}</td>
               <td>${esc(r.FirstName)} ${esc(r.LastName)}</td>
+              <td>${esc(r.GroupName || '')}</td>
               <td>${r.DateOfBirth ? fmtDate(r.DateOfBirth) : '—'}</td>
               <td>${esc(r.ParentName || '')}</td>
               <td>${esc(r.ParentPhone || '')}</td>
               <td>${esc(r.ParentEmail || '')}</td>
+              <td>${esc(r.CoachName || 'Unassigned')}</td>
               <td><span class="status-badge ${r.PaperworkStatus === 'Complete' ? 'badge-ok' : 'badge-missing'}">${esc(r.PaperworkStatus || 'Missing')}</span></td>
             </tr>`).join('')}
         </tbody>
@@ -900,6 +915,53 @@
         <tbody>${rows}</tbody>
       </table>
       <div class="report-footer-note">${Object.keys(groups).length} group(s) - ${data.length} total players</div>`;
+  }
+
+
+  // ── Paperwork Complete Renderer ───────────────────────────────────────────
+  function renderPaperworkComplete(data) {
+    if (!data || !data.length) return '<div class="report-empty">No players with complete paperwork found.</div>';
+
+    // Group by GroupName
+    const groups = {};
+    data.forEach(r => {
+      const gkey = r.GroupName || 'No Group Assigned';
+      if (!groups[gkey]) groups[gkey] = [];
+      groups[gkey].push(r);
+    });
+
+    let rows = '';
+    let num = 0;
+    Object.keys(groups).sort().forEach(groupKey => {
+      const players = groups[groupKey];
+      rows += `
+        <tr class="rpt-group-row">
+          <td colspan="6">
+            <span class="rpt-group-name">${esc(groupKey)}</span>
+            <span class="rpt-group-count">${players.length} players</span>
+          </td>
+        </tr>`;
+      players.forEach(r => {
+        num++;
+        rows += `
+          <tr>
+            <td class="col-num">${num}</td>
+            <td style="font-weight:600;">${esc(r.FirstName)} ${esc(r.LastName)}</td>
+            <td class="col-num">${r.PlayerNumber ?? '--'}</td>
+            <td class="rpt-cell-sub">${esc(r.GroupName || '')}</td>
+            <td><span class="status-badge badge-ok">Complete</span></td>
+            <td><span class="status-badge badge-ok">${esc(r.PhotoReleaseStatus || 'Yes')}</span></td>
+          </tr>`;
+      });
+    });
+
+    return `
+      <div class="report-print-header"><strong>Fontana Fire FC - Paperwork Complete</strong></div>
+      <table class="report-table">
+        <thead><tr><th>#</th><th>Player</th><th>Jersey</th><th>Group</th><th>Paperwork</th><th>Photo Release</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="report-footer-note">${data.length} player(s) with complete paperwork</div>`;
   }
 
   // ── Coach Comments print fix ───────────────────────────────────────────────
