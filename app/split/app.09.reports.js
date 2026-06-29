@@ -56,7 +56,7 @@
         ${buildAccordion('snacks',     '🍎 Snack Rotation')}
         ${buildAccordion('emergency',  '🚨 Emergency Contacts')}
         ${buildAccordion('roster',     '👥 Full Roster')}
-        ${buildAccordion('redflags',   '🚨 Attendance Red Flags', buildRedFlagControls())}
+        ${buildAccordion('redflags',   '🔴 Attendance Red Flags', buildRedFlagControls())}
         ${buildAccordion('gameday',    '⚽ Game Day Roster', buildGameDayControls())}
         ${buildAccordion('groupstats', '📈 Monthly Group Breakdown', buildGroupStatsControls())}
       </div>
@@ -150,7 +150,7 @@
       if (!sel) return;
       groups.forEach(g => {
         const opt = document.createElement('option');
-        opt.value = g.GroupCode || g.GroupName;
+        opt.value = g.BirthYear || g.GroupCode || g.GroupName;
         opt.textContent = g.GroupName;
         sel.appendChild(opt);
       });
@@ -236,14 +236,22 @@
       if (key === 'gameday') {
         const gameId = st.gameId;
         if (!gameId) { el.innerHTML = '<div class="report-empty">Select a game above to view the roster.</div>'; return; }
-        const [detRes, rosterRes] = await Promise.all([
+        const [detRes, rosterRes, attRes] = await Promise.all([
           fetch(`${API_BASE}/events/${gameId}/details`, { credentials: 'include' }),
-          fetch(`${API_BASE}/events/${gameId}/roster`, { credentials: 'include' })
+          fetch(`${API_BASE}/events/${gameId}/roster`, { credentials: 'include' }),
+          fetch(`${API_BASE}/reports/game-attendance/${gameId}`, { credentials: 'include' })
         ]);
         const det = await detRes.json();
         const roster = await rosterRes.json();
+        // Build attendance map: PlayerID -> AttendanceStatus
+        const attMap = {};
+        try {
+          const attData = await attRes.json();
+          const attList = Array.isArray(attData) ? attData : (attData.attendance || attData.records || []);
+          attList.forEach(a => { if (a.PlayerID) attMap[a.PlayerID] = a.AttendanceStatus; });
+        } catch(e) {}
         st.loaded = true;
-        el.innerHTML = renderGameDay(det.event || {}, roster.players || []);
+        el.innerHTML = renderGameDay(det.event || det, roster.players || [], attMap);
         return;
       }
 
@@ -366,7 +374,7 @@
     // Group by BirthYear
     const groups = {};
     data.forEach(r => {
-      const key = r.BirthYear || r.GroupName || 'Unknown';
+      const key = r.BirthYear || r.GroupName || 'No Group Assigned';
       if (!groups[key]) groups[key] = [];
       groups[key].push(r);
     });
@@ -622,9 +630,26 @@
 
   // ── Print ──────────────────────────────────────────────────────────────────
   window.printReport = function (key) {
+    // Hide all other accordions during print to avoid blank pages
+    const styleId = 'rpt-print-style';
+    let style = document.getElementById(styleId);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = styleId;
+      document.head.appendChild(style);
+    }
+    style.textContent = `@media print {
+      .report-accordion:not(#accordion-${key}) { display: none !important; }
+      .report-accordion-body { display: block !important; }
+      .no-print, .report-toolbar, .btn-detail-back, .btn-report-print, .btn-report-excel { display: none !important; }
+      .reports-wrap { padding: 0 !important; }
+    }`;
     document.body.setAttribute('data-printing-report', key);
     window.print();
-    setTimeout(() => document.body.removeAttribute('data-printing-report'), 1000);
+    setTimeout(() => {
+      document.body.removeAttribute('data-printing-report');
+      style.textContent = '';
+    }, 1000);
   };
 
   window.downloadReportExcel = function (key) {
@@ -795,21 +820,33 @@
   }
 
   // ── Game Day Roster Renderer ───────────────────────────────────────────────
-  function renderGameDay(event, players) {
+  function fmtGender(g) {
+    if (!g) return '--';
+    const s = String(g).trim().toLowerCase();
+    if (s === 'm' || s === 'male') return 'Boy';
+    if (s === 'f' || s === 'female') return 'Girl';
+    return g;
+  }
+
+  function renderGameDay(event, players, attendanceMap) {
     if (!event || !event.EventDate) return '<div class="report-empty">No game data available.</div>';
     if (!players.length) return `
       <div class="report-print-header"><strong>${esc(event.EventName || 'Game')} - ${fmtDate(event.EventDate)}</strong></div>
       <div class="report-empty">No players rostered for this game. Use Edit Roster to add players.</div>`;
+    const attMap = attendanceMap || {};
     const rows = players.map(p => {
-      const status = p.AttendanceStatus || '--';
-      const badgeClass = { 'Present': 'badge-present', 'Absent': 'badge-absent', 'Excused': 'badge-excused' }[status] || '';
+      const status = attMap[p.PlayerID] || p.AttendanceStatus || 'Not Marked';
+      const badgeClass = { 'Present': 'badge-present', 'Absent': 'badge-absent', 'Excused': 'badge-excused', 'Cancelled': 'badge-cancelled' }[status] || '';
+      const statusHtml = badgeClass
+        ? `<span class="rpt-status-badge ${badgeClass}">${status}</span>`
+        : `<span style="color:#aaa;">Not Marked</span>`;
       return `
         <tr>
           <td class="col-num">${p.PlayerNumber ?? '--'}</td>
           <td style="font-weight:600;">${esc(p.FirstName)} ${esc(p.LastName)}</td>
           <td class="rpt-cell-sub">${esc(p.GroupName || String(p.BirthYear || ''))}</td>
-          <td>${p.Gender === 'M' ? 'Boy' : p.Gender === 'F' ? 'Girl' : '--'}</td>
-          <td>${status !== '--' ? `<span class="rpt-status-badge ${badgeClass}">${status}</span>` : '<span style="color:#ccc;">Not marked</span>'}</td>
+          <td>${fmtGender(p.Gender)}</td>
+          <td>${statusHtml}</td>
         </tr>`;
     }).join('');
     return `
@@ -833,7 +870,7 @@
     const periodLabel = sel?.selectedOptions[0]?.text || month || 'All Time';
     const groups = {};
     data.forEach(r => {
-      const gkey = r.GroupName || String(r.BirthYear || 'Unknown');
+      const gkey = r.GroupName || String(r.BirthYear || 'No Group Assigned');
       if (!groups[gkey]) groups[gkey] = [];
       groups[gkey].push(r);
     });
