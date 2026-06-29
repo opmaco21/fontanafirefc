@@ -580,7 +580,9 @@ const PERMISSION_LABELS = {
   canDeletePlayer:       { label: "Delete Players",         desc: "Permanently delete players and their attendance records" },
   canGenerateSchedule:   { label: "Generate Schedule",     desc: "Bulk-create practice events from the Practice tab" },
   canViewDashboard:      { label: "View Dashboard",        desc: "Access attendance reports and player summaries" },
-  canViewUserManagement: { label: "View User Management",  desc: "See the user list (Admin can also edit users)" }
+  canViewUserManagement: { label: "View User Management",  desc: "See the user list (Admin can also edit users)" },
+  canDeleteEvents:       { label: "Delete Events",          desc: "Permanently delete games, practices, and team events" },
+  canImportGames:        { label: "Import Games",           desc: "Use the AI schedule import to create games from photos or text" }
 };
 
 const ROLE_LABELS = {
