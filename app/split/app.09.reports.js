@@ -487,7 +487,7 @@
           <td>${fmtDate(e.EventDate)}</td>
           <td><span class="rpt-event-type-pill rpt-type-${(e.EventType||'').replace(' ','-').toLowerCase()}">${esc(e.EventType)}</span></td>
           <td>${esc(e.EventName || e.EventType)}</td>
-          <td>${esc(e.LocationName || '—')}</td>
+          <td>${esc(e.LocationName || (e.EventType === 'Practice' ? 'Central Park' : '—'))}</td>
           <td><span class="rpt-status-dot ${dotClass}"></span><span class="rpt-status-badge ${badgeClass}">${status}</span></td>
         </tr>`;
     }).join('');
@@ -714,6 +714,21 @@
     return s;
   }
 
+  function fmtTime(val) {
+    if (!val) return '';
+    const s = String(val);
+    // Extract HH:MM from ISO string or HH:MM:SS
+    let hours, minutes;
+    const isoMatch = s.match(/T(\d{2}):(\d{2})/);
+    const plainMatch = s.match(/^(\d{1,2}):(\d{2})/);
+    if (isoMatch) { hours = parseInt(isoMatch[1]); minutes = isoMatch[2]; }
+    else if (plainMatch) { hours = parseInt(plainMatch[1]); minutes = plainMatch[2]; }
+    else return s;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const h12 = hours % 12 || 12;
+    return h12 + ':' + minutes + ' ' + ampm;
+  }
+
   function esc(str) {
     if (typeof window.escapeHtml === 'function') return window.escapeHtml(str);
     return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -870,7 +885,7 @@
         <span>${esc(event.EventName || 'Game')} - ${fmtDate(event.EventDate)}</span>
       </div>
       ${event.LocationName ? `<div style="font-size:12px;color:#666;margin-bottom:10px;">Location: ${esc(event.LocationName)}</div>` : ''}
-      ${event.StartTime ? `<div style="font-size:12px;color:#666;margin-bottom:14px;">Time: ${event.StartTime}</div>` : ''}
+      ${event.StartTime ? `<div style="font-size:12px;color:#666;margin-bottom:14px;">Time: ${fmtTime(event.StartTime)}</div>` : ''}
       <table class="report-table">
         <thead><tr><th>Jersey</th><th>Player</th><th>Group</th><th>Gender</th><th>Status</th></tr></thead>
         <tbody>${rows}</tbody>
