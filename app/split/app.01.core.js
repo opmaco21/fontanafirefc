@@ -174,7 +174,7 @@ const apiVersionText = document.getElementById("apiVersionText");
    APP STATE
    ========================= */
 let currentUser = null;
-let currentPermissions = {};  // loaded from /api/auth/me — DB-driven per role
+let currentPermissions = {};  // loaded from /api/auth/me ? DB-driven per role
 let currentTab = "Dashboard";
 let isTeamEventFormOpen = false;
 let isAttendanceModeActive = true;
@@ -366,12 +366,12 @@ function canManageEvents() {
 }
 
 function canManageUsers() {
-  // User management view — Admin always, TeamMom always
+  // User management view ? Admin always, TeamMom always
   return hasRole("Admin", "TeamMom");
 }
 
 function canCreateResetUsers() {
-  // Always Admin only — not configurable
+  // Always Admin only ? not configurable
   return hasRole("Admin");
 }
 
@@ -382,22 +382,22 @@ function canGenerateSchedule() {
 function applyRolePermissions() {
   if (!currentUser) return;
 
-  // Player Management — Admin and TeamMom only
+  // Player Management ? Admin and TeamMom only
   if (addPlayerSection) {
     addPlayerSection.style.display = canManagePlayers() ? "block" : "none";
   }
 
-  // Player Management tab — Admin and TeamMom only
+  // Player Management tab ? Admin and TeamMom only
   if (playerManagementTab) {
     playerManagementTab.style.display = canManagePlayers() ? "" : "none";
   }
 
-  // User Management tab — Admin and TeamMom only
+  // User Management tab ? Admin and TeamMom only
   if (userManagementTab) {
     userManagementTab.classList.toggle("hidden", !canManageUsers());
   }
 
-  // Reports tab — Admin and TeamMom only
+  // Reports tab ? Admin and TeamMom only
   if (reportsTab) {
     reportsTab.classList.toggle("hidden", !canManagePlayers());
   }
@@ -683,7 +683,7 @@ function ensureGameManagementElements() {
         + Add New Game
       </button>
       <button type="button" id="importGamesBtn" class="btn btn-secondary" onclick="openGameImportModal()" style="margin-top:0;font-size:13px;padding:10px 14px;">
-        ?? Import from Post
+        <i class="ti ti-upload" aria-hidden="true"></i> Import from Post
       </button>
     </div>
   `;
@@ -1803,7 +1803,7 @@ async function loadEvents() {
       const showAll = document.getElementById("practiceShowAllToggle") &&
         document.getElementById("practiceShowAllToggle").checked;
 
-      // Sort ascending — soonest practice at top
+      // Sort ascending ? soonest practice at top
       displayEvents = [...filteredEvents].sort((a, b) =>
         new Date(a.EventDate) - new Date(b.EventDate)
       );
@@ -1981,9 +1981,9 @@ async function loadSelectedEventDetails() {
     if (eventCompactBar) {
       const startFmt = formatEventTime(event.StartTime);
       const endFmt = formatEventTime(event.EndTime);
-      const timeStr = (startFmt && startFmt !== "-") ? `${startFmt}${endFmt && endFmt !== "-" ? " – " + endFmt : ""}` : "";
+      const timeStr = (startFmt && startFmt !== "-") ? `${startFmt}${endFmt && endFmt !== "-" ? " ? " + endFmt : ""}` : "";
       if (eventCompactDate) eventCompactDate.textContent = dateInfo.localDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-      if (eventCompactTime) eventCompactTime.textContent = timeStr || "–";
+      if (eventCompactTime) eventCompactTime.textContent = timeStr || "?";
       if (eventCompactLocation && eventCompactLocationWrap) {
         const loc = event.LocationName || "";
         eventCompactLocation.textContent = loc;
@@ -2144,7 +2144,7 @@ function updateSchedulePreview() {
   }
   const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const selectedDayNames = days.map(d => dayNames[d]).join(" & ");
-  preview.innerHTML = `<span class="schedule-preview-count">${count}</span> practice${count !== 1 ? "s" : ""} will be created<br><span style="color:#666;font-size:12px;">${selectedDayNames} · ${startDate} to ${endDate}</span>`;
+  preview.innerHTML = `<span class="schedule-preview-count">${count}</span> practice${count !== 1 ? "s" : ""} will be created<br><span style="color:#666;font-size:12px;">${selectedDayNames} ? ${startDate} to ${endDate}</span>`;
   preview.classList.remove("hidden");
 }
 
@@ -2202,7 +2202,7 @@ async function submitGenerateSchedule() {
 }
 
 
-// Wire up schedule modal events — called by app.99.bootstrap.js after all scripts load
+// Wire up schedule modal events ? called by app.99.bootstrap.js after all scripts load
 function initScheduleModal() {
   if (generateScheduleBtn) {
     generateScheduleBtn.addEventListener("click", openGenerateScheduleModal);

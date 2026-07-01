@@ -261,9 +261,10 @@ async function restoreSession() {
   // Show a friendly message while the backend wakes up.
   // Render free tier can take 30-50s on cold start - this avoids
   // "Session expired" flashing during normal startup.
-  // Show soccer ball animation while connecting
+  // Only show loading if there's a saved session worth restoring
+  const savedUser = localStorage.getItem("attendanceUser");
   const loginLoading = document.getElementById("loginLoading");
-  if (loginLoading) loginLoading.classList.remove("hidden");
+  if (savedUser && loginLoading) loginLoading.classList.remove("hidden");
   if (loginMessage) loginMessage.textContent = "";
 
   try {
