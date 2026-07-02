@@ -5,7 +5,11 @@
    ========================================================= */
 
 // --- DASHBOARD STATE ---
-let dashboardSelectedMonth = new Date().toISOString().slice(0, 7); 
+function getDashboardCurrentMonthValue() {
+  const now = new Date();
+  return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+}
+let dashboardSelectedMonth = getDashboardCurrentMonthValue();
 let dashboardMonthFilterReady = false;
 let dashboardPlayerDates = {};
 let dashboardOpenSummaryCard = ""; 
@@ -13,11 +17,6 @@ let dashboardSummaryPlayerCache = {};
 let dashboardOpenDetailKey = "";
 
 // --- UTILITIES & FORMATTERS ---
-
-function getDashboardCurrentMonthValue() {
-  const now = new Date();
-  return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
-}
 
 function formatDashboardMonthLabel(value) {
   if (!value) return "All Months";
