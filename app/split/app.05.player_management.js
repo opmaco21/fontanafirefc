@@ -340,7 +340,6 @@ function showPlayerDetails(playerId) {
         ${detailLine("Snack", player.SnackPreference || "Bring Snack")}
         ${detailLine("Paperwork", player.PaperworkStatus || "Not Received")}
         ${detailLine("Photo Release", getPhotoReleaseLabel(player))}
-        ${detailLine("Photo Form Received", formatYesNo(player.PhotoReleaseFormReceived))}
         ${detailLine("Last Updated", formatPlayerUpdatedAt(player.UpdatedAt))}
       </section>
     </div>
@@ -915,14 +914,6 @@ function ensurePlayerManagementForm() {
               <option value="No">No (Declined)</option>
             </select>
           </label>
-
-          <label>
-            Photo Release Form Received
-            <select id="pmPhotoReleaseFormReceived">
-              <option value="0">No</option>
-              <option value="1">Yes</option>
-            </select>
-          </label>
         </div>
       </div>
 
@@ -1041,7 +1032,6 @@ function getPlayerFormPayload() {
   const snackPreferenceInput = document.getElementById("pmSnackPreference");
   const paperworkStatusInput = document.getElementById("pmPaperworkStatus");
   const photoReleaseStatusInput = document.getElementById("pmPhotoReleaseStatus");
-  const photoReleaseFormReceivedInput = document.getElementById("pmPhotoReleaseFormReceived");
   const startDateInput = document.getElementById("pmStartDate");
   const endDateInput = document.getElementById("pmEndDate");
   const isActiveInput = document.getElementById("pmIsActive");
@@ -1086,7 +1076,6 @@ function getPlayerFormPayload() {
     snackPreference: snackPreferenceInput ? snackPreferenceInput.value : "Bring Snack",
     paperworkStatus: paperworkStatusInput ? paperworkStatusInput.value : "Not Received",
     photoReleaseStatus: photoReleaseStatusInput ? photoReleaseStatusInput.value : "Not Received",
-    photoReleaseFormReceived: photoReleaseFormReceivedInput ? photoReleaseFormReceivedInput.value === "1" : false,
 
     startDate: startDateInput ? startDateInput.value || null : null,
     endDate: endDateInput ? endDateInput.value || null : null,
