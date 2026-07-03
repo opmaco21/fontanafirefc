@@ -8,8 +8,14 @@
   const TOUR_STEPS = [
     {
       target: "#dashboardTab",
-      title: "Navigation Tabs",
-      body: "These tabs are how you move around the app. Let's start with the Dashboard, which gives you a quick overview of attendance.",
+      title: "Welcome to the Dashboard",
+      body: "This is your home base. The Dashboard shows attendance summaries for practices, games, and events. Use the month filter at the top to review any month. Click any colored summary card (Needs Attention, Good, Strong) to see the exact players behind that number. Birthdays and player highlight lists are further down the page.",
+      tab: "Dashboard"
+    },
+    {
+      target: "#dashboardMonthFilter",
+      title: "Filters & Icons",
+      body: "🔴 Needs Attention (≤70%) &nbsp;·&nbsp; 🟡 Good (71–84%) &nbsp;·&nbsp; 🟢 Strong (≥85%) &nbsp;·&nbsp; ⚪ Not Rostered (no games/practices tracked yet). These colors are used throughout the Dashboard and Reports. Use the month dropdown here to change which month's data you're viewing.",
       tab: "Dashboard"
     },
     {
@@ -21,19 +27,13 @@
     {
       target: "#eventSelect, .event-selector-row select",
       title: "Select an Event",
-      body: "Use this dropdown to pick which practice, game, or event you want to work with.",
-      tab: null
-    },
-    {
-      target: "#editRosterBtn",
-      title: "Edit Roster",
-      body: "Click here to add or remove players from an event's roster. All active players will show up with checkboxes.",
+      body: "Use this dropdown to pick which practice, game, or event you want to work with. Once you select one, more options appear below like Edit Roster and Submit Attendance.",
       tab: null
     },
     {
       target: "#gamesTab",
       title: "Games",
-      body: "Create new games here. You can pick players right away, or leave the roster empty and add players later with Edit Roster.",
+      body: "Create new games here. You can pick players right away, or leave the roster empty and add players later with Edit Roster — which appears once you've selected a game above.",
       tab: "Games"
     },
     {
@@ -49,15 +49,9 @@
       tab: "Events"
     },
     {
-      target: "#dashboardTab",
-      title: "Back to the Dashboard",
-      body: "The Dashboard shows attendance summaries, birthdays, and player highlights. Click any summary card to see the players behind the numbers.",
-      tab: "Dashboard"
-    },
-    {
       target: "#helpTab",
       title: "You're all set!",
-      body: "Come back to the Help tab anytime you need a refresher, or to re-take this tour. Good luck!",
+      body: "You can retake this tour anytime — just come back to the Help tab and click 'Take an Interactive Tour' again. Good luck!",
       tab: null
     }
   ];
