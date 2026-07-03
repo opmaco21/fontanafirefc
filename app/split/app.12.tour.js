@@ -22,13 +22,26 @@
       target: "#practiceTab",
       title: "Practice Attendance",
       body: "Click here to take attendance for practices. Select a date, then mark each player Present, Absent, Excused, or Cancelled.",
-      tab: null
+      tab: "Practice"
     },
     {
       target: "#eventSelect, .event-selector-row select",
       title: "Select an Event",
       body: "Use this dropdown to pick which practice, game, or event you want to work with. Once you select one, more options appear below like Edit Roster and Submit Attendance.",
-      tab: null
+      tab: "Practice"
+    },
+    {
+      target: "#eventDotsBtn",
+      title: "The Pencil Menu",
+      body: "This pencil icon appears once you select an event. Click it to <strong>Edit details</strong> (name, date, time, location), <strong>Cancel</strong> the event, <strong>Restore</strong> a cancelled one, or <strong>Delete</strong> it permanently.",
+      tab: "Practice",
+      requiresEventSelection: true
+    },
+    {
+      target: "#attendanceFilterIconBtn",
+      title: "Search & Filter Icon",
+      body: "Next to the player search box, this sliders icon opens extra filters — birth year, gender, and attendance status — to help you narrow down a long player list quickly.",
+      tab: "Practice"
     },
     {
       target: "#gamesTab",
@@ -149,7 +162,22 @@
       if (btn) btn.click();
     }
 
-    // Give the DOM a moment to update after tab switch
+    // Auto-select the first available event so elements like the
+    // pencil menu (which only appear once an event is chosen) are visible.
+    const stepDelay = step.tab ? 200 : 0;
+    const selectDelay = step.requiresEventSelection ? stepDelay + 250 : stepDelay;
+
+    setTimeout(() => {
+      if (step.requiresEventSelection) {
+        const sel = document.querySelector("#eventSelect, .event-selector-row select");
+        if (sel && !sel.value && sel.options && sel.options.length > 1) {
+          sel.value = sel.options[1].value;
+          sel.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+    }, stepDelay);
+
+    // Give the DOM a moment to update after tab switch / event selection
     setTimeout(() => {
       const target = findTarget(step.target);
 
@@ -185,7 +213,7 @@
       if (nextBtn) nextBtn.onclick = nextStep;
       if (backBtn) backBtn.onclick = prevStep;
       if (skipBtn) skipBtn.onclick = endTour;
-    }, step.tab ? 200 : 0);
+    }, selectDelay);
   }
 
   function nextStep() {
