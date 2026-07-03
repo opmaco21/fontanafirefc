@@ -533,6 +533,11 @@ async function showApp() {
   // Show topbar logout button
   if (logoutBtn) logoutBtn.classList.remove("hidden");
 
+  // Show one-time "take the tour" banner (no-op if already dismissed)
+  if (typeof window.maybeShowTourBanner === "function") {
+    window.maybeShowTourBanner();
+  }
+
   hideGroupDropdown();
 
 
