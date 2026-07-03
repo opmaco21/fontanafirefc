@@ -92,7 +92,7 @@
 
     tooltipEl = document.createElement("div");
     tooltipEl.id = "appTourTooltip";
-    tooltipEl.style.cssText = "position:fixed;background:#fff;border-radius:12px;padding:18px;max-width:300px;box-shadow:0 8px 30px rgba(0,0,0,0.3);z-index:99999;pointer-events:auto;font-family:inherit;";
+    tooltipEl.style.cssText = "position:fixed;background:#fff;border-radius:12px;padding:18px;width:90vw;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,0.3);z-index:99999;pointer-events:auto;font-family:inherit;box-sizing:border-box;";
 
     document.body.appendChild(overlayEl);
     document.body.appendChild(spotlightEl);
@@ -122,17 +122,13 @@
     spotlightEl.style.width = (rect.width + pad * 2) + "px";
     spotlightEl.style.height = (rect.height + pad * 2) + "px";
 
-    // Position tooltip below the target, or above if not enough room
-    const tooltipWidth = 300;
-    let top = rect.bottom + 14;
-    let left = Math.min(Math.max(rect.left, 10), window.innerWidth - tooltipWidth - 10);
-
-    if (top + 180 > window.innerHeight) {
-      top = Math.max(rect.top - 190, 10);
-    }
-
-    tooltipEl.style.top = top + "px";
-    tooltipEl.style.left = left + "px";
+    // Dock the tooltip to the bottom of the screen, centered.
+    // This avoids overlapping page content, regardless of where the
+    // highlighted element sits or how tall the page is.
+    tooltipEl.style.top = "";
+    tooltipEl.style.bottom = "20px";
+    tooltipEl.style.left = "50%";
+    tooltipEl.style.transform = "translateX(-50%)";
 
     target.scrollIntoView({ behavior: "smooth", block: "center" });
   }
