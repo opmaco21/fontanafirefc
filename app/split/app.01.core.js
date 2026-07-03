@@ -329,6 +329,15 @@ function setLoginLoading(isLoading) {
   }
 }
 
+// Reset any stuck "Connecting to server..." state if the browser restores
+// this page from back/forward cache (bfcache) instead of a fresh load.
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    setLoginLoading(false);
+    if (loginMessage) loginMessage.textContent = "";
+  }
+});
+
 /* =========================
    ROLE PERMISSIONS
    ========================= */
