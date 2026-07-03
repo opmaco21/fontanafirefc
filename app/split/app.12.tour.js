@@ -15,7 +15,7 @@
     {
       target: "#dashboardMonthFilter",
       title: "Filters & Icons",
-      body: "🔴 Needs Attention (≤70%) &nbsp;·&nbsp; 🟡 Good (71–84%) &nbsp;·&nbsp; 🟢 Strong (≥85%) &nbsp;·&nbsp; ⚪ Not Rostered (no games/practices tracked yet). These colors are used throughout the Dashboard and Reports. Use the month dropdown here to change which month's data you're viewing.",
+      body: "🔴 Needs Attention &nbsp;·&nbsp; 🟡 Good &nbsp;·&nbsp; 🟢 Strong &nbsp;·&nbsp; ⚪ Not Rostered (no games/practices tracked yet). These colors are used throughout the Dashboard and Reports to flag attendance at a glance. Use the month dropdown here to change which month's data you're viewing.",
       tab: "Dashboard"
     },
     {
@@ -27,15 +27,8 @@
     {
       target: "#eventSelect, .event-selector-row select",
       title: "Select an Event",
-      body: "Use this dropdown to pick which practice, game, or event you want to work with. Once you select one, more options appear below like Edit Roster and Submit Attendance.",
+      body: "Use this dropdown to pick which practice, game, or event you want to work with. Once you select one, a <strong>pencil icon</strong> appears next to it — click it to <strong>Edit details</strong> (name, date, time, location), <strong>Cancel</strong> the event, <strong>Restore</strong> a cancelled one, or <strong>Delete</strong> it permanently. More options like Edit Roster and Submit Attendance also appear below.",
       tab: "Practice"
-    },
-    {
-      target: "#eventDotsBtn",
-      title: "The Pencil Menu",
-      body: "This pencil icon appears once you select an event. Click it to <strong>Edit details</strong> (name, date, time, location), <strong>Cancel</strong> the event, <strong>Restore</strong> a cancelled one, or <strong>Delete</strong> it permanently.",
-      tab: "Practice",
-      requiresEventSelection: true
     },
     {
       target: "#attendanceFilterIconBtn",
