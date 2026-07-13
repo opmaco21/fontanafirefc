@@ -361,7 +361,8 @@ function hasPerm(capability) {
     canManagePlayers:      ["Admin", "TeamMom"],
     canGenerateSchedule:   ["Admin"],
     canViewDashboard:      ["Admin", "TeamMom", "HeadCoach", "Coaches"],
-    canViewUserManagement: ["Admin", "TeamMom"]
+    canViewUserManagement: ["Admin", "TeamMom"],
+    canViewReports:        ["Admin", "TeamMom", "HeadCoach"]
   };
   return currentUser && (defaults[capability] || []).includes(currentUser.RoleName);
 }
@@ -406,9 +407,9 @@ function applyRolePermissions() {
     userManagementTab.classList.toggle("hidden", !canManageUsers());
   }
 
-  // Reports tab ? Admin and TeamMom only
+  // Reports tab — controlled by canViewReports
   if (reportsTab) {
-    reportsTab.classList.toggle("hidden", !canManagePlayers());
+    reportsTab.classList.toggle("hidden", !hasPerm("canViewReports"));
   }
 
   // Role label display

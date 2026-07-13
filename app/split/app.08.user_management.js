@@ -581,6 +581,7 @@ const PERMISSION_LABELS = {
   canGenerateSchedule:   { label: "Generate Schedule",     desc: "Bulk-create practice events from the Practice tab" },
   canViewDashboard:      { label: "View Dashboard",        desc: "Access attendance reports and player summaries" },
   canViewUserManagement: { label: "View User Management",  desc: "See the user list (Admin can also edit users)" },
+  canViewReports:        { label: "View Reports",          desc: "Access attendance, roster, paperwork, emergency, snack, and player reports" },
   canDeleteEvents:       { label: "Delete Events",          desc: "Permanently delete games, practices, and team events" },
   canImportGames:        { label: "Import Games",           desc: "Use the AI schedule import to create games from photos or text" }
 };
@@ -593,7 +594,7 @@ const ROLE_LABELS = {
 };
 
 // Capabilities that Admin cannot have toggled (prevent lockout)
-const ADMIN_LOCKED = ["canMarkAttendance", "canViewDashboard", "canViewUserManagement"];
+const ADMIN_LOCKED = ["canMarkAttendance", "canViewDashboard", "canViewUserManagement", "canViewReports"];
 
 async function loadPermissionManager() {
   const container = document.getElementById("permissionManagerContainer");
