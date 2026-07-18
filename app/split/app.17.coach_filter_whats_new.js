@@ -185,38 +185,74 @@
   }
 
   function injectCoachOverrideField() {
-    const form = document.getElementById("pmSavePlayerBtn");
-    if (!form) return;
+    // The Player Management form is rebuilt dynamically every time Add/Edit opens.
+    // Always look for the live form instead of assuming the field from a prior render still exists.
+    const saveBtn = document.getElementById("pmSavePlayerBtn");
+    const addSection = document.getElementById("addPlayerSection");
 
-    if (document.getElementById("pmCoachOverride")) return;
+    if (!saveBtn || !addSection) return false;
+    if (document.getElementById("pmCoachOverride")) return true;
 
     const genderSelect = document.getElementById("pmGender");
     const anchorLabel = genderSelect ? genderSelect.closest("label") : null;
 
     const label = document.createElement("label");
+    label.id = "pmCoachOverrideLabel";
     label.innerHTML = `
       Coach Override
       <select id="pmCoachOverride">
-        <option value="">Default</option>
+        <option value="">Default (Automatic)</option>
         <option value="Jose">Jose</option>
         <option value="Alfredo">Alfredo</option>
         <option value="Bobby">Bobby</option>
         <option value="Damian">Damian</option>
       </select>
-      <small style="display:block;margin-top:4px;color:#6b7280;">
-        Default uses birth year and gender rules.
+      <small style="display:block;margin-top:4px;color:#6b7280;line-height:1.35;">
+        Leave on Default to use the automatic birth-year/gender coach assignment.
+        Choose a coach only when this player is an exception.
       </small>
     `;
 
+    // Preferred placement: directly after Gender in the Player Info grid.
     if (anchorLabel && anchorLabel.parentNode) {
       anchorLabel.insertAdjacentElement("afterend", label);
-      return;
+      return true;
     }
 
-    const firstGrid = document.querySelector("#addPlayerSection .player-form-grid");
+    // Fallback: first grid inside the Player Info section.
+    const firstGrid = addSection.querySelector(".player-form-section .player-form-grid");
     if (firstGrid) {
       firstGrid.appendChild(label);
+      return true;
     }
+
+    return false;
+  }
+
+  function keepCoachOverrideFieldMounted() {
+    const addSection = document.getElementById("addPlayerSection");
+    if (!addSection || addSection.dataset.coachObserverAttached) return;
+
+    addSection.dataset.coachObserverAttached = "1";
+
+    const observer = new MutationObserver(() => {
+      // The base Player Management code replaces addPlayerSection.innerHTML.
+      // Re-add the field immediately after each form rebuild.
+      injectCoachOverrideField();
+
+      if (typeof editingPlayerId !== "undefined" && editingPlayerId) {
+        setCurrentOverrideValue(
+          coachOverrideMap.get(Number(editingPlayerId)) || ""
+        );
+      }
+    });
+
+    observer.observe(addSection, {
+      childList: true,
+      subtree: true
+    });
+
+    injectCoachOverrideField();
   }
 
   function getCurrentOverrideValue() {
@@ -495,6 +531,73 @@
     };
   }
 
+  function renderCleanHelpContent() {
+    const helpContainer = document.getElementById("helpContainer");
+    const startTourBtn = document.getElementById("startTourBtn");
+
+    // Replace the literal graduation-cap emoji with the already-loaded Tabler icon font.
+    // This avoids mojibake / Asian-looking replacement characters on mis-encoded deployments.
+    if (startTourBtn) {
+      startTourBtn.innerHTML =
+        '<i class="ti ti-school" aria-hidden="true"></i> Take an Interactive Tour';
+    }
+
+    if (!helpContainer) return;
+
+    helpContainer.innerHTML = `
+      <div class="help-page">
+        <section class="help-section">
+          <h3>Attendance App Help</h3>
+          <p>Use this guide for the main Fontana Fire FC attendance workflows.</p>
+        </section>
+
+        <section class="help-section">
+          <h4>Attendance</h4>
+          <p>Select Practice, Games, or Events, choose an event, then mark each visible player Present, Absent, or Excused.</p>
+          <p>The Coach filter only changes which player rows you see. Selecting All Coaches always restores the full event attendance roster.</p>
+        </section>
+
+        <section class="help-section">
+          <h4>Coach Filter</h4>
+          <p>Automatic coach assignments are based on birth year and gender:</p>
+          <ul>
+            <li>Jose: birth years 2017-2021</li>
+            <li>Alfredo: boys born 2015-2016</li>
+            <li>Bobby: girls born 2014-2016</li>
+            <li>Damian: boys born 2011-2014</li>
+          </ul>
+          <p>Players with a Coach Override use the selected coach instead of the automatic rule.</p>
+        </section>
+
+        <section class="help-section">
+          <h4>Assigning a Coach Override</h4>
+          <p>Open Players, choose Edit for the player, then use Coach Override in the Player Info section.</p>
+          <p>Leave Coach Override on Default (Automatic) for normal assignments. Select Jose, Alfredo, Bobby, or Damian only for an exception player.</p>
+        </section>
+
+        <section class="help-section">
+          <h4>Player Management</h4>
+          <p>Use Players to add or edit roster information, parent contact details, paperwork, photo release, snack preference, active status, and Coach Override.</p>
+        </section>
+
+        <section class="help-section">
+          <h4>Games and Team Events</h4>
+          <p>Games and Team Events use custom rosters. Edit the roster first, save it, then continue to attendance.</p>
+        </section>
+
+        <section class="help-section">
+          <h4>Reports</h4>
+          <p>Report access is controlled separately by the Reports permission. Users without report permission cannot open report API data.</p>
+        </section>
+
+        <section class="help-section">
+          <h4>Cancelled Events</h4>
+          <p>Cancelling an event temporarily sets attendance to Cancelled. Restoring the event returns prior Present, Absent, Excused, and blank attendance states.</p>
+        </section>
+      </div>
+    `;
+  }
+
   function showWhatsNewPopupOnce() {
     if (!document.body) return;
 
@@ -554,6 +657,8 @@
     installSummaryCountExtension();
     ensureCoachFilterControl();
     injectCoachOverrideField();
+    keepCoachOverrideFieldMounted();
+    renderCleanHelpContent();
 
     // Covers an already-visible session when this script is loaded late.
     if (typeof appScreen !== "undefined" &&
