@@ -3,6 +3,44 @@
    Compact rows, quick status buttons, search, and filters.
    ========================= */
 
+let attendanceCoachFilter = "";
+
+const ATTENDANCE_COACH_NAMES = ["Jose", "Alfredo", "Bobby", "Damian"];
+
+function getDefaultAttendanceCoach(playerOrRow) {
+  if (!playerOrRow) return "";
+
+  const birthYear = playerOrRow.dataset
+    ? playerOrRow.dataset.birthYear
+    : playerOrRow.BirthYear || playerOrRow.GroupCode;
+
+  const genderValue = playerOrRow.dataset
+    ? playerOrRow.dataset.gender
+    : playerOrRow.Gender;
+
+  const year = Number(birthYear || 0);
+  const gender = String(genderValue || "").trim().toLowerCase();
+
+  if (year >= 2017 && year <= 2021) return "Jose";
+  if ((year === 2015 || year === 2016) && (gender === "male" || gender === "m")) return "Alfredo";
+  if (year >= 2014 && year <= 2016 && (gender === "female" || gender === "f")) return "Bobby";
+  if (year >= 2011 && year <= 2014 && (gender === "male" || gender === "m")) return "Damian";
+
+  return "";
+}
+
+function getResolvedAttendanceCoach(playerOrRow) {
+  const override = playerOrRow.dataset
+    ? String(playerOrRow.dataset.coachOverride || "").trim()
+    : String(playerOrRow.CoachOverride || "").trim();
+
+  if (ATTENDANCE_COACH_NAMES.includes(override)) {
+    return override;
+  }
+
+  return getDefaultAttendanceCoach(playerOrRow);
+}
+
 /* =========================
    ATTENDANCE SEARCH NORMALIZER
    Makes search more forgiving:
@@ -44,6 +82,19 @@ function ensureAttendanceFilterControls() {
         <label class="attendance-filter-label">
           Search Players
           <input id="attendanceSearchInput" type="text" placeholder="Search by name, number, birth year, or gender" />
+        </label>
+      </div>
+
+      <div class="attendance-filter-row">
+        <label class="attendance-filter-label" for="attendanceCoachFilter">
+          Coach
+          <select id="attendanceCoachFilter">
+            <option value="">All Coaches</option>
+            <option value="Jose">Jose</option>
+            <option value="Alfredo">Alfredo</option>
+            <option value="Bobby">Bobby</option>
+            <option value="Damian">Damian</option>
+          </select>
         </label>
       </div>
 
@@ -99,6 +150,18 @@ function ensureAttendanceFilterControls() {
         attendanceSearchText = normalizeAttendanceSearchText(searchInput.value);
         updateAttendanceDisplay();
       }, 150);
+    });
+  }
+
+  const coachFilter = document.getElementById("attendanceCoachFilter");
+
+  if (coachFilter && !coachFilter.dataset.listenerAttached) {
+    coachFilter.dataset.listenerAttached = "1";
+    coachFilter.value = attendanceCoachFilter;
+
+    coachFilter.addEventListener("change", () => {
+      attendanceCoachFilter = coachFilter.value || "";
+      updateAttendanceDisplay();
     });
   }
 
@@ -675,7 +738,7 @@ function updateAttendanceDisplay() {
       ? completedPlayerList.classList.contains("hidden")
       : true;
 
-    const filterText = attendanceSearchText || attendanceStatusFilter || attendanceBirthYearFilter || attendanceGenderFilter
+    const filterText = attendanceSearchText || attendanceStatusFilter || attendanceBirthYearFilter || attendanceGenderFilter || attendanceCoachFilter
       ? ` | Showing ${visibleCount}`
       : "";
 
@@ -712,6 +775,7 @@ function rowMatchesAttendanceFilters(row) {
   const rowSearchText = normalizeAttendanceSearchText(row.dataset.searchText || "");
   const rowBirthYear = String(row.dataset.birthYear || "");
   const rowGender = String(row.dataset.gender || "");
+  const rowCoach = String(row.dataset.coach || "");
 
   const searchTerms = parseAttendanceSearchTerms(attendanceSearchText);
   const searchMatches =
@@ -731,7 +795,11 @@ function rowMatchesAttendanceFilters(row) {
     (attendanceStatusFilter === "Remaining" && !status) ||
     status === attendanceStatusFilter;
 
-  return searchMatches && birthYearMatches && genderMatches && statusMatches;
+  const coachMatches =
+    !attendanceCoachFilter ||
+    rowCoach === attendanceCoachFilter;
+
+  return searchMatches && birthYearMatches && genderMatches && statusMatches && coachMatches;
 }
 
 function createAttendancePlayerRow(player) {
@@ -750,6 +818,8 @@ function createAttendancePlayerRow(player) {
   row.dataset.status = "";
   row.dataset.birthYear = String(birthYear || "");
   row.dataset.gender = String(gender || "");
+  row.dataset.coachOverride = String(player.CoachOverride || "");
+  row.dataset.coach = getResolvedAttendanceCoach(player);
 
   row.dataset.searchText = normalizeAttendanceSearchText([
     playerName,
@@ -769,7 +839,7 @@ function createAttendancePlayerRow(player) {
   row.innerHTML = `
     <div class="attendance-player-info">
       <div class="attendance-player-name">${playerNameHtml}</div>
-      <div class="attendance-player-meta">${playerNumber} ${birthYear ? `| Birth Year: ${birthYear}` : ""} ${gender ? `| Gender: ${formatGenderShort(gender)}` : ""}</div>
+      <div class="attendance-player-meta">${playerNumber} ${birthYear ? `| Birth Year: ${birthYear}` : ""} ${gender ? `| Gender: ${formatGenderShort(gender)}` : ""} ${row.dataset.coach ? `| Coach: ${row.dataset.coach}` : ""}</div>
     </div>
 
     <div class="attendance-status-buttons" role="group" aria-label="Attendance status for ${playerNameHtml}">

@@ -99,6 +99,41 @@ function formatGenderShort(value) {
   return "-";
 }
 
+
+const PLAYER_COACH_NAMES = ["Jose", "Alfredo", "Bobby", "Damian"];
+
+function getDefaultPlayerCoach(player) {
+  if (!player) return "";
+
+  const year = Number(player.BirthYear || player.GroupCode || 0);
+  const gender = safeValue(player.Gender).trim().toLowerCase();
+
+  if (year >= 2017 && year <= 2021) return "Jose";
+  if ((year === 2015 || year === 2016) && (gender === "male" || gender === "m")) return "Alfredo";
+  if (year >= 2014 && year <= 2016 && (gender === "female" || gender === "f")) return "Bobby";
+  if (year >= 2011 && year <= 2014 && (gender === "male" || gender === "m")) return "Damian";
+
+  return "";
+}
+
+function getResolvedPlayerCoach(player) {
+  const override = safeValue(player && player.CoachOverride).trim();
+
+  if (PLAYER_COACH_NAMES.includes(override)) {
+    return {
+      name: override,
+      source: "Override"
+    };
+  }
+
+  const defaultCoach = getDefaultPlayerCoach(player);
+
+  return {
+    name: defaultCoach || "Unassigned",
+    source: defaultCoach ? "Default" : "Unassigned"
+  };
+}
+
 function formatDisplayDate(value) {
   if (!value) return "-";
 
@@ -304,6 +339,7 @@ function showPlayerDetails(playerId) {
         ${detailLine("Last Name", player.LastName)}
         ${detailLine("Birth Year", player.BirthYear || player.GroupCode)}
         ${detailLine("Gender", formatGenderShort(player.Gender))}
+        ${detailLine("Coach", `${getResolvedPlayerCoach(player).name} (${getResolvedPlayerCoach(player).source})`)}
         ${detailLine("Date of Birth", formatDisplayDate(player.DateOfBirth))}
         ${detailLine("Start Date", formatDisplayDate(player.StartDate))}
         ${detailLine("End Date", formatDisplayDate(player.EndDate))}
@@ -768,6 +804,20 @@ function ensurePlayerManagementForm() {
           </label>
 
           <label>
+            Coach Override
+            <select id="pmCoachOverride">
+              <option value="">Default (Automatic)</option>
+              <option value="Jose">Jose</option>
+              <option value="Alfredo">Alfredo</option>
+              <option value="Bobby">Bobby</option>
+              <option value="Damian">Damian</option>
+            </select>
+            <small style="display:block;margin-top:4px;color:#6b7280;line-height:1.35;">
+              Use Default for the automatic birth-year and gender assignment.
+            </small>
+          </label>
+
+          <label>
             First Name
             <input id="pmFirstName" type="text" placeholder="First name" />
           </label>
@@ -1015,6 +1065,7 @@ function getPlayerFormPayload() {
   const birthYearInput = document.getElementById("pmBirthYear");
   const dateOfBirthInput = document.getElementById("pmDateOfBirth");
   const genderInput = document.getElementById("pmGender");
+  const coachOverrideInput = document.getElementById("pmCoachOverride");
   const parentNameInput = document.getElementById("pmParentName");
   const parentPhoneInput = document.getElementById("pmParentPhone");
   const parentEmailInput = document.getElementById("pmParentEmail");
@@ -1056,6 +1107,7 @@ function getPlayerFormPayload() {
     birthYear: birthYear ? Number(birthYear) : null,
     dateOfBirth,
     gender: genderInput ? genderInput.value : "",
+    coachOverride: coachOverrideInput ? coachOverrideInput.value || null : null,
 
     parentName: parentNameInput ? parentNameInput.value.trim() : "",
     parentPhone: parentPhoneInput ? formatPhoneNumberForDisplay(parentPhoneInput.value) : "",
@@ -1188,6 +1240,7 @@ function resetPlayerManagementForm(clearMessage = true) {
     pmPlayerNumber: "",
     pmBirthYear: "",
     pmGender: "",
+    pmCoachOverride: "",
     pmFirstName: "",
     pmLastName: "",
     pmDateOfBirth: "",
@@ -1270,6 +1323,7 @@ editingPlayerId = player.PlayerID;
     pmPlayerNumber: safeValue(player.PlayerNumber),
     pmBirthYear: safeValue(player.BirthYear || player.GroupCode || ""),
     pmGender: safeValue(player.Gender || ""),
+    pmCoachOverride: safeValue(player.CoachOverride || ""),
     pmFirstName: safeValue(player.FirstName),
     pmLastName: safeValue(player.LastName),
     pmDateOfBirth: formatDateForInput(player.DateOfBirth),
@@ -1498,6 +1552,7 @@ function renderPlayerManagementList(players) {
     const canToggle = canManagePlayers();
     const canDelete = canDeletePlayer();
     const genderLabel = formatGenderShort(player.Gender);
+    const resolvedCoach = getResolvedPlayerCoach(player);
     const parent1Name = player.ParentName || "No parent name entered";
     const parent1Phone = formatPhoneNumberForDisplay(player.ParentPhone) || "No phone entered";
     const parentEmail = player.ParentEmail || "No email entered";
@@ -1518,6 +1573,9 @@ function renderPlayerManagementList(players) {
               <span class="player-card-badge player-number-badge">${playerNumber}</span>
               <span class="player-card-badge">${player.BirthYear || "-"}</span>
               <span class="player-card-badge">${genderLabel}</span>
+              <span class="player-card-badge" title="${resolvedCoach.source === "Override" ? "Coach Override" : "Automatic coach assignment"}">
+                Coach: ${resolvedCoach.name}
+              </span>
             </div>
             ${hasWarnings ? `<div class="player-card-warning-row" style="margin-top:4px;">
               ${!player.ParentName || !player.ParentPhone || !player.ParentEmail ? '<span class="player-card-warning-badge">⚠ No contact</span>' : ""}

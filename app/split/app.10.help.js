@@ -50,7 +50,7 @@
         <ol>
           <li>Open the <strong>Practice</strong> tab.</li>
           <li>Select the practice date from the dropdown. By default, only current month and future dates show. Toggle <em>Show all dates</em> to see older practices.</li>
-          <li>Use search, birth year, gender, and status filters to narrow the list.</li>
+          <li>Use search, coach, birth year, gender, and status filters to narrow the list. <strong>All Coaches</strong> always shows the full roster.</li>
           <li>Tap <strong>Present</strong>, <strong>Absent</strong>, <strong>Excused</strong>, <strong>Cancelled</strong>, or <strong>Clear / Reset</strong> for each player.</li>
           <li>Click <strong>Submit Attendance</strong>.</li>
           <li>A <strong>Completed</strong> badge appears when all players are marked.</li>
@@ -132,7 +132,8 @@
       body: `
         <ul>
           <li>Click <strong>Add New Player</strong> to open the add form.</li>
-          <li>Player cards show jersey number, birth year, gender, status, parent contacts.</li>
+          <li>Player cards show jersey number, birth year, gender, resolved coach, status, and parent contacts.</li>
+          <li>Use <strong>Coach Override</strong> only for exceptions. Leave it on <strong>Default (Automatic)</strong> for the standard birth-year and gender assignment.</li>
           <li>Click <strong>View Details</strong> to see the full profile including address, emergency contact, and paperwork status.</li>
           <li>Use <strong>Edit</strong> only when changing player information.</li>
           <li>Use filters for birth year, gender, missing paperwork, missing photo release, and missing emergency info.</li>
@@ -241,7 +242,7 @@
 
     container.innerHTML = '<div class="help-wrap">' +
       '<div class="help-header">' +
-        '<span class="help-logo">\uD83D\uDD25</span>' +
+        '<span class="help-logo"><i class="ti ti-flame" aria-hidden="true"></i></span>' +
         '<div>' +
           '<h2 class="help-title" style="color:#c2410c; opacity:1;">Fontana Fire FC</h2>' +
           '<p class="help-subtitle">Attendance App \u2014 Help Guide</p>' +
