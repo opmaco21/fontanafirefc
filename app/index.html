@@ -15,7 +15,6 @@
        automatic web build version before app JS is loaded.
        Load order matters.
   -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/01-base-layout.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/02-buttons-tabs-events.css" />
   <link class="appStylesheet" rel="stylesheet" href="css/03-attendance.css" />
@@ -47,7 +46,7 @@
         </div>
       </div>
       <button id="logoutBtn" class="topbar-logout hidden" type="button">
-        <i class="ti ti-logout" aria-hidden="true"></i>
+        <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H5v14h5M13 8l4 4-4 4M17 12H9"/></svg>
         <span>Logout</span>
       </button>
     </header>
@@ -261,14 +260,14 @@
 
         <!-- TABS -->
         <div class="tabs">
-          <button id="dashboardTab" class="tab active"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dash</button>
-          <button id="practiceTab" class="tab"><i class="ti ti-run" aria-hidden="true"></i>Practice</button>
-          <button id="gamesTab" class="tab"><i class="ti ti-ball-football" aria-hidden="true"></i>Games</button>
-          <button id="teamEventsTab" class="tab"><i class="ti ti-calendar-event" aria-hidden="true"></i>Events</button>
-          <button id="playerManagementTab" class="tab"><i class="ti ti-users" aria-hidden="true"></i>Players</button>
-          <button id="reportsTab" class="tab hidden"><i class="ti ti-file-analytics" aria-hidden="true"></i>Reports</button>
-          <button id="userManagementTab" class="tab hidden"><i class="ti ti-shield-lock" aria-hidden="true"></i>Users</button>
-          <button id="helpTab" class="tab"><i class="ti ti-help-circle" aria-hidden="true"></i>Help</button>
+          <button id="dashboardTab" class="tab active"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dash</button>
+          <button id="practiceTab" class="tab"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="4" r="2"/><path d="M10 8l3 2 2 4 4 2M11 10l-3 4-4 1M13 12l-2 5-4 3M15 9l3-2"/></svg>Practice</button>
+          <button id="gamesTab" class="tab"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 4.5l3 2 3-2M7 10l2-3h6l2 3-2 3H9zM7 10l-3 2M17 10l3 2M9 13l-1 6M15 13l1 6"/></svg>Games</button>
+          <button id="teamEventsTab" class="tab"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3v3H8z"/></svg>Events</button>
+          <button id="playerManagementTab" class="tab"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-4 2.5-7 6-7s6 3 6 7M14 14c3.5 0 6 2.5 6 6"/></svg>Players</button>
+          <button id="reportsTab" class="tab hidden"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6zM14 3v4h4M9 16v-3M12 16v-6M15 16v-4"/></svg>Reports</button>
+          <button id="userManagementTab" class="tab hidden"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6zM9 11h6M12 8v6"/></svg>Users</button>
+          <button id="helpTab" class="tab"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 014.6 1c0 2-2.4 2.2-2.4 4"/><circle cx="12" cy="17.5" r=".7" fill="currentColor" stroke="none"/></svg>Help</button>
         </div>
 
         <!-- DASHBOARD / REPORTS SECTION
@@ -365,7 +364,7 @@
         <div id="practiceTabHeader" class="practice-tab-header hidden">
           <h3>Practice</h3>
           <button id="generateScheduleBtn" class="btn-schedule" type="button">
-            <i class="ti ti-calendar-plus" aria-hidden="true"></i> Schedule
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M12 13v6M9 16h6"/></svg> Schedule
           </button>
         </div>
 
@@ -382,23 +381,23 @@
             <option value="">Select event</option>
           </select>
           <button id="eventDotsBtn" type="button" class="event-dots-btn hidden" aria-label="Event actions">
-            <i class="ti ti-pencil" aria-hidden="true"></i>
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/></svg>
           </button>
         </div>
 
         <!-- DOTS DROPDOWN MENU -->
         <div id="eventDotsMenu" class="event-dots-menu hidden">
           <button id="editEventDetailsBtn" type="button" class="hidden" onclick="openEditEventModal()">
-            <i class="ti ti-pencil" aria-hidden="true"></i> Edit details
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/></svg> Edit details
           </button>
           <button id="cancelEventBtn" type="button" class="hidden dots-menu-danger">
-            <i class="ti ti-ban" aria-hidden="true"></i> Cancel event
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/></svg> Cancel event
           </button>
           <button id="restoreEventBtn" type="button" class="hidden">
-            <i class="ti ti-refresh" aria-hidden="true"></i> Restore event
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M19 11a8 8 0 10-2 6"/></svg> Restore event
           </button>
           <button id="deleteEventBtn" type="button" class="dots-menu-delete hidden">
-            <i class="ti ti-trash" aria-hidden="true"></i> Delete event
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></svg> Delete event
           </button>
         </div>
 
@@ -548,7 +547,7 @@
           <!-- COMPACT ATTENDANCE TOOLBAR -->
             <div class="attendance-compact-toolbar">
               <div class="attendance-compact-search-row">
-                <i class="ti ti-search" style="font-size:16px;color:#9ca3af;flex-shrink:0;" aria-hidden="true"></i>
+                <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg>
                 <input
                   id="attendanceSearchInputCompact"
                   type="text"
@@ -556,7 +555,7 @@
                   autocomplete="off"
                 />
                 <button id="attendanceFilterIconBtn" class="attendance-filter-icon-btn" type="button" aria-label="Filters">
-                  <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
+                  <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
                 </button>
               </div>
               <div class="attendance-compact-meta-row">
@@ -673,7 +672,7 @@
         <!-- HELP SECTION -->
         <section id="helpSection" class="hidden">
           <button type="button" id="startTourBtn" class="btn btn-primary" style="margin-bottom:16px;" onclick="startAppTour()">
-            <i class="ti ti-school" aria-hidden="true"></i> Take an Interactive Tour
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-5 9 5-9 5zM7 12v5c3 2 7 2 10 0v-5M21 10v6"/></svg> Take an Interactive Tour
           </button>
           <div id="helpContainer"></div>
         </section>
@@ -730,6 +729,7 @@
         "split/app.07.dashboard.js",
         "split/app.08.user_management.js",
         "split/app.09.reports.js",
+        "split/app.17.changelog.js",
         "split/app.10.help.js",
         "split/app.12.tour.js",
         "split/app.18.whats_new.js",
@@ -760,10 +760,10 @@
 <div id="generateScheduleModal" class="schedule-modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Generate practice schedule">
   <div class="schedule-modal">
     <div class="schedule-modal-header">
-      <i class="ti ti-calendar-plus" style="font-size:20px;color:#f57c00;" aria-hidden="true"></i>
+      <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M12 13v6M9 16h6"/></svg>
       <h3>Generate practice schedule</h3>
       <button class="schedule-modal-close" id="scheduleModalCloseBtn" type="button" aria-label="Close">
-        <i class="ti ti-x" aria-hidden="true"></i>
+        <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
 

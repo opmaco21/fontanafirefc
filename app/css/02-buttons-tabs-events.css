@@ -724,3 +724,7 @@
     padding: 8px 10px;
   }
 }
+.app-icon{width:1.15em;height:1.15em;display:inline-block;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.16em}
+.tab .app-icon{width:18px;height:18px}
+.btn .app-icon,.topbar-logout .app-icon,.event-dots-btn .app-icon,.event-dots-menu .app-icon,.attendance-filter-icon-btn .app-icon{width:1em;height:1em;margin-right:4px}
+.event-dots-btn .app-icon,.attendance-filter-icon-btn .app-icon,.schedule-modal-close .app-icon{margin-right:0}

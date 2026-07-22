@@ -5,6 +5,14 @@
 
 const API_BASE = "https://attendance-api-xb3v.onrender.com/api";
 
+const APP_ICON_SVGS = {
+  upload: `<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M8 8l4-4 4 4M4 14v6h16v-6"/></svg>`,
+  pencil: `<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/></svg>`,
+  check: `<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>`
+};
+function appIcon(name) { return APP_ICON_SVGS[name] || ""; }
+
+
 /* =========================
    SHARED HTML ESCAPE HELPER
    Use whenever player/user/contact data is inserted into
@@ -698,7 +706,7 @@ function ensureGameManagementElements() {
         + Add New Game
       </button>
       <button type="button" id="importGamesBtn" class="btn btn-secondary" onclick="openGameImportModal()" style="margin-top:0;font-size:13px;padding:10px 14px;">
-        <i class="ti ti-upload" aria-hidden="true"></i> Import from Post
+        ${appIcon("upload")} Import from Post
       </button>
     </div>
   `;
@@ -1996,9 +2004,9 @@ async function loadSelectedEventDetails() {
     if (eventCompactBar) {
       const startFmt = formatEventTime(event.StartTime);
       const endFmt = formatEventTime(event.EndTime);
-      const timeStr = (startFmt && startFmt !== "-") ? `${startFmt}${endFmt && endFmt !== "-" ? " ? " + endFmt : ""}` : "";
+      const timeStr = (startFmt && startFmt !== "-") ? `${startFmt}${endFmt && endFmt !== "-" ? " - " + endFmt : ""}` : "";
       if (eventCompactDate) eventCompactDate.textContent = dateInfo.localDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-      if (eventCompactTime) eventCompactTime.textContent = timeStr || "?";
+      if (eventCompactTime) eventCompactTime.textContent = timeStr || "-";
       if (eventCompactLocation && eventCompactLocationWrap) {
         const loc = event.LocationName || "";
         eventCompactLocation.textContent = loc;
@@ -2159,7 +2167,7 @@ function updateSchedulePreview() {
   }
   const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const selectedDayNames = days.map(d => dayNames[d]).join(" & ");
-  preview.innerHTML = `<span class="schedule-preview-count">${count}</span> practice${count !== 1 ? "s" : ""} will be created<br><span style="color:#666;font-size:12px;">${selectedDayNames} ? ${startDate} to ${endDate}</span>`;
+  preview.innerHTML = `<span class="schedule-preview-count">${count}</span> practice${count !== 1 ? "s" : ""} will be created<br><span style="color:#666;font-size:12px;">${selectedDayNames} - ${startDate} to ${endDate}</span>`;
   preview.classList.remove("hidden");
 }
 
@@ -2292,7 +2300,7 @@ async function openEditEventModal() {
   modal.innerHTML = `
     <div style="background:#fff;border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <h3 style="margin:0;font-size:18px;color:#111827;">?? Edit Event Details</h3>
+        <h3 style="margin:0;font-size:18px;color:#111827;">${appIcon("pencil")} Edit Event Details</h3>
         <button id="editEventCloseBtn" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6b7280;">&times;</button>
       </div>
 
@@ -2337,7 +2345,7 @@ async function openEditEventModal() {
 
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
         <button id="editEventCancelBtn" class="btn btn-secondary">Cancel</button>
-        <button id="editEventSaveBtn" class="btn btn-primary">?? Save Changes</button>
+        <button id="editEventSaveBtn" class="btn btn-primary">${appIcon("check")} Save Changes</button>
       </div>
       <div id="editEventMsg" style="margin-top:10px;font-size:13px;text-align:center;"></div>
     </div>
@@ -2378,7 +2386,7 @@ async function openEditEventModal() {
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
 
-      msgEl.textContent = "? Saved!";
+      msgEl.textContent = "Saved!";
       msgEl.style.color = "#16a34a";
 
       // Reload events list and close after short delay
@@ -2389,7 +2397,7 @@ async function openEditEventModal() {
       msgEl.textContent = "Error: " + err.message;
       msgEl.style.color = "#dc2626";
       saveBtn.disabled = false;
-      saveBtn.textContent = "?? Save Changes";
+      saveBtn.innerHTML = `${appIcon("check")} Save Changes`;
     }
   };
 }

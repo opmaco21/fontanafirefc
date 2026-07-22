@@ -3,6 +3,27 @@
 
 (function () {
 
+  function renderReleaseHistory() {
+    const releases = Array.isArray(window.ATTENDANCE_CHANGELOG) ? window.ATTENDANCE_CHANGELOG : [];
+    if (!releases.length) return '<p>No release history is available yet.</p>';
+    return releases.map(function(release) {
+      function list(title, items) {
+        if (!Array.isArray(items) || !items.length) return '';
+        return '<h5>' + title + '</h5><ul>' + items.map(function(item) { return '<li>' + item + '</li>'; }).join('') + '</ul>';
+      }
+      return '<article class="release-history-entry">' +
+        '<div class="release-history-heading"><strong>' + release.title + '</strong><span>' + release.version + ' · ' + release.date + '</span></div>' +
+        '<p>' + release.summary + '</p>' +
+        list('New features', release.features) +
+        list('Fixes', release.fixes) +
+        list('Backend / database', release.backend) +
+        list('Frontend', release.frontend) +
+        list('Deployment notes', release.deployment) +
+        list('Testing status', release.testing) +
+      '</article>';
+    }).join('');
+  }
+
   // Each section: title, body HTML, roles that can see it (empty = all roles)
   const HELP_SECTIONS = [
     {
@@ -201,6 +222,11 @@
       `
     },
     {
+      title: 'What\'s New / Release History',
+      roles: [],
+      body: renderReleaseHistory()
+    },
+    {
       title: 'Troubleshooting',
       roles: [],
       body: `
@@ -242,7 +268,7 @@
 
     container.innerHTML = '<div class="help-wrap">' +
       '<div class="help-header">' +
-        '<span class="help-logo"><i class="ti ti-flame" aria-hidden="true"></i></span>' +
+        '<span class="help-logo"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c-4 0-7-3-7-7 0-3 2-6 5-9 0 3 2 4 3 5 1-3 1-6 0-9 4 3 7 7 7 12 0 5-3 8-8 8zM9 17c0-2 1-3 3-5 0 2 2 3 2 5a2.5 2.5 0 01-5 0z"/></svg></span>' +
         '<div>' +
           '<h2 class="help-title" style="color:#c2410c; opacity:1;">Fontana Fire FC</h2>' +
           '<p class="help-subtitle">Attendance App \u2014 Help Guide</p>' +

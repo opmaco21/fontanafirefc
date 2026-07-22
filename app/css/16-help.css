@@ -113,3 +113,20 @@
   font-size: 13px;
   color: #d4aa40;
 }
+
+.help-logo .app-icon{width:2.2rem;height:2.2rem;color:#e05c00;fill:rgba(224,92,0,.12)}
+.release-history-entry{padding:14px;margin:10px 0;border:1px solid #3a3a4a;border-radius:8px;background:#202034}
+.release-history-heading{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.release-history-heading span{color:#aaa;font-size:12px}
+.release-history-entry h5{margin:14px 0 4px;color:#f0f0f0;font-size:13px}
+.whats-new-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.58);display:flex;align-items:center;justify-content:center;padding:20px}
+.whats-new-card{width:min(520px,100%);max-height:90vh;overflow-y:auto;background:#fff;color:#1f2937;border-radius:16px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.whats-new-heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.whats-new-heading h2,.whats-new-card h3{margin:0}.whats-new-card h3{margin-top:14px}
+.whats-new-kicker{color:#b45309;font-size:12px;font-weight:700;margin-bottom:4px}
+.whats-new-close{border:0;background:transparent;color:#6b7280;font-size:28px;line-height:1;cursor:pointer}
+.whats-new-list{padding-left:22px;line-height:1.55}
+.whats-new-dismiss-choice{display:grid;grid-template-columns:22px 20px 1fr;gap:8px;align-items:center;margin:18px 0;padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;cursor:pointer}
+.whats-new-dismiss-choice input{width:18px;height:18px;margin:0}.whats-new-checkmark{color:#16a34a;font-size:18px;font-weight:900}
+.whats-new-actions{display:flex;gap:10px;justify-content:flex-end}.whats-new-actions .btn{margin-top:0}
+@media(max-width:520px){.whats-new-actions{flex-direction:column-reverse}.whats-new-actions .btn{width:100%}}
