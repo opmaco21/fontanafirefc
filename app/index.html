@@ -396,6 +396,12 @@
           <button id="restoreEventBtn" type="button" class="hidden">
             <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M19 11a8 8 0 10-2 6"/></svg> Restore event
           </button>
+          <button id="completeEventBtn" type="button" class="hidden" onclick="markSelectedEventCompleted()">
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg> Mark completed
+          </button>
+          <button id="reopenEventBtn" type="button" class="hidden" onclick="reopenSelectedEvent()">
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 101.7-4.9M4 4v5h5"/></svg> Reopen event
+          </button>
           <button id="deleteEventBtn" type="button" class="dots-menu-delete hidden">
             <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></svg> Delete event
           </button>

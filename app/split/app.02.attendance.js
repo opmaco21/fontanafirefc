@@ -683,36 +683,9 @@ function updateAttendanceDisplay() {
       `Present: ${present} · Absent: ${absent} · Excused: ${excused} · Remaining: ${remaining}`;
   }
 
-  // Show "Completed" status when all players have been marked
-  const totalPlayers = allRows.length;
-  const isPracticeComplete = totalPlayers > 0 && remaining === 0;
-
-  // Update compact bar status badge
-  const eventCompactStatus = document.getElementById("eventCompactStatus");
-  if (eventCompactStatus) {
-    const currentStatus = eventCompactStatus.textContent.trim();
-    if (isPracticeComplete) {
-      eventCompactStatus.textContent = "Completed";
-      eventCompactStatus.className = "event-compact-status status-completed";
-    } else if (currentStatus === "Completed") {
-      // Revert if someone cleared a mark
-      eventCompactStatus.textContent = "Scheduled";
-      eventCompactStatus.className = "event-compact-status status-scheduled";
-    }
-  }
-
-  // Update the dropdown option label
-  if (eventSelect && eventSelect.value) {
-    const selectedOption = eventSelect.options[eventSelect.selectedIndex];
-    if (selectedOption) {
-      const label = selectedOption.textContent;
-      if (isPracticeComplete && !label.includes("Completed")) {
-        selectedOption.textContent = label.replace(/- Scheduled$/, "- Completed");
-      } else if (!isPracticeComplete && label.includes("- Completed")) {
-        selectedOption.textContent = label.replace(/- Completed$/, "- Scheduled");
-      }
-    }
-  }
+  // EventStatus is owned by the backend.
+  // Do not infer Scheduled/Completed from the currently visible attendance rows here.
+  // This is important for manual completion and for historically eligible rosters.
 
   const hideMarked = hideMarkedToggle ? hideMarkedToggle.checked : true;
 
@@ -953,11 +926,186 @@ async function saveAttendance() {
     clearAttendanceDraft(eventId);
 
     setMessage(attendanceMessage, "✅ Attendance saved / updated.", false);
+
+    // Reload events so the server-calculated Scheduled/Completed status is shown.
+    await loadEvents();
+    if (eventSelect) eventSelect.value = String(eventId);
+    saveSelectedEvent();
+    updateEventActionButtons();
+    await loadSelectedEventDetails();
     await loadAttendanceForEvent();
 
   } catch (err) {
     console.error("Save attendance error:", err);
     setMessage(attendanceMessage, "Could not save attendance.", true);
+  }
+}
+
+/* =========================
+   MANUAL COMPLETE / REOPEN SELECTED EVENT
+
+   Purpose:
+   - Close an event when attendance was not recorded.
+   - Change EventStatus only; never creates fake attendance.
+   - Reopen changes Completed back to Scheduled without changing attendance.
+   ========================= */
+async function markSelectedEventCompleted() {
+  if (!eventSelect || !eventSelect.value) {
+    setMessage(attendanceMessage, "Select an event first.", true);
+    return;
+  }
+
+  if (!canManageEvents()) {
+    setMessage(attendanceMessage, "Access denied.", true);
+    return;
+  }
+
+  const eventId = eventSelect.value;
+  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+  const eventText = selectedOption ? selectedOption.textContent : "this event";
+  const eventStatus = selectedOption ? selectedOption.dataset.eventStatus : "";
+
+  if (eventStatus === "Cancelled") {
+    setMessage(attendanceMessage, "Restore a cancelled event before marking it Completed.", true);
+    return;
+  }
+
+  if (eventStatus === "Completed") return;
+
+  const allMatchingParam = getAllMatchingParam();
+  const selectedGroupId = getSelectedGroupIdValue();
+  const groupedNote = !selectedGroupId && getSelectedEventType() !== "Game"
+    ? "\n\nAll Groups is selected, so all matching event rows will be marked Completed."
+    : "";
+
+  const confirmed = confirm(
+    `Mark this event Completed?\n\n${eventText}${groupedNote}\n\nThis changes the event status only. It will NOT create attendance records or change the roster.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/events/${eventId}/complete${allMatchingParam}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(attendanceMessage, data.message || "Could not mark event Completed.", true);
+      return;
+    }
+
+    setMessage(attendanceMessage, "✅ Event marked Completed. Attendance and roster were not changed.", false);
+
+    await loadEvents();
+    if (eventSelect) eventSelect.value = String(eventId);
+    saveSelectedEvent();
+    updateEventActionButtons();
+    await loadSelectedEventDetails();
+  } catch (err) {
+    console.error("Error manually completing event:", err);
+    setMessage(attendanceMessage, "Server error marking event Completed.", true);
+  }
+}
+
+async function reopenSelectedEvent() {
+  if (!eventSelect || !eventSelect.value) {
+    setMessage(attendanceMessage, "Select an event first.", true);
+    return;
+  }
+
+  if (!canManageEvents()) {
+    setMessage(attendanceMessage, "Access denied.", true);
+    return;
+  }
+
+  const eventId = eventSelect.value;
+  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+  const eventText = selectedOption ? selectedOption.textContent : "this event";
+  const allMatchingParam = getAllMatchingParam();
+  const selectedGroupId = getSelectedGroupIdValue();
+  const groupedNote = !selectedGroupId && getSelectedEventType() !== "Game"
+    ? "\n\nAll Groups is selected, so all matching completed event rows will be reopened."
+    : "";
+
+  const confirmed = confirm(
+    `Reopen this event as Scheduled?\n\n${eventText}${groupedNote}\n\nExisting attendance and roster data will remain unchanged.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/events/${eventId}/reopen${allMatchingParam}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setMessage(attendanceMessage, data.message || "Could not reopen event.", true);
+      return;
+    }
+
+    setMessage(attendanceMessage, "✅ Event reopened as Scheduled. Existing attendance was preserved.", false);
+
+    await loadEvents();
+    if (eventSelect) eventSelect.value = String(eventId);
+    saveSelectedEvent();
+    updateEventActionButtons();
+    await loadSelectedEventDetails();
+  } catch (err) {
+    console.error("Error reopening event:", err);
+    setMessage(attendanceMessage, "Server error reopening event.", true);
+  }
+}
+
+/* =========================
+   EXTEND EVENT ACTION MENU FOR COMPLETE / REOPEN
+   app.02 loads after app.01.core.js, so this replaces the core
+   menu-state helper while preserving the existing behavior.
+   ========================= */
+function updateEventActionButtons() {
+  if (!eventSelect) return;
+
+  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+  const eventStatus = selectedOption ? selectedOption.dataset.eventStatus : "";
+  const userCanManageEvents = currentUser && canManageEvents();
+
+  const completeBtn = document.getElementById("completeEventBtn");
+  const reopenBtn = document.getElementById("reopenEventBtn");
+  const editBtn = document.getElementById("editEventDetailsBtn");
+
+  [cancelEventBtn, restoreEventBtn, deleteEventBtn, editBtn, completeBtn, reopenBtn].forEach(btn => {
+    if (btn) btn.classList.add("hidden");
+  });
+
+  if (!eventSelect.value || !eventStatus || !userCanManageEvents) {
+    if (eventDotsBtn) eventDotsBtn.classList.add("hidden");
+    if (eventDotsMenu) eventDotsMenu.classList.add("hidden");
+    return;
+  }
+
+  if (eventDotsBtn) eventDotsBtn.classList.remove("hidden");
+
+  if (eventStatus === "Cancelled") {
+    if (restoreEventBtn) restoreEventBtn.classList.remove("hidden");
+  } else if (eventStatus === "Completed") {
+    if (reopenBtn) reopenBtn.classList.remove("hidden");
+  } else {
+    if (cancelEventBtn) cancelEventBtn.classList.remove("hidden");
+    if (completeBtn) completeBtn.classList.remove("hidden");
+  }
+
+  if (editBtn) editBtn.classList.remove("hidden");
+
+  // Delete remains controlled by the dedicated canDeleteEvents permission.
+  if (deleteEventBtn && typeof hasPerm === "function" && hasPerm("canDeleteEvents")) {
+    deleteEventBtn.classList.remove("hidden");
   }
 }
 

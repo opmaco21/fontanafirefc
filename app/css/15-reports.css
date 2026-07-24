@@ -647,3 +647,42 @@
 .badge-excused   { color: #d4aa40; }
 .badge-cancelled { color: #888; }
 .badge-none      { color: #555; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ATTENDANCE REPORT PLAYER SEARCH
+   Works together with month/date, group, gender, and percentage filters.
+   ══════════════════════════════════════════════════════════════════════════ */
+.att-search-group {
+  min-width: 180px;
+}
+
+.report-player-search {
+  background: #252540;
+  border: 1px solid #3a3a5a;
+  color: #f0f0f0;
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 13px;
+  width: 190px;
+  min-height: 30px;
+}
+
+.report-player-search::placeholder {
+  color: #777;
+}
+
+.report-player-search:focus {
+  outline: none;
+  border-color: #e05c00;
+}
+
+@media (max-width: 700px) {
+  .att-search-group,
+  .report-player-search {
+    width: 100%;
+  }
+
+  .att-search-group {
+    align-items: stretch;
+  }
+}

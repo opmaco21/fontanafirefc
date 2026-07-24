@@ -10,7 +10,7 @@
       loaded: false, data: null,
       month: getCurrentMonthValue(),
       from: '', to: '',
-      group: '', gender: '', below: '',
+      group: '', gender: '', below: '', search: '',
       viewingPlayer: null   // { playerId, playerName } when in detail view
     },
     paperwork:  { loaded: false, data: null },
@@ -103,6 +103,16 @@
           <label class="report-filter-label">To</label>
           <input type="date" id="att-to" class="report-date-input" />
         </div>
+        <div class="att-filter-group att-search-group">
+          <label class="report-filter-label" for="att-player-search">Player</label>
+          <input
+            id="att-player-search"
+            class="report-player-search"
+            type="search"
+            placeholder="Search name or #"
+            autocomplete="off"
+          />
+        </div>
         <div class="att-filter-group">
           <label class="report-filter-label">Group</label>
           <select id="att-group" class="report-month-select">
@@ -163,6 +173,19 @@
       const el = document.getElementById(id);
       if (el) el.addEventListener('change', onAttFilterChange);
     });
+
+    const playerSearch = document.getElementById('att-player-search');
+    if (playerSearch) {
+      playerSearch.addEventListener('input', () => {
+        reportState.attendance.search = playerSearch.value || '';
+        reportState.attendance.viewingPlayer = null;
+
+        const content = document.getElementById('content-attendance');
+        if (content && reportState.attendance.data) {
+          content.innerHTML = renderAttendance(reportState.attendance.data);
+        }
+      });
+    }
   }
 
   window.onAttFilterChange = function () {
@@ -171,6 +194,7 @@
     st.group  = document.getElementById('att-group')?.value  || '';
     st.gender = document.getElementById('att-gender')?.value || '';
     st.below  = document.getElementById('att-below')?.value  || '';
+    st.search = document.getElementById('att-player-search')?.value || st.search || '';
     st.from   = document.getElementById('att-from')?.value   || '';
     st.to     = document.getElementById('att-to')?.value     || '';
     st.loaded = false;
@@ -377,6 +401,19 @@
     if (!data || !data.length) return '<div class="report-empty">No attendance data for this period.</div>';
 
     const st = reportState.attendance;
+    const rawSearch = String(st.search || '').trim().toLowerCase();
+    const search = rawSearch.replace(/^#/, '');
+    const filteredData = !search ? data : data.filter(r => {
+      const first = String(r.FirstName || '').toLowerCase();
+      const last = String(r.LastName || '').toLowerCase();
+      const full = `${first} ${last}`.trim();
+      const number = r.PlayerNumber == null ? '' : String(r.PlayerNumber).toLowerCase();
+      return first.includes(search) || last.includes(search) || full.includes(search) || number.includes(search);
+    });
+
+    if (!filteredData.length) {
+      return `<div class="report-empty">No players match “${esc(st.search)}”.</div>`;
+    }
     let periodLabel = '';
     if (st.from && st.to) periodLabel = `${fmtDate(st.from)} – ${fmtDate(st.to)}`;
     else if (st.month) {
@@ -386,7 +423,7 @@
 
     // Group by BirthYear
     const groups = {};
-    data.forEach(r => {
+    filteredData.forEach(r => {
       const key = r.BirthYear || r.GroupName || 'No Group Assigned';
       if (!groups[key]) groups[key] = [];
       groups[key].push(r);
@@ -453,7 +490,7 @@
         </thead>
         <tbody>${rows}</tbody>
       </table>
-      <div class="report-footer-note">${data.length} players</div>
+      <div class="report-footer-note">${filteredData.length}${filteredData.length !== data.length ? ` of ${data.length}` : ""} players</div>
     `;
   }
 
