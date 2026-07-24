@@ -110,7 +110,7 @@ function renderDashboardSummaryCards(data) {
   const missingPhoto = activeCount - optIn - optOut;
 
   const cards = [
-    renderDashboardCard("Inactive Players", totals.InactivePlayers || 0, activeCount + " active players", "active"),
+    renderDashboardCard("Inactive Players", totals.InactivePlayers || 0, activeCount + " active players", "inactive"),
     renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, (paperwork.CompletePaperwork || 0) + " complete roster", "paperwork"),
     renderDashboardCard("Photo Release", optIn, "<b>" + optIn + " Allowed</b> . " + optOut + " Denied<br>" + missingPhoto + " Missing Response", "photo"),
     renderDashboardCard("Bring Snack 🍎", snack.BringSnackPlayers || 0, "Rotation families", "snack"),
@@ -149,13 +149,13 @@ function renderSummaryPanel(category) {
   const panel = document.getElementById("dashboardSummaryPanel");
   if (!panel || !category) { if(panel) panel.innerHTML = ""; return; }
   const players = dashboardSummaryPlayerCache[category] || [];
-  const titles = { active: "Inactive Players", paperwork: "Missing Paperwork", photo: "Photo Release Needed", snack: "Snack Rotation", paidout: "Coach Snacks" };
+  const titles = { inactive: "Inactive Players", paperwork: "Missing Paperwork", photo: "Photo Release Needed", snack: "Snack Rotation", paidout: "Coach Snacks" };
 
   const formatPlayer = (p, idx) => {
     const extra = {
       paperwork: p.PaperworkStatus || "Not Received",
       photo: p.PhotoReleaseStatus === "No" ? "DENIED" : "MISSING",
-      active: p.BirthYear || ""
+      inactive: p.BirthYear || ""
     }[category] || "";
     return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:${idx % 2 === 0 ? '#fff' : '#f9f9f9'};">
       <span style="font-weight:600;">${escapeDashboardHtml(p.FirstName + " " + p.LastName)}</span>
