@@ -1207,7 +1207,7 @@ async function savePlayerManagementForm() {
     );
 
     resetPlayerManagementForm(false);
-    await loadPlayerManagementList();
+    await loadPlayerManagementList({ preservePage: true });
 
     if (currentTab !== "Player Management") {
       await loadPlayers();
@@ -1408,7 +1408,7 @@ editingPlayerId = player.PlayerID;
   }
 }
 
-async function loadPlayerManagementList() {
+async function loadPlayerManagementList(options = {}) {
   if (!playerManagementList) return;
 
   ensurePlayerManagementForm();
@@ -1451,7 +1451,11 @@ async function loadPlayerManagementList() {
     }
 
     latestManagedPlayers = data.players || [];
-    playerManagementPageIndex = 0;
+
+    if (!options.preservePage) {
+      playerManagementPageIndex = 0;
+    }
+
     updatePlayerManagementQuickCounts();
     renderPlayerManagementList(getFilteredManagedPlayers(latestManagedPlayers));
 
