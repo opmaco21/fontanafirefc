@@ -33,7 +33,7 @@
   async function loadGroups() {
     if (groupsCache) return groupsCache;
     try {
-      const res = await fetch(`${API_BASE}/groups`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/groups`, { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       groupsCache = Array.isArray(data) ? data : (data.groups || []);
     } catch (_) { groupsCache = []; }
@@ -44,8 +44,26 @@
   window.initReportsTab = function () {
     const container = document.getElementById('reportsContainer');
     if (!container) return;
+
+    // Reports are live views of current app data.
+    // Preserve filter/search selections, but never reuse stale loaded rows
+    // after leaving and returning to the Reports tab.
+    Object.values(reportState).forEach(st => {
+      st.loaded = false;
+      st.data = null;
+    });
+
     container.innerHTML = buildReportsShell();
     wireAttendanceControls();
+  };
+
+  // Mark report data stale after player/event/attendance updates.
+  // Filter/search selections remain intact.
+  window.invalidateReportsData = function () {
+    Object.values(reportState).forEach(st => {
+      st.loaded = false;
+      st.data = null;
+    });
   };
 
   // ── Shell ──────────────────────────────────────────────────────────────────
@@ -289,7 +307,7 @@
         const params = new URLSearchParams();
         if (month) params.set('month', month);
         params.set('below', below);
-        const res = await fetch(`${API_BASE}/reports/attendance?${params}`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/reports/attendance?${params}`, { credentials: 'include', cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         st.data = json.data || [];
@@ -302,9 +320,9 @@
         const gameId = st.gameId;
         if (!gameId) { el.innerHTML = '<div class="report-empty">Select a game above to view the roster.</div>'; return; }
         const [detRes, rosterRes, attRes] = await Promise.all([
-          fetch(`${API_BASE}/events/${gameId}/details`, { credentials: 'include' }),
-          fetch(`${API_BASE}/events/${gameId}/roster`, { credentials: 'include' }),
-          fetch(`${API_BASE}/reports/game-attendance/${gameId}`, { credentials: 'include' })
+          fetch(`${API_BASE}/events/${gameId}/details`, { credentials: 'include', cache: 'no-store' }),
+          fetch(`${API_BASE}/events/${gameId}/roster`, { credentials: 'include', cache: 'no-store' }),
+          fetch(`${API_BASE}/reports/game-attendance/${gameId}`, { credentials: 'include', cache: 'no-store' })
         ]);
         const det = await detRes.json();
         const roster = await rosterRes.json();
@@ -324,7 +342,7 @@
         const month = document.getElementById('gs-month')?.value || '';
         const params = new URLSearchParams();
         if (month) params.set('month', month);
-        const res = await fetch(`${API_BASE}/reports/attendance?${params}`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/reports/attendance?${params}`, { credentials: 'include', cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         st.data = json.data || [];
@@ -333,7 +351,7 @@
         return;
       }
       if (key === 'paperwork-complete') {
-        const res = await fetch(`${API_BASE}/reports/paperwork-complete`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/reports/paperwork-complete`, { credentials: 'include', cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         st.data = json.data || [];
@@ -356,7 +374,7 @@
         url += '?' + params.toString();
       }
 
-      const res = await fetch(url, { credentials: 'include' });
+      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const data = json.data || json;
@@ -389,7 +407,7 @@
       else if (st.month)    { params.set('month', st.month); }
       const url = `${API_BASE}/reports/player-detail/${playerId}?${params.toString()}`;
 
-      const res = await fetch(url, { credentials: 'include' });
+      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
 
@@ -884,7 +902,7 @@
 
   async function loadGameDayGames() {
     try {
-      const res = await fetch(`${API_BASE}/events`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/events`, { credentials: 'include', cache: 'no-store' });
       const data = await res.json();
       const events = Array.isArray(data) ? data : (data.events || []);
       const games = events
