@@ -58,12 +58,11 @@ function isPaperworkMissing(player) {
 }
 
 function isPhotoReleaseMissing(player) {
-  // Only flag if paperwork is complete but photo release is not Yes
-  // Players without complete paperwork are already flagged under Missing Paperwork
-  const paperwork = player.PaperworkStatus || "Not Received";
-  if (paperwork !== "Complete") return false;
-  const status = getPhotoReleaseLabel(player);
-  return status !== "Yes";
+  // PhotoReleaseStatus is the source of truth.
+  // Yes = received/approved.
+  // No = received/declined, so it is NOT missing.
+  // Only Not Received is missing.
+  return getPhotoReleaseLabel(player) === "Not Received";
 }
 
 function hasEmergencyInfo(player) {
