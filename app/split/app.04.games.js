@@ -132,9 +132,35 @@ async function addGame() {
     if (!res.ok) throw new Error(data.message);
     
     setMessage(gameMessage, "✅ Game added successfully!", false);
+
+    const createdEventId =
+      data && data.event && data.event.EventID
+        ? String(data.event.EventID)
+        : data && data.EventID
+          ? String(data.EventID)
+          : "";
+
+    // Save -> refresh -> remain on the Games tab and open the newly created game.
     await loadEvents();
+
+    if (createdEventId && eventSelect) {
+      const createdOption = eventSelect.querySelector(`option[value="${createdEventId}"]`);
+
+      if (createdOption) {
+        eventSelect.value = createdEventId;
+        saveSelectedEvent();
+      }
+    }
+
     isGameFormOpen = false;
+    resetWorkflowForSelectedEvent();
     updateGameSection();
+    updateEventActionButtons();
+    await loadSelectedEventDetails();
+    updateAttendanceSectionVisibility();
+    await updateEventRosterSection();
+    await loadPlayers();
+
   } catch (err) { setMessage(gameMessage, "Error: " + err.message, true); }
 }
 

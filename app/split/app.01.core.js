@@ -1430,7 +1430,9 @@ function getFilteredRosterPlayers(players) {
   });
 }
 
-function loadRosterPlayers(players) {
+function loadRosterPlayers(players, options = {}) {
+  const preserveFilters = options.preserveFilters === true;
+
   latestRosterPlayers = Array.isArray(players) ? players : [];
   selectedRosterPlayerIds = new Set(
     latestRosterPlayers
@@ -1440,7 +1442,21 @@ function loadRosterPlayers(players) {
   );
 
   ensureEventRosterFilterControls();
-  resetRosterFilters();
+
+  if (!preserveFilters) {
+    resetRosterFilters();
+  } else {
+    const searchInput = document.getElementById("eventRosterSearchInput");
+    const birthYearSelect = document.getElementById("eventRosterBirthYearFilter");
+    const genderSelect = document.getElementById("eventRosterGenderFilter");
+    const selectionSelect = document.getElementById("eventRosterSelectionFilter");
+
+    if (searchInput) searchInput.value = rosterPlayerSearchText || "";
+    if (birthYearSelect) birthYearSelect.value = rosterBirthYearFilter || "";
+    if (genderSelect) genderSelect.value = rosterGenderFilter || "";
+    if (selectionSelect) selectionSelect.value = rosterSelectionFilter || "";
+  }
+
   renderRosterPlayers(latestRosterPlayers);
 }
 
@@ -1576,7 +1592,7 @@ function renderRosterPlayers(players) {
   updateRosterSummary();
 }
 
-async function updateEventRosterSection() {
+async function updateEventRosterSection(options = {}) {
   if (!eventRosterSection) return;
 
   if (currentTab === "Dashboard" || currentTab === "Player Management") {
@@ -1642,7 +1658,7 @@ async function updateEventRosterSection() {
       return;
     }
 
-    loadRosterPlayers(data.players || []);
+    loadRosterPlayers(data.players || [], { preserveFilters: options.preserveFilters === true });
 
   } catch (err) {
     console.error("Load roster error:", err);
@@ -1728,7 +1744,8 @@ async function saveEventRoster() {
       false
     );
 
-    await updateEventRosterSection();
+    // Save -> refresh roster from server -> keep the same event and roster filters/search.
+    await updateEventRosterSection({ preserveFilters: true });
     await loadPlayers();
 
   } catch (err) {
