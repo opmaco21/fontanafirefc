@@ -390,6 +390,12 @@
           <button id="editEventDetailsBtn" type="button" class="hidden" onclick="openEditEventModal()">
             <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/></svg> Edit details
           </button>
+          <button id="completeEventBtn" type="button" class="hidden" onclick="markSelectedEventCompleted()">
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg> Mark completed
+          </button>
+          <button id="reopenEventBtn" type="button" class="hidden" onclick="reopenSelectedEvent()">
+            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 101.7-4.9M4 4v5h5"/></svg> Reopen event
+          </button>
           <button id="cancelEventBtn" type="button" class="hidden dots-menu-danger">
             <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/></svg> Cancel event
           </button>
