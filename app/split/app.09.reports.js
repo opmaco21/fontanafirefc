@@ -16,7 +16,7 @@
     paperwork:  { loaded: false, data: null },
     snacks:     { loaded: false, data: null },
     emergency:  { loaded: false, data: null },
-    roster:     { loaded: false, data: null },
+    roster:     { loaded: false, data: null, coach: '' },
     redflags:   { loaded: false, data: null },
     gameday:    { loaded: false, data: null, gameId: null },
     groupstats: { loaded: false, data: null, month: '' },
@@ -56,7 +56,7 @@
         ${buildAccordion('paperwork',  '📋 Missing Paperwork & Photo Release')}
         ${buildAccordion('snacks',     '🍎 Snack Rotation')}
         ${buildAccordion('emergency',  '🚨 Emergency Contacts')}
-        ${buildAccordion('roster',     '👥 Full Roster')}
+        ${buildAccordion('roster',     '👥 Full Roster', buildRosterControls())}
         ${buildAccordion('paperwork-complete', '✅ Paperwork Complete')}
         ${buildAccordion('redflags',   '🔴 Attendance Red Flags', buildRedFlagControls())}
         ${buildAccordion('gameday',    '⚽ Game Day Roster', buildGameDayControls())}
@@ -142,6 +142,45 @@
       </div>
     `;
   }
+
+  function buildRosterControls() {
+    const selected = reportState.roster.coach || '';
+    const options = [
+      ['', 'All Coaches'],
+      ['Jose', 'Jose'],
+      ['Alfredo', 'Alfredo'],
+      ['Bobby', 'Bobby'],
+      ['Damian', 'Damian'],
+      ['Unassigned', 'Unassigned']
+    ];
+
+    return `
+      <div class="att-filters">
+        <div class="att-filter-group">
+          <label class="report-filter-label">Coach</label>
+          <select id="roster-coach" class="report-month-select" onchange="onRosterCoachFilterChange()">
+            ${options.map(([value, label]) =>
+              `<option value="${value}" ${selected === value ? 'selected' : ''}>${label}</option>`
+            ).join('')}
+          </select>
+        </div>
+      </div>
+    `;
+  }
+
+  window.onRosterCoachFilterChange = function () {
+    const st = reportState.roster;
+    st.coach = document.getElementById('roster-coach')?.value || '';
+
+    const el = document.getElementById('content-roster');
+    if (!el) return;
+
+    if (st.data) {
+      el.innerHTML = renderRoster(st.data);
+    } else {
+      loadReport('roster');
+    }
+  };
 
   function buildMonthOptions() {
     const now = new Date();
@@ -599,7 +638,7 @@
               <td>${esc(r.ParentName || '')}</td>
               <td>${esc(r.ParentPhone || '')}</td>
               <td><span class="status-badge ${r.PaperworkStatus === 'Complete' ? 'badge-ok' : 'badge-missing'}">${esc(r.PaperworkStatus || 'Missing')}</span></td>
-              <td><span class="status-badge ${r.PhotoRelease === 'Received' ? 'badge-ok' : 'badge-missing'}">${esc(r.PhotoRelease || 'Missing')}</span></td>
+              <td><span class="status-badge ${r.PhotoRelease === 'Missing' ? 'badge-missing' : 'badge-ok'}">${esc(r.PhotoRelease || 'Missing')}</span></td>
             </tr>`).join('')}
         </tbody>
       </table>
@@ -654,15 +693,41 @@
 
   function renderRoster(data) {
     if (!data || !data.length) return '<div class="report-empty">No roster data.</div>';
+
+    const selectedCoach = reportState.roster.coach || '';
+    const filtered = data.filter(r => {
+      const coach = (r.CoachName || 'Unassigned').trim() || 'Unassigned';
+      return !selectedCoach || coach === selectedCoach;
+    });
+
+    if (!filtered.length) {
+      return `<div class="report-empty">No active players found for ${esc(selectedCoach || 'this coach')}.</div>`;
+    }
+
+    const coachLabel = selectedCoach || 'All Coaches';
+
     return `
       <div class="report-print-header">
         <strong>Fontana Fire FC — Full Roster</strong>
-        <span>As of ${new Date().toLocaleDateString()}</span>
+        <span>${esc(coachLabel)} · As of ${new Date().toLocaleDateString()}</span>
       </div>
       <table class="report-table">
-        <thead><tr><th>#</th><th>Jersey</th><th>Player</th><th>Group</th><th>DOB</th><th>Parent</th><th>Phone</th><th>Coach</th><th>Paperwork</th></tr></thead>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Jersey</th>
+            <th>Player</th>
+            <th>Group</th>
+            <th>DOB</th>
+            <th>Parent</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Coach</th>
+            <th>Paperwork</th>
+          </tr>
+        </thead>
         <tbody>
-          ${data.map((r, i) => `
+          ${filtered.map((r, i) => `
             <tr>
               <td class="col-num">${i + 1}</td>
               <td class="col-num">${r.PlayerNumber ?? '—'}</td>
@@ -677,7 +742,7 @@
             </tr>`).join('')}
         </tbody>
       </table>
-      <div class="report-footer-note">${data.length} active players</div>`;
+      <div class="report-footer-note">${filtered.length} active player${filtered.length === 1 ? '' : 's'} · ${esc(coachLabel)}</div>`;
   }
 
   // ── Print ──────────────────────────────────────────────────────────────────

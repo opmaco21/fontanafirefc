@@ -2389,8 +2389,35 @@ async function openEditEventModal() {
       msgEl.textContent = "Saved!";
       msgEl.style.color = "#16a34a";
 
-      // Reload events list and close after short delay
+      // Save -> auto-refresh -> stay on the same event.
       await loadEvents();
+
+      if (eventSelect) {
+        const refreshedOption = eventSelect.querySelector(
+          `option[value="${currentEventId}"]`
+        );
+
+        if (refreshedOption) {
+          eventSelect.value = String(currentEventId);
+
+          if (typeof saveSelectedEvent === "function") {
+            saveSelectedEvent();
+          }
+
+          if (typeof updateEventActionButtons === "function") {
+            updateEventActionButtons();
+          }
+
+          if (typeof loadSelectedEventDetails === "function") {
+            await loadSelectedEventDetails();
+          }
+
+          if (typeof updateEventRosterSection === "function") {
+            await updateEventRosterSection();
+          }
+        }
+      }
+
       setTimeout(() => modal.remove(), 800);
 
     } catch (err) {

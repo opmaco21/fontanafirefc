@@ -1721,7 +1721,7 @@ async function updatePlayerActiveStatus(playerId, makeActive) {
       return;
     }
 
-    await loadPlayerManagementList();
+    await loadPlayerManagementList({ preservePage: true });
 
   } catch (err) {
     console.error("Update player status error:", err);
@@ -1742,7 +1742,7 @@ async function deletePlayerPermanently(playerId, playerName) {
       return;
     }
     alert(`${playerName} has been permanently deleted.`);
-    await loadPlayerManagementList();
+    await loadPlayerManagementList({ preservePage: true });
   } catch (err) {
     console.error("Delete player error:", err);
     alert("Could not delete player.");

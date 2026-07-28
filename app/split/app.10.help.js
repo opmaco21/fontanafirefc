@@ -116,6 +116,57 @@
     </details>`;
   }
 
+  function renderReleaseHistorySection() {
+    const changelog = Array.isArray(window.ATTENDANCE_CHANGELOG)
+      ? window.ATTENDANCE_CHANGELOG
+      : [];
+
+    if (!changelog.length) {
+      return `
+        <details class="help-section" data-help-section="Release Updates / Release History">
+          <summary class="help-section-title">🔥 Release Updates / Release History</summary>
+          <div class="help-section-body">
+            <p>No release history is available in this build.</p>
+          </div>
+        </details>
+      `;
+    }
+
+    const latest = changelog[0];
+
+    const historyHtml = changelog.map((release, index) => `
+      <div class="help-release-entry">
+        <p><strong>${esc(release.version || '')} · ${esc(release.date || '')}</strong></p>
+        <p><strong>${esc(release.title || '')}</strong></p>
+        ${release.summary ? `<p>${esc(release.summary)}</p>` : ''}
+        ${(release.features || []).length ? `
+          <p><strong>${index === 0 ? 'What’s New' : 'Features'}</strong></p>
+          <ul>${release.features.map(item => `<li>${esc(item)}</li>`).join('')}</ul>` : ''}
+        ${(release.fixes || []).length ? `
+          <p><strong>Fixes</strong></p>
+          <ul>${release.fixes.map(item => `<li>${esc(item)}</li>`).join('')}</ul>` : ''}
+        ${index < changelog.length - 1 ? '<hr>' : ''}
+      </div>
+    `).join('');
+
+    return `
+      <details class="help-section" data-help-section="Release Updates / Release History">
+        <summary class="help-section-title">🔥 Release Updates / Release History</summary>
+        <div class="help-section-body">
+          <div class="help-note">
+            <strong>Current release:</strong> ${esc(latest.version || '')} · ${esc(latest.date || '')}
+          </div>
+          <p><strong>${esc(latest.title || '')}</strong></p>
+          <p>${esc(latest.summary || '')}</p>
+          <button type="button" id="helpShowWhatsNewBtn" class="btn btn-secondary" style="margin:6px 0 14px;">
+            Show What's New
+          </button>
+          ${historyHtml}
+        </div>
+      </details>
+    `;
+  }
+
   window.initHelpTab = function () {
     const container = document.getElementById('helpContainer');
     if (!container) return;
@@ -139,6 +190,7 @@
       </section>
       <div class="help-guide-heading"><h3>How-To Guide</h3><p>Open a section when you need more detail.</p></div>
       ${visible.map(renderSection).join('')}
+      ${renderReleaseHistorySection()}
     </div>`;
 
     container.querySelectorAll('.help-task-card').forEach(btn => {
@@ -151,5 +203,14 @@
         section.scrollIntoView({behavior:'smooth', block:'start'});
       });
     });
+
+    const whatsNewBtn = document.getElementById('helpShowWhatsNewBtn');
+    if (whatsNewBtn) {
+      whatsNewBtn.addEventListener('click', () => {
+        if (typeof window.showAttendanceWhatsNew === 'function') {
+          window.showAttendanceWhatsNew();
+        }
+      });
+    }
   };
 })();
