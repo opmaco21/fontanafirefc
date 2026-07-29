@@ -686,3 +686,62 @@
     align-items: stretch;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODERN REPORTS — Monthly Attendance by Group
+   ══════════════════════════════════════════════════════════════════════════ */
+#accordion-groupstats.report-accordion{border-color:#313144;background:linear-gradient(180deg,#1b1b2d 0%,#171729 100%)}
+#accordion-groupstats.report-accordion--open{border-color:#f07a24;box-shadow:0 12px 32px rgba(0,0,0,.24)}
+#accordion-groupstats .report-toolbar{background:#151527;border-bottom-color:#303044}
+#accordion-groupstats .report-content{padding:20px;background:radial-gradient(circle at top right,rgba(240,122,36,.08),transparent 34%),#171729}
+.rpt-modern-report{display:flex;flex-direction:column;gap:18px}
+.rpt-modern-report-heading,.rpt-modern-section-heading,.rpt-modern-table-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.rpt-modern-report-heading h3,.rpt-modern-section-heading h4,.rpt-modern-table-heading h4{margin:0;color:#f8fafc}
+.rpt-modern-report-heading h3{font-size:22px;line-height:1.2}
+.rpt-modern-report-heading p,.rpt-modern-section-heading p,.rpt-modern-table-heading p{margin:5px 0 0;color:#9295a8;font-size:13px}
+.rpt-modern-eyebrow{margin-bottom:6px;color:#f07a24;font-size:11px;font-weight:800;letter-spacing:.12em}
+.rpt-modern-goal-chip{flex:0 0 auto;display:inline-flex;align-items:center;min-height:30px;padding:6px 11px;border:1px solid rgba(93,202,126,.28);border-radius:999px;background:rgba(93,202,126,.09);color:#8bd9a3;font-size:12px;font-weight:700}
+.rpt-modern-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.rpt-modern-stat{min-width:0;padding:15px 16px;border:1px solid #303044;border-radius:12px;background:#202033}
+.rpt-modern-stat span{display:block;color:#9da1b3;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.rpt-modern-stat strong{display:block;margin-top:7px;color:#f8fafc;font-size:27px;line-height:1}
+.rpt-modern-stat small{display:block;margin-top:7px;color:#72768a;font-size:11px}
+.rpt-modern-stat--attention{border-color:rgba(224,112,112,.34);background:linear-gradient(145deg,rgba(92,32,38,.72),#202033)}
+.rpt-modern-stat--attention strong{color:#f19a9a}
+.rpt-modern-chart-card{padding:17px;border:1px solid #303044;border-radius:12px;background:#1e1e31}
+.rpt-modern-chart-legend{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px 14px;color:#8f93a5;font-size:11px}
+.rpt-modern-chart-legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.rpt-legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.rpt-legend-dot--goal{background:#f07a24}.rpt-legend-dot--attention{background:#e07070}
+.rpt-modern-bars{display:flex;flex-direction:column;gap:10px;margin-top:17px}
+.rpt-modern-bar-row{display:grid;grid-template-columns:52px minmax(0,1fr) 50px;align-items:center;gap:10px}
+.rpt-modern-bar-label{color:#c9cbd4;font-size:12px;font-weight:700}
+.rpt-modern-bar-track{position:relative;height:10px;overflow:hidden;border-radius:999px;background:#2a2a3d}
+.rpt-modern-bar-fill{position:relative;z-index:1;height:100%;min-width:2px;border-radius:inherit;transition:width .25s ease}
+.rpt-modern-bar--goal{background:linear-gradient(90deg,#d65b13,#f29445)}
+.rpt-modern-bar--attention{background:linear-gradient(90deg,#8f3a43,#d96d77)}
+.rpt-modern-goal-line{position:absolute;z-index:2;top:-2px;bottom:-2px;left:70%;width:1px;background:rgba(255,255,255,.42)}
+.rpt-modern-bar-value{color:#e6e7ec;text-align:right;font-size:12px;font-weight:800}
+.rpt-modern-table-wrap{overflow-x:auto;border:1px solid #303044;border-radius:12px}
+.rpt-modern-table{min-width:730px}.rpt-modern-table th{background:#242438;color:#bfc2cd;border-bottom-color:#343449}
+.rpt-modern-table td{padding-top:10px;padding-bottom:10px;border-bottom-color:#29293d}
+.rpt-modern-table tbody tr:not(.rpt-attention-detail-row):hover td{background:#222237}
+.rpt-modern-group-name{color:#f3f4f6;font-weight:800}
+.rpt-attention-link{padding:0;border:0;background:none;color:#f08a47;font:inherit;font-size:12px;font-weight:800;text-decoration:underline;text-decoration-color:rgba(240,138,71,.46);text-underline-offset:3px;cursor:pointer}
+.rpt-attention-link:hover,.rpt-attention-link.is-open{color:#ffad70}
+.rpt-none-label{color:#72c78b;font-size:12px;font-weight:700}
+.rpt-attention-detail-row td{padding:0!important;background:#18182a!important}
+.rpt-attention-panel{padding:16px;border-top:1px solid #303044;border-bottom:1px solid #303044;background:linear-gradient(90deg,rgba(240,122,36,.06),transparent 52%),#18182a}
+.rpt-attention-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.rpt-attention-panel-heading strong{display:block;color:#f1f2f5;font-size:13px}
+.rpt-attention-panel-heading span:not(.rpt-attention-count){display:block;margin-top:3px;color:#7f8395;font-size:11px}
+.rpt-attention-count{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:rgba(224,112,112,.14);color:#ef9a9a;font-size:12px;font-weight:800}
+.rpt-attention-player-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rpt-attention-player{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:10px 11px;border:1px solid #303044;border-radius:10px;background:#202033;color:#e5e7eb;text-align:left;cursor:pointer}
+.rpt-attention-player:hover{border-color:#f07a24;background:#25253a}
+.rpt-attention-player strong{display:block;font-size:12px}.rpt-attention-player small{display:block;margin-top:2px;color:#777b8f;font-size:10px}
+#accordion-groupstats .btn-report-print,#accordion-groupstats .btn-report-excel,#accordion-groupstats .report-month-select{min-height:32px;border-radius:8px}
+#accordion-groupstats .btn-report-excel{background:#1f7a45}
+@media(max-width:760px){#accordion-groupstats .report-content{padding:14px}.rpt-modern-report-heading,.rpt-modern-section-heading,.rpt-modern-table-heading{flex-direction:column}.rpt-modern-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rpt-modern-chart-legend{justify-content:flex-start}.rpt-attention-player-grid{grid-template-columns:1fr}}
+@media(max-width:440px){.rpt-modern-stats{grid-template-columns:1fr 1fr;gap:8px}.rpt-modern-stat{padding:12px}.rpt-modern-stat strong{font-size:23px}.rpt-modern-bar-row{grid-template-columns:44px minmax(0,1fr) 44px;gap:7px}}
+@media print{.rpt-modern-report-heading,.rpt-modern-stats,.rpt-modern-chart-card,.rpt-modern-table-heading{break-inside:avoid}.rpt-modern-stat,.rpt-modern-chart-card,.rpt-modern-table-wrap,.rpt-attention-panel{border-color:#bbb!important;background:#fff!important}.rpt-modern-report-heading h3,.rpt-modern-section-heading h4,.rpt-modern-table-heading h4,.rpt-modern-stat strong,.rpt-modern-group-name{color:#000!important}.rpt-modern-bar-track{background:#ddd!important}.rpt-modern-bar-fill{background:#777!important}.rpt-attention-detail-row{display:none!important}}

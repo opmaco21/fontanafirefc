@@ -78,7 +78,7 @@
         ${buildAccordion('paperwork-complete', '✅ Paperwork Complete')}
         ${buildAccordion('redflags',   '🔴 Attendance Red Flags', buildRedFlagControls())}
         ${buildAccordion('gameday',    '⚽ Game Day Roster', buildGameDayControls())}
-        ${buildAccordion('groupstats', '📈 Monthly Group Breakdown', buildGroupStatsControls())}
+        ${buildAccordion('groupstats', '📈 Monthly Attendance by Group', buildGroupStatsControls())}
       </div>
     `;
   }
@@ -788,9 +788,81 @@
   };
 
   window.downloadReportExcel = function (key) {
-    const fnName = `downloadReport_${key}`;
-    if (typeof window[fnName] === 'function') window[fnName]();
-    else alert('Excel export for this report is not yet available.');
+    const content = document.getElementById(`content-${key}`);
+    if (!content) {
+      alert('This report is not available yet.');
+      return;
+    }
+
+    const table = content.querySelector('.report-table');
+    if (!table) {
+      alert('Open and load the report before exporting to Excel.');
+      return;
+    }
+
+    const titleMap = {
+      attendance: 'Attendance Summary',
+      paperwork: 'Missing Paperwork and Photo Release',
+      snacks: 'Snack Rotation',
+      emergency: 'Emergency Contacts',
+      roster: 'Full Roster',
+      'paperwork-complete': 'Paperwork Complete',
+      redflags: 'Attendance Red Flags',
+      gameday: 'Game Day Roster',
+      groupstats: 'Monthly Attendance by Group'
+    };
+
+    const rows = Array.from(table.querySelectorAll('tr')).map(tr =>
+      Array.from(tr.querySelectorAll('th,td'))
+        .filter(cell => !cell.closest('.rpt-attention-detail-row'))
+        .map(cell => String(cell.innerText || '').replace(/\s+/g, ' ').trim())
+    );
+
+    if (!rows.length) {
+      alert('There is no report data to export.');
+      return;
+    }
+
+    function xmlEscape(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    const worksheetRows = rows.map(row => {
+      const cells = row.map(value => {
+        const numeric = /^-?\d+(?:\.\d+)?$/.test(value);
+        const type = numeric ? 'Number' : 'String';
+        return `<Cell><Data ss:Type="${type}">${xmlEscape(value)}</Data></Cell>`;
+      }).join('');
+      return `<Row>${cells}</Row>`;
+    }).join('');
+
+    const reportTitle = titleMap[key] || 'Report';
+    const xml = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Worksheet ss:Name="Report">
+  <Table>${worksheetRows}</Table>
+ </Worksheet>
+</Workbook>`;
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    const safeTitle = reportTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    link.href = url;
+    link.download = `${safeTitle}-${stamp}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1013,44 +1085,182 @@
       <div class="report-footer-note">${players.length} rostered player(s)</div>`;
   }
 
-  // ── Monthly Group Breakdown Renderer ──────────────────────────────────────
+  // ── Monthly Attendance by Group Renderer ─────────────────────────────────
   function renderGroupStats(data, month) {
     if (!data || !data.length) return '<div class="report-empty">No data for this period.</div>';
+
     const sel = document.getElementById('gs-month');
     const periodLabel = sel?.selectedOptions[0]?.text || month || 'All Time';
+
     const groups = {};
     data.forEach(r => {
-      const gkey = r.GroupName || String(r.BirthYear || 'No Group Assigned');
+      const gkey = String(r.BirthYear || r.GroupName || 'No Group Assigned');
       if (!groups[gkey]) groups[gkey] = [];
       groups[gkey].push(r);
     });
-    const rows = Object.keys(groups).sort().map(groupKey => {
+
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      const an = Number(a), bn = Number(b);
+      if (Number.isFinite(an) && Number.isFinite(bn)) return an - bn;
+      return String(a).localeCompare(String(b));
+    });
+
+    const clubPractice = avg(data.map(p => p.PracticePct));
+    const clubGame = avg(data.map(p => p.GamePct));
+    const clubOverall = avg(data.map(p => p.OverallPct));
+    const needingAttention = data.filter(p => {
+      const pct = p.OverallPct ?? p.PracticePct;
+      return pct != null && pct < 70;
+    });
+
+    const groupStats = sortedKeys.map(groupKey => {
       const players = groups[groupKey];
       const avgP = avg(players.map(p => p.PracticePct));
       const avgG = avg(players.map(p => p.GamePct));
       const avgO = avg(players.map(p => p.OverallPct));
-      const flagged = players.filter(p => (p.OverallPct ?? p.PracticePct) != null && (p.OverallPct ?? p.PracticePct) < 70).length;
+      const flaggedPlayers = players.filter(p => {
+        const pct = p.OverallPct ?? p.PracticePct;
+        return pct != null && pct < 70;
+      }).sort((a, b) => {
+        const ap = a.OverallPct ?? a.PracticePct ?? 999;
+        const bp = b.OverallPct ?? b.PracticePct ?? 999;
+        return ap - bp;
+      });
+      return { groupKey, players, avgP, avgG, avgO, flaggedPlayers };
+    });
+
+    const chartRows = groupStats.map(g => {
+      const pct = g.avgO == null ? 0 : Math.max(0, Math.min(100, Number(g.avgO)));
+      const goalClass = pct >= 70 ? 'rpt-modern-bar--goal' : 'rpt-modern-bar--attention';
+      return `
+        <div class="rpt-modern-bar-row">
+          <div class="rpt-modern-bar-label">${esc(g.groupKey)}</div>
+          <div class="rpt-modern-bar-track">
+            <div class="rpt-modern-bar-fill ${goalClass}" style="width:${pct}%"></div>
+            <span class="rpt-modern-goal-line" aria-hidden="true"></span>
+          </div>
+          <div class="rpt-modern-bar-value">${fmtPct(g.avgO)}</div>
+        </div>`;
+    }).join('');
+
+    const tableRows = groupStats.map(g => {
+      const count = g.flaggedPlayers.length;
+      const detailId = `gs-attention-${g.groupKey.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+      const flagged = count
+        ? `<button type="button" class="rpt-attention-link" onclick="toggleGroupAttention('${detailId}', this)" aria-expanded="false">${count} player${count === 1 ? '' : 's'}</button>`
+        : '<span class="rpt-none-label">None</span>';
+
+      const detail = count ? `
+        <tr id="${detailId}" class="rpt-attention-detail-row" style="display:none;">
+          <td colspan="6">
+            <div class="rpt-attention-panel">
+              <div class="rpt-attention-panel-heading">
+                <div>
+                  <strong>${esc(g.groupKey)} · Players Needing Attention</strong>
+                  <span>Below 70% overall attendance for ${esc(periodLabel)}</span>
+                </div>
+                <span class="rpt-attention-count">${count}</span>
+              </div>
+              <div class="rpt-attention-player-grid">
+                ${g.flaggedPlayers.map(p => {
+                  const pct = p.OverallPct ?? p.PracticePct;
+                  const name = `${p.FirstName || ''} ${p.LastName || ''}`.trim();
+                  return `
+                    <button type="button" class="rpt-attention-player" onclick="openGroupStatsPlayer(${Number(p.PlayerID)}, '${esc(name).replace(/'/g, "\\'")}')">
+                      <span><strong>${esc(name)}</strong>${p.PlayerNumber ? `<small>#${esc(p.PlayerNumber)}</small>` : ''}</span>
+                      <span class="pct-badge ${pctClass(pct)}">${fmtPct(pct)}</span>
+                    </button>`;
+                }).join('')}
+              </div>
+            </div>
+          </td>
+        </tr>` : '';
+
       return `
         <tr>
-          <td style="font-weight:700;">${esc(groupKey)}</td>
-          <td class="col-num">${players.length}</td>
-          <td><span class="pct-badge ${pctClass(avgP)}">${fmtPct(avgP)}</span></td>
-          <td><span class="pct-badge ${pctClass(avgG)}">${fmtPct(avgG)}</span></td>
-          <td><span class="pct-badge ${pctClass(avgO)}">${fmtPct(avgO)}</span></td>
-          <td>${flagged > 0 ? `<span style="color:#dc2626;font-weight:700;">!! ${flagged}</span>` : '<span style="color:#16a34a;">None</span>'}</td>
-        </tr>`;
+          <td class="rpt-modern-group-name">${esc(g.groupKey)}</td>
+          <td class="col-num">${g.players.length}</td>
+          <td><span class="pct-badge ${pctClass(g.avgP)}">${fmtPct(g.avgP)}</span></td>
+          <td><span class="pct-badge ${pctClass(g.avgG)}">${fmtPct(g.avgG)}</span></td>
+          <td><span class="pct-badge ${pctClass(g.avgO)}">${fmtPct(g.avgO)}</span></td>
+          <td>${flagged}</td>
+        </tr>${detail}`;
     }).join('');
+
     return `
       <div class="report-print-header">
-        <strong>Fontana Fire FC - Monthly Group Breakdown</strong>
-        <span>${periodLabel}</span>
+        <strong>Fontana Fire FC — Monthly Attendance by Group</strong>
+        <span>${esc(periodLabel)}</span>
       </div>
-      <table class="report-table">
-        <thead><tr><th>Group</th><th>Players</th><th>Avg Practice %</th><th>Avg Game %</th><th>Avg Overall %</th><th>Below 70%</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <div class="report-footer-note">${Object.keys(groups).length} group(s) - ${data.length} total players</div>`;
+
+      <div class="rpt-modern-report">
+        <div class="rpt-modern-report-heading">
+          <div>
+            <div class="rpt-modern-eyebrow">COACHING OVERVIEW</div>
+            <h3>Monthly Attendance by Group</h3>
+            <p>${esc(periodLabel)} · Compare attendance across birth-year groups and quickly identify players who may need follow-up.</p>
+          </div>
+          <span class="rpt-modern-goal-chip">Goal 70%+</span>
+        </div>
+
+        <div class="rpt-modern-stats">
+          <div class="rpt-modern-stat"><span>Active Players</span><strong>${data.length}</strong><small>${sortedKeys.length} birth-year groups</small></div>
+          <div class="rpt-modern-stat"><span>Practice Average</span><strong class="${pctClass(clubPractice)}-text">${fmtPct(clubPractice)}</strong><small>Club average</small></div>
+          <div class="rpt-modern-stat"><span>Game Average</span><strong class="${pctClass(clubGame)}-text">${fmtPct(clubGame)}</strong><small>Rostered games</small></div>
+          <div class="rpt-modern-stat rpt-modern-stat--attention"><span>Need Attention</span><strong>${needingAttention.length}</strong><small>Players below 70%</small></div>
+        </div>
+
+        <div class="rpt-modern-chart-card">
+          <div class="rpt-modern-section-heading">
+            <div><h4>Overall Attendance by Birth Year</h4><p>Each bar shows the group's average overall attendance.</p></div>
+            <div class="rpt-modern-chart-legend">
+              <span><i class="rpt-legend-dot rpt-legend-dot--goal"></i>70% or higher</span>
+              <span><i class="rpt-legend-dot rpt-legend-dot--attention"></i>Below 70%</span>
+            </div>
+          </div>
+          <div class="rpt-modern-bars">${chartRows}</div>
+        </div>
+
+        <div class="rpt-modern-table-heading">
+          <div><h4>Group Detail</h4><p>Click a player count to see who is below the attendance goal.</p></div>
+        </div>
+
+        <div class="rpt-modern-table-wrap">
+          <table class="report-table rpt-modern-table">
+            <thead>
+              <tr><th>Birth Year</th><th>Players</th><th>Practice Avg</th><th>Game Avg</th><th>Overall Avg</th><th>Players Needing Attention</th></tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+
+        <div class="report-footer-note">${sortedKeys.length} birth-year groups · ${data.length} active players</div>
+      </div>`;
   }
+
+  window.toggleGroupAttention = function(detailId, button) {
+    const row = document.getElementById(detailId);
+    if (!row) return;
+    const isOpen = row.style.display !== 'none';
+    row.style.display = isOpen ? 'none' : 'table-row';
+    if (button) {
+      button.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+      button.classList.toggle('is-open', !isOpen);
+    }
+  };
+
+  window.openGroupStatsPlayer = function(playerId, playerName) {
+    const attendanceAccordion = document.getElementById('accordion-attendance');
+    const attendanceBody = document.getElementById('body-attendance');
+    if (attendanceAccordion && attendanceBody) {
+      attendanceBody.style.display = 'block';
+      attendanceAccordion.classList.add('report-accordion--open');
+      const chevron = attendanceAccordion.querySelector('.report-accordion-chevron');
+      if (chevron) chevron.textContent = '▲';
+    }
+    loadPlayerDetail(playerId, playerName);
+    setTimeout(() => document.getElementById('accordion-attendance')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
 
 
   // ── Paperwork Complete Renderer ───────────────────────────────────────────
