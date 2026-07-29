@@ -70,13 +70,26 @@
   function buildReportsShell() {
     return `
       <div class="reports-wrap">
+        <div class="reports-modern-header">
+          <div>
+            <span class="reports-modern-kicker">FONTANA FIRE FC</span>
+            <h3>Reports & Coaching Insights</h3>
+            <p>Attendance, roster, player follow-up, game-day, and club administration reports.</p>
+          </div>
+          <div class="reports-modern-header-mark">FF</div>
+        </div>
+
+        <div class="reports-modern-section-label">Coaching & Attendance</div>
         ${buildAccordion('attendance', '📊 Attendance Summary', buildAttendanceControls())}
+        <div class="reports-modern-section-label">Club Administration</div>
         ${buildAccordion('paperwork',  '📋 Missing Paperwork & Photo Release')}
         ${buildAccordion('snacks',     '🍎 Snack Rotation')}
         ${buildAccordion('emergency',  '🚨 Emergency Contacts')}
         ${buildAccordion('roster',     '👥 Full Roster', buildRosterControls())}
         ${buildAccordion('paperwork-complete', '✅ Paperwork Complete')}
+        <div class="reports-modern-section-label">Coaching Follow-Up</div>
         ${buildAccordion('redflags',   '🔴 Attendance Red Flags', buildRedFlagControls())}
+        <div class="reports-modern-section-label">Game Day</div>
         ${buildAccordion('gameday',    '⚽ Game Day Roster', buildGameDayControls())}
         ${buildAccordion('groupstats', '📈 Monthly Attendance by Group', buildGroupStatsControls())}
       </div>
@@ -453,6 +466,18 @@
     }
   }
 
+  function renderModernSummaryCards(cards) {
+    return `
+      <div class="rpt-summary-grid">
+        ${cards.map(card => `
+          <div class="rpt-summary-card ${card.tone ? `rpt-summary-card--${card.tone}` : ''}">
+            <span>${esc(card.label)}</span>
+            <strong>${esc(card.value)}</strong>
+            ${card.note ? `<small>${esc(card.note)}</small>` : ''}
+          </div>`).join('')}
+      </div>`;
+  }
+
   // ── Attendance Summary (list view) ─────────────────────────────────────────
   function renderAttendance(data) {
     if (!data || !data.length) return '<div class="report-empty">No attendance data for this period.</div>';
@@ -529,11 +554,19 @@
       });
     });
 
+    const attendanceCards = renderModernSummaryCards([
+      { label: 'Players', value: String(filteredData.length), note: periodLabel },
+      { label: 'Practice Avg', value: fmtPct(avg(filteredData.map(p => p.PracticePct))), tone: 'info' },
+      { label: 'Game Avg', value: fmtPct(avg(filteredData.map(p => p.GamePct))), tone: 'success' },
+      { label: 'Overall Avg', value: fmtPct(avg(filteredData.map(p => p.OverallPct))), tone: 'brand' }
+    ]);
+
     return `
       <div class="report-print-header">
         <strong>Fontana Fire FC — Attendance Summary</strong>
         <span>${periodLabel}</span>
       </div>
+      ${attendanceCards}
       <div class="rpt-hint">Click any player row to see their full event history →</div>
       <table class="report-table rpt-att-table">
         <thead>
@@ -644,8 +677,20 @@
   // ── Other report renderers (unchanged) ────────────────────────────────────
   function renderPaperwork(data) {
     if (!data || !data.length) return '<div class="report-empty">All paperwork is complete. 🎉</div>';
+
+    const paperworkMissing = data.filter(r => (r.PaperworkStatus || 'Not Received') !== 'Complete').length;
+    const photoMissing = data.filter(r => (r.PhotoRelease || 'Missing') === 'Missing').length;
+    const declined = data.filter(r => (r.PhotoRelease || '') === 'Declined').length;
+    const summaryCards = renderModernSummaryCards([
+      { label: 'Players With Missing Items', value: String(data.length), tone: 'attention' },
+      { label: 'Paperwork Missing', value: String(paperworkMissing), tone: 'warning' },
+      { label: 'Photo Release Missing', value: String(photoMissing), tone: 'warning' },
+      { label: 'Photo Release Declined', value: String(declined), note: 'Form received', tone: 'info' }
+    ]);
+
     return `
       <div class="report-print-header"><strong>Fontana Fire FC — Missing Paperwork & Photo Release</strong></div>
+      ${summaryCards}
       <table class="report-table">
         <thead><tr><th>#</th><th>Player</th><th>Parent</th><th>Phone</th><th>Paperwork</th><th>Photo Release</th></tr></thead>
         <tbody>
@@ -665,8 +710,18 @@
 
   function renderSnacks(data) {
     if (!data || !data.length) return '<div class="report-empty">No snack data available.</div>';
+
+    const bringSnack = data.filter(r => (r.SnackPreference || 'Bring Snack') === 'Bring Snack').length;
+    const paidOut = data.filter(r => String(r.SnackPreference || '').toLowerCase().includes('paid')).length;
+    const summaryCards = renderModernSummaryCards([
+      { label: 'Players', value: String(data.length) },
+      { label: 'Bring Snack', value: String(bringSnack), tone: 'success' },
+      { label: 'Paid Out', value: String(paidOut), tone: 'info' }
+    ]);
+
     return `
       <div class="report-print-header"><strong>Fontana Fire FC — Snack Rotation</strong></div>
+      ${summaryCards}
       <table class="report-table">
         <thead><tr><th>#</th><th>Player</th><th>Parent</th><th>Phone</th><th>Snack Preference</th></tr></thead>
         <tbody>
@@ -685,11 +740,20 @@
 
   function renderEmergency(data) {
     if (!data || !data.length) return '<div class="report-empty">No emergency contact data.</div>';
+
+    const missingEmergency = data.filter(r => !String(r.EmergencyContactName || '').trim() || !String(r.EmergencyContactPhone || '').trim()).length;
+    const summaryCards = renderModernSummaryCards([
+      { label: 'Active Players', value: String(data.length) },
+      { label: 'Emergency Contact Complete', value: String(data.length - missingEmergency), tone: 'success' },
+      { label: 'Missing Emergency Contact', value: String(missingEmergency), tone: missingEmergency ? 'attention' : 'success' }
+    ]);
+
     return `
       <div class="report-print-header">
         <strong>Fontana Fire FC — Emergency Contact Sheet</strong>
         <span class="report-print-confidential">CONFIDENTIAL</span>
       </div>
+      ${summaryCards}
       <table class="report-table report-table--compact">
         <thead><tr><th>#</th><th>Player</th><th>Parent</th><th>Parent Phone</th><th>Emergency Contact</th><th>Relationship</th><th>EC Phone</th><th>Notes</th></tr></thead>
         <tbody>
@@ -723,12 +787,21 @@
     }
 
     const coachLabel = selectedCoach || 'All Coaches';
+    const paperworkComplete = filtered.filter(r => r.PaperworkStatus === 'Complete').length;
+    const unassigned = filtered.filter(r => (r.CoachName || 'Unassigned') === 'Unassigned').length;
+    const summaryCards = renderModernSummaryCards([
+      { label: 'Active Players', value: String(filtered.length) },
+      { label: 'Paperwork Complete', value: String(paperworkComplete), tone: 'success' },
+      { label: 'Missing Paperwork', value: String(filtered.length - paperworkComplete), tone: 'warning' },
+      { label: 'Unassigned Coach', value: String(unassigned), tone: unassigned ? 'attention' : 'success' }
+    ]);
 
     return `
       <div class="report-print-header">
         <strong>Fontana Fire FC — Full Roster</strong>
         <span>${esc(coachLabel)} · As of ${new Date().toLocaleDateString()}</span>
       </div>
+      ${summaryCards}
       <table class="report-table">
         <thead>
           <tr>
@@ -1019,6 +1092,17 @@
   function renderRedFlags(data, below) {
     below = below || '70';
     if (!data || !data.length) return `<div class="report-empty">No players below ${below}% this period.</div>`;
+
+    const practiceAvg = avg(data.map(r => r.PracticePct));
+    const gameAvg = avg(data.map(r => r.GamePct));
+    const overallAvg = avg(data.map(r => r.OverallPct ?? r.PracticePct));
+    const summaryCards = renderModernSummaryCards([
+      { label: 'Players Flagged', value: String(data.length), tone: 'attention' },
+      { label: 'Practice Avg', value: fmtPct(practiceAvg), tone: 'warning' },
+      { label: 'Game Avg', value: fmtPct(gameAvg), tone: 'info' },
+      { label: 'Overall Avg', value: fmtPct(overallAvg), tone: 'attention' }
+    ]);
+
     const rows = data.map((r, i) => {
       const pct = r.OverallPct ?? r.PracticePct;
       return `
@@ -1033,6 +1117,7 @@
     }).join('');
     return `
       <div class="report-print-header"><strong>Fontana Fire FC - Attendance Red Flags (Below ${below}%)</strong></div>
+      ${summaryCards}
       <div class="rpt-hint">Click a player to see their full event history</div>
       <table class="report-table">
         <thead><tr><th>#</th><th>Player</th><th>Group</th><th>Practice %</th><th>Game %</th><th>Overall %</th></tr></thead>
@@ -1056,6 +1141,17 @@
       <div class="report-print-header"><strong>${esc(event.EventName || 'Game')} - ${fmtDate(event.EventDate)}</strong></div>
       <div class="report-empty">No players rostered for this game. Use Edit Roster to add players.</div>`;
     const attMap = attendanceMap || {};
+    const statuses = players.map(p => attMap[p.PlayerID] || p.AttendanceStatus || 'Not Marked');
+    const presentCount = statuses.filter(s => s === 'Present').length;
+    const absentCount = statuses.filter(s => s === 'Absent').length;
+    const notMarkedCount = statuses.filter(s => s === 'Not Marked').length;
+    const summaryCards = renderModernSummaryCards([
+      { label: 'Rostered', value: String(players.length) },
+      { label: 'Present', value: String(presentCount), tone: 'success' },
+      { label: 'Absent', value: String(absentCount), tone: 'attention' },
+      { label: 'Not Marked', value: String(notMarkedCount), tone: notMarkedCount ? 'warning' : 'success' }
+    ]);
+
     const rows = players.map(p => {
       const status = attMap[p.PlayerID] || p.AttendanceStatus || 'Not Marked';
       const badgeClass = { 'Present': 'badge-present', 'Absent': 'badge-absent', 'Excused': 'badge-excused', 'Cancelled': 'badge-cancelled' }[status] || '';
@@ -1078,6 +1174,7 @@
       </div>
       ${event.LocationName ? `<div style="font-size:12px;color:#666;margin-bottom:10px;">Location: ${esc(event.LocationName)}</div>` : ''}
       ${event.StartTime ? `<div style="font-size:12px;color:#666;margin-bottom:14px;">Time: ${fmtTime(event.StartTime)}</div>` : ''}
+      ${summaryCards}
       <table class="report-table">
         <thead><tr><th>Jersey</th><th>Player</th><th>Group</th><th>Gender</th><th>Status</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -1267,6 +1364,14 @@
   function renderPaperworkComplete(data) {
     if (!data || !data.length) return '<div class="report-empty">No players with complete paperwork found.</div>';
 
+    const groupsCount = new Set(data.map(r => r.GroupName || 'No Group Assigned')).size;
+    const declinedCount = data.filter(r => (r.PhotoReleaseStatus || '') === 'Declined').length;
+    const summaryCards = renderModernSummaryCards([
+      { label: 'Complete Players', value: String(data.length), tone: 'success' },
+      { label: 'Groups', value: String(groupsCount), tone: 'info' },
+      { label: 'Photo Release Declined', value: String(declinedCount), note: 'Form received', tone: 'info' }
+    ]);
+
     // Group by GroupName
     const groups = {};
     data.forEach(r => {
@@ -1302,6 +1407,7 @@
 
     return `
       <div class="report-print-header"><strong>Fontana Fire FC - Paperwork Complete</strong></div>
+      ${summaryCards}
       <table class="report-table">
         <thead><tr><th>#</th><th>Player</th><th>Jersey</th><th>Group</th><th>Paperwork</th><th>Photo Release</th></tr></thead>
         <tbody>${rows}</tbody>
