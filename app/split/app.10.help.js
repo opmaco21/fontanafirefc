@@ -58,7 +58,7 @@
       <li>Turn on <strong>Show inactive players</strong> to review or restore inactive players.</li>
     </ul>`],
 
-    ['Reports', ['Admin','TeamMom'], `<ul>
+    ['Reports', ['Admin','TeamMom','HeadCoach'], `<ul>
       <li>Open <strong>Reports</strong> and expand the report you need.</li>
       <li>In <strong>Attendance Summary</strong>, use Player search plus Month, Group, Gender, percentage, or Date Range filters.</li>
       <li>Tap a player row to open detailed event history.</li>
