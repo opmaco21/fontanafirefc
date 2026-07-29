@@ -88,7 +88,7 @@
         ${buildAccordion('roster',     '👥 Full Roster', buildRosterControls())}
         ${buildAccordion('paperwork-complete', '✅ Paperwork Complete')}
         <div class="reports-modern-section-label">Coaching Follow-Up</div>
-        ${buildAccordion('redflags',   '🔴 Attendance Red Flags', buildRedFlagControls())}
+        ${buildAccordion('redflags',   '🎯 Player Follow-Up', buildRedFlagControls())}
         <div class="reports-modern-section-label">Game Day</div>
         ${buildAccordion('gameday',    '⚽ Game Day Roster', buildGameDayControls())}
         ${buildAccordion('groupstats', '📈 Monthly Attendance by Group', buildGroupStatsControls())}
@@ -315,17 +315,20 @@
 
       // ── New report loaders ──
       if (key === 'redflags') {
-        const month = document.getElementById('rf-month')?.value || '';
-        const below = document.getElementById('rf-below')?.value || '70';
+        const month = document.getElementById('rf-month')?.value || getCurrentMonthValue();
         const params = new URLSearchParams();
         if (month) params.set('month', month);
-        params.set('below', below);
-        const res = await fetch(`${API_BASE}/reports/attendance?${params}`, { credentials: 'include', cache: 'no-store' });
+
+        const res = await fetch(`${API_BASE}/reports/redflags?${params}`, {
+          credentials: 'include',
+          cache: 'no-store'
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         const json = await res.json();
         st.data = json.data || [];
         st.loaded = true;
-        el.innerHTML = renderRedFlags(st.data, below);
+        el.innerHTML = renderRedFlags(st.data, json.month || month);
         return;
       }
 
@@ -880,7 +883,7 @@
       emergency: 'Emergency Contacts',
       roster: 'Full Roster',
       'paperwork-complete': 'Paperwork Complete',
-      redflags: 'Attendance Red Flags',
+      redflags: 'Player Follow-Up',
       gameday: 'Game Day Roster',
       groupstats: 'Monthly Attendance by Group'
     };
@@ -1000,7 +1003,7 @@
   }
 
 
-  // ── Red Flag Controls ──────────────────────────────────────────────────────
+  // ── Player Follow-Up Controls ─────────────────────────────────────────────
   function buildRedFlagControls() {
     const months = buildMonthOptions();
     return `
@@ -1010,11 +1013,23 @@
           <select id="rf-month" class="report-month-select" onchange="onRedFlagFilterChange()">${months}</select>
         </div>
         <div class="att-filter-group">
-          <label class="report-filter-label">Threshold</label>
-          <select id="rf-below" class="report-month-select" onchange="onRedFlagFilterChange()">
-            <option value="70">Below 70%</option>
-            <option value="80">Below 80%</option>
-            <option value="60">Below 60%</option>
+          <label class="report-filter-label">Coach</label>
+          <select id="rf-coach" class="report-month-select" onchange="onRedFlagFilterChange()">
+            <option value="">All Coaches</option>
+            <option value="Jose">Jose</option>
+            <option value="Alfredo">Alfredo</option>
+            <option value="Bobby">Bobby</option>
+            <option value="Damian">Damian</option>
+            <option value="Unassigned">Unassigned</option>
+          </select>
+        </div>
+        <div class="att-filter-group">
+          <label class="report-filter-label">Status</label>
+          <select id="rf-status" class="report-month-select" onchange="onRedFlagFilterChange()">
+            <option value="">All Follow-Up</option>
+            <option value="Priority">Priority</option>
+            <option value="Follow Up">Follow Up</option>
+            <option value="Watch">Watch</option>
           </select>
         </div>
       </div>`;
@@ -1088,42 +1103,164 @@
     loadReport('groupstats');
   };
 
-  // ── Red Flags Renderer ─────────────────────────────────────────────────────
-  function renderRedFlags(data, below) {
-    below = below || '70';
-    if (!data || !data.length) return `<div class="report-empty">No players below ${below}% this period.</div>`;
+  // ── Player Follow-Up Renderer ─────────────────────────────────────────────
+  function renderRedFlags(data, month) {
+    const coachFilter = document.getElementById('rf-coach')?.value || '';
+    const statusFilter = document.getElementById('rf-status')?.value || '';
 
-    const practiceAvg = avg(data.map(r => r.PracticePct));
-    const gameAvg = avg(data.map(r => r.GamePct));
-    const overallAvg = avg(data.map(r => r.OverallPct ?? r.PracticePct));
+    const filtered = (data || []).filter(r => {
+      const coach = (r.CoachName || 'Unassigned').trim() || 'Unassigned';
+      const status = r.FollowUpStatus || 'Watch';
+      return (!coachFilter || coach === coachFilter)
+        && (!statusFilter || status === statusFilter);
+    });
+
+    const monthLabel = (() => {
+      if (!month) return 'Current Month';
+      const parts = String(month).split('-');
+      if (parts.length !== 2) return month;
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+      return d.toLocaleString('default', { month: 'long', year: 'numeric' });
+    })();
+
+    if (!filtered.length) {
+      return '<div class="report-empty">No players currently need follow-up for these filters.</div>';
+    }
+
+    const priority = filtered.filter(r => r.FollowUpStatus === 'Priority').length;
+    const followUp = filtered.filter(r => r.FollowUpStatus === 'Follow Up').length;
+    const watch = filtered.filter(r => r.FollowUpStatus === 'Watch').length;
+    const neverSeen = filtered.filter(r => !r.LastSeen).length;
+
     const summaryCards = renderModernSummaryCards([
-      { label: 'Players Flagged', value: String(data.length), tone: 'attention' },
-      { label: 'Practice Avg', value: fmtPct(practiceAvg), tone: 'warning' },
-      { label: 'Game Avg', value: fmtPct(gameAvg), tone: 'info' },
-      { label: 'Overall Avg', value: fmtPct(overallAvg), tone: 'attention' }
+      { label: 'Need Follow-Up', value: String(filtered.length), tone: 'attention' },
+      { label: 'Priority', value: String(priority), note: '30+ days or never seen', tone: 'attention' },
+      { label: 'Follow Up', value: String(followUp), note: '14–29 days away', tone: 'warning' },
+      { label: 'Watch', value: String(watch), note: 'Below 70% but seen recently', tone: 'info' }
     ]);
 
-    const rows = data.map((r, i) => {
+    const buckets = [
+      { label: 'Seen < 7 days', count: filtered.filter(r => r.DaysAway != null && r.DaysAway < 7).length, tone: 'good' },
+      { label: '7–13 days', count: filtered.filter(r => r.DaysAway != null && r.DaysAway >= 7 && r.DaysAway < 14).length, tone: 'info' },
+      { label: '14–29 days', count: filtered.filter(r => r.DaysAway != null && r.DaysAway >= 14 && r.DaysAway < 30).length, tone: 'warning' },
+      { label: '30+ days', count: filtered.filter(r => r.DaysAway != null && r.DaysAway >= 30).length, tone: 'danger' },
+      { label: 'Never attended', count: neverSeen, tone: 'danger' }
+    ];
+    const maxBucket = Math.max(1, ...buckets.map(b => b.count));
+
+    const recencyChart = buckets.map(b => `
+      <div class="rpt-followup-bar-row">
+        <span>${b.label}</span>
+        <div class="rpt-followup-bar-track">
+          <div class="rpt-followup-bar rpt-followup-bar--${b.tone}" style="width:${Math.round((b.count / maxBucket) * 100)}%"></div>
+        </div>
+        <strong>${b.count}</strong>
+      </div>`).join('');
+
+    const statusRank = { 'Priority': 1, 'Follow Up': 2, 'Watch': 3, 'OK': 4 };
+    filtered.sort((a, b) => {
+      const sr = (statusRank[a.FollowUpStatus] || 9) - (statusRank[b.FollowUpStatus] || 9);
+      if (sr !== 0) return sr;
+      const ad = a.DaysAway == null ? 9999 : Number(a.DaysAway);
+      const bd = b.DaysAway == null ? 9999 : Number(b.DaysAway);
+      return bd - ad;
+    });
+
+    const rows = filtered.map((r, i) => {
+      const status = r.FollowUpStatus || 'Watch';
+      const statusClass = status === 'Priority'
+        ? 'rpt-followup-status--priority'
+        : status === 'Follow Up'
+          ? 'rpt-followup-status--follow'
+          : 'rpt-followup-status--watch';
+
       const pct = r.OverallPct ?? r.PracticePct;
+      const daysText = r.LastSeen
+        ? `${Number(r.DaysAway || 0)} day${Number(r.DaysAway || 0) === 1 ? '' : 's'}`
+        : 'Never';
+
       return `
-        <tr class="rpt-player-row" onclick="drillDownPlayer(${r.PlayerID}, '${esc(r.FirstName + ' ' + r.LastName).replace(/'/g,"\\'")}')">
-          <td class="col-num">${i+1}</td>
-          <td><span class="rpt-player-name">${esc(r.FirstName)} ${esc(r.LastName)}</span>${r.PlayerNumber ? ` <span class="rpt-jersey">#${r.PlayerNumber}</span>` : ''}</td>
+        <tr class="rpt-followup-row">
+          <td class="col-num">${i + 1}</td>
+          <td>
+            <span class="rpt-player-name">${esc(r.FirstName)} ${esc(r.LastName)}</span>
+            ${r.PlayerNumber ? `<span class="rpt-jersey">#${r.PlayerNumber}</span>` : ''}
+          </td>
+          <td>${esc(r.CoachName || 'Unassigned')}</td>
           <td class="rpt-cell-sub">${esc(r.GroupName || String(r.BirthYear || ''))}</td>
-          <td><span class="pct-badge ${pctClass(r.PracticePct)}">${fmtPct(r.PracticePct)}</span> <span class="rpt-fraction">${r.PracticePresent??0}/${r.PracticeCounted??0}</span></td>
-          <td><span class="pct-badge ${pctClass(r.GamePct)}">${fmtPct(r.GamePct)}</span> <span class="rpt-fraction">${r.GamePresent??0}/${r.GameCounted??0}</span></td>
-          <td><span class="pct-badge ${pctClass(pct)}" style="font-weight:800;">${fmtPct(pct)}</span></td>
+          <td>${r.LastSeen ? fmtDate(r.LastSeen) : '<span class="rpt-never-seen">Never</span>'}</td>
+          <td>${esc(daysText)}</td>
+          <td><span class="pct-badge ${pctClass(pct)}">${fmtPct(pct)}</span></td>
+          <td>
+            <div class="rpt-parent-stack">
+              <span>${esc(r.ParentName || '—')}</span>
+              <small>${esc(r.ParentPhone || '')}</small>
+            </div>
+          </td>
+          <td><span class="rpt-followup-status ${statusClass}">${esc(status)}</span></td>
+          <td>
+            <button type="button"
+              class="rpt-followup-action"
+              onclick="drillDownPlayer(${Number(r.PlayerID)}, '${esc((r.FirstName || '') + ' ' + (r.LastName || '')).replace(/'/g,"\\'")}')">
+              View Attendance
+            </button>
+          </td>
         </tr>`;
     }).join('');
+
     return `
-      <div class="report-print-header"><strong>Fontana Fire FC - Attendance Red Flags (Below ${below}%)</strong></div>
+      <div class="report-print-header">
+        <strong>Fontana Fire FC — Player Follow-Up</strong>
+        <span>${esc(monthLabel)}</span>
+      </div>
+
+      <div class="rpt-followup-intro">
+        <div>
+          <span class="reports-modern-kicker">COACH ACTION LIST</span>
+          <h3>Player Follow-Up</h3>
+          <p>Players who may need attention based on attendance level or time since they were last present.</p>
+        </div>
+      </div>
+
       ${summaryCards}
-      <div class="rpt-hint">Click a player to see their full event history</div>
-      <table class="report-table">
-        <thead><tr><th>#</th><th>Player</th><th>Group</th><th>Practice %</th><th>Game %</th><th>Overall %</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <div class="report-footer-note">${data.length} player(s) flagged</div>`;
+
+      <div class="rpt-followup-chart-card">
+        <div class="rpt-modern-section-heading">
+          <div>
+            <h4>Time Since Last Attendance</h4>
+            <p>Recency helps distinguish a low monthly percentage from a player who may be disengaging.</p>
+          </div>
+        </div>
+        <div class="rpt-followup-bars">${recencyChart}</div>
+      </div>
+
+      <div class="rpt-followup-key">
+        <span><b class="rpt-followup-dot rpt-followup-dot--priority"></b><strong>Priority</strong> — never seen or 30+ days away</span>
+        <span><b class="rpt-followup-dot rpt-followup-dot--follow"></b><strong>Follow Up</strong> — 14–29 days away</span>
+        <span><b class="rpt-followup-dot rpt-followup-dot--watch"></b><strong>Watch</strong> — below 70% but attended recently</span>
+      </div>
+
+      <div class="rpt-modern-table-wrap">
+        <table class="report-table rpt-followup-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>Coach</th>
+              <th>Group</th>
+              <th>Last Seen</th>
+              <th>Days Away</th>
+              <th>${esc(monthLabel)} Attendance</th>
+              <th>Parent</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+
+      <div class="report-footer-note">${filtered.length} player${filtered.length === 1 ? '' : 's'} currently need follow-up</div>`;
   }
 
   // ── Game Day Roster Renderer ───────────────────────────────────────────────
