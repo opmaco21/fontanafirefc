@@ -1,66 +1,74 @@
 window.ATTENDANCE_CHANGELOG = [
   {
+    version: "2026.07.29-reports-insights",
+    date: "July 29, 2026",
+    title: "Reports & Coaching Insights",
+    summary: "Reports now provide a modern coaching-focused experience with clearer attendance insights and player follow-up tools.",
+    highlights: [
+      "Modern Reports design with visual summaries and coaching-focused organization.",
+      "Monthly Attendance by Group includes birth-year comparisons and players needing attention.",
+      "Player Follow-Up replaces Attendance Red Flags with more meaningful action data.",
+      "Excel export is available for loaded report tables."
+    ],
+    features: [
+      "Modernized the Reports area with summary cards, clearer organization, and updated report colors.",
+      "Added Monthly Attendance by Group with birth-year visualization and player drill-down.",
+      "Added Player Follow-Up using attendance percentage, last-seen date, days away, coach, and parent contact information.",
+      "Added Excel-compatible export for loaded report tables."
+    ],
+    improvements: [
+      "Reports are organized into Coaching & Attendance, Club Administration, Coaching Follow-Up, and Game Day sections.",
+      "Players needing attention can be opened directly from report views.",
+      "Help now explains the current Reports and Player Follow-Up workflows."
+    ],
+    fixes: [
+      "Grouped several report reliability, filtering, export, and data-display corrections into this release."
+    ]
+  },
+  {
     version: "2026.07.28-stability-refresh",
     date: "July 28, 2026",
     title: "Stability, Live Refresh, and Data Consistency",
-    summary: "Improved save-and-refresh behavior, corrected Photo Release data consistency, and fixed several event-management regressions.",
+    summary: "Improved data consistency and event-management stability across the attendance app.",
+    highlights: [
+      "Save and update flows refresh current data while preserving working context.",
+      "Photo Release values are consistent throughout Player Management and Reports.",
+      "Permanent event deletion safely handles related event records."
+    ],
     features: [
-      "Save and update workflows refresh current data while keeping the user in context.",
-      "Newly created games remain selected after save.",
-      "Edit Roster preserves the current event, search, and roster filters after saving.",
-      "Reports refresh live data instead of reusing stale rows.",
-      "Full Roster includes coach filtering for All Coaches, Jose, Alfredo, Bobby, Damian, and Unassigned."
+      "Improved save-and-refresh behavior while preserving selected events, filters, and working context.",
+      "Improved Full Roster coach filtering and report consistency.",
+      "Added persistent Release History and What's New access through Help."
+    ],
+    improvements: [
+      "Game creation and roster editing preserve the current workflow more reliably.",
+      "Player Management and Reports refresh current data instead of relying on stale views."
     ],
     fixes: [
-      "Photo Release now uses PhotoReleaseStatus as the source of truth: Yes and No count as received, while Not Received remains missing.",
-      "Corrected the SQL Photo Release trigger so Not Received is no longer converted to No.",
-      "Declined photo releases are no longer classified as Missing.",
-      "Admin and Team Mom Delete Event permission is available immediately after a fresh login.",
-      "Permanent event deletion now safely removes related Attendance, cancellation backup, roster, and snack rows before deleting the event.",
-      "Player Management save keeps the current page and refreshes the saved player data.",
-      "Help includes the How-To Guide together with What's New and persistent Release History."
-    ],
-    testing: [
-      "Photo Release SQL consistency audit returns zero mismatches.",
-      "Matthew Gonzales remains Not Received after saving.",
-      "Game creation stay-in-place behavior passed.",
-      "Edit Roster loads all active players and preserves roster context.",
-      "Permanent game deletion passed."
+      "Grouped Photo Release consistency, login permission loading, event deletion, and related stability corrections into this release."
     ]
   },
   {
     version: "2026.07-coach-assignment",
     date: "July 2026",
     title: "Coach Assignment and Attendance Filtering",
-    summary: "Added permanent coach assignments, player-level overrides, attendance filtering, and stability improvements.",
+    summary: "Added coach assignments, player-level overrides, and coach filtering for attendance.",
+    highlights: [
+      "Coach filter added to attendance.",
+      "Coach Override added to Player Management.",
+      "All Coaches restores the complete attendance roster."
+    ],
     features: [
       "Coach filter added to attendance.",
       "Coach Override added directly to Player Management.",
       "Player cards and Player Details show the resolved coach.",
       "All Coaches restores the complete attendance roster."
     ],
-    fixes: [
-      "Coach Override can be cleared back to Default (Automatic).",
-      "Add and Edit Player are compatible with the Players table trigger.",
+    improvements: [
       "Coach filtering changes visibility only and does not modify event rosters."
     ],
-    backend: [
-      "Players API returns and saves CoachOverride through normal player routes.",
-      "Player INSERT and UPDATE use trigger-safe save-and-select queries."
-    ],
-    frontend: [
-      "Coach logic is owned by Player Management and Attendance.",
-      "Temporary wrappers and fetch bridges were removed."
-    ],
-    deployment: [
-      "Deploy the updated Players route before the matching frontend.",
-      "Confirm the CoachOverride SQL column exists."
-    ],
-    testing: [
-      "Coach Override workflow passed.",
-      "Default coach reset passed.",
-      "Add Player trigger-safe save passed.",
-      "Attendance filtering and save/reload safety passed."
+    fixes: [
+      "Grouped coach override reset and player-save compatibility corrections into this release."
     ]
   }
 ];

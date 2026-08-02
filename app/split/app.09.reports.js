@@ -81,6 +81,7 @@
 
         <div class="reports-modern-section-label">Coaching & Attendance</div>
         ${buildAccordion('attendance', '📊 Attendance Summary', buildAttendanceControls())}
+        ${buildAccordion('groupstats', '📈 Monthly Attendance by Group', buildGroupStatsControls())}
         <div class="reports-modern-section-label">Club Administration</div>
         ${buildAccordion('paperwork',  '📋 Missing Paperwork & Photo Release')}
         ${buildAccordion('snacks',     '🍎 Snack Rotation')}
@@ -91,7 +92,6 @@
         ${buildAccordion('redflags',   '🎯 Player Follow-Up', buildRedFlagControls())}
         <div class="reports-modern-section-label">Game Day</div>
         ${buildAccordion('gameday',    '⚽ Game Day Roster', buildGameDayControls())}
-        ${buildAccordion('groupstats', '📈 Monthly Attendance by Group', buildGroupStatsControls())}
       </div>
     `;
   }

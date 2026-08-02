@@ -6,6 +6,7 @@
     ['↺','Fix Attendance','Practice Attendance','Change the incorrect status and submit attendance again.'],
     ['✓','Complete an Old Game','Event Actions','Use the event actions menu and choose Mark completed.'],
     ['⌕','Find a Player Report','Reports','Search Attendance Summary, then tap the player for details.'],
+    ['🎯','Follow Up With a Player','Reports','Use Player Follow-Up to find players who may need parent contact.'],
     ['⊘','Cancel or Restore','Event Actions','Use Cancel for rainouts and Restore for accidental cancellations.']
   ];
 
@@ -58,12 +59,23 @@
       <li>Turn on <strong>Show inactive players</strong> to review or restore inactive players.</li>
     </ul>`],
 
-    ['Reports', ['Admin','TeamMom','HeadCoach'], `<ul>
-      <li>Open <strong>Reports</strong> and expand the report you need.</li>
-      <li>In <strong>Attendance Summary</strong>, use Player search plus Month, Group, Gender, percentage, or Date Range filters.</li>
-      <li>Tap a player row to open detailed event history.</li>
-      <li>Use Attendance Red Flags, Game Day Roster, and Monthly Group Breakdown for quick review.</li>
-      <li>Other reports include paperwork, emergency contacts, roster, and snack information.</li>
+    ['Reports', ['Admin','TeamMom','HeadCoach'], `<div class="help-note">Reports are live views of current app data. Open a report section to load the latest information.</div><ul>
+      <li><strong>Attendance Summary:</strong> review Practice, Game, and Overall attendance. Filter by month, group, gender, percentage, player search, or date range. Tap a player to see event-by-event attendance.</li>
+      <li><strong>Monthly Attendance by Group:</strong> compares attendance by birth year and highlights groups and players below the 70% goal. Tap a player count to see names needing attention.</li>
+      <li><strong>Player Follow-Up:</strong> identifies players who may need coach or parent follow-up using monthly attendance and time since last Present.
+        <ul>
+          <li><strong>Watch:</strong> below 70% but seen recently.</li>
+          <li><strong>Follow Up:</strong> 14–29 days since last Present.</li>
+          <li><strong>Priority:</strong> 30+ days since last Present or never seen.</li>
+        </ul>
+      </li>
+      <li><strong>Game Day Roster:</strong> select a game to review roster and attendance status.</li>
+      <li><strong>Full Roster:</strong> review active players and filter by coach.</li>
+      <li><strong>Missing Paperwork &amp; Photo Release:</strong> identifies active players who still need required forms.</li>
+      <li><strong>Paperwork Complete:</strong> shows players whose required paperwork and photo release status are on file.</li>
+      <li><strong>Emergency Contacts:</strong> provides the active-player emergency contact sheet.</li>
+      <li><strong>Snack Rotation:</strong> currently shows snack preference information.</li>
+      <li>Use <strong>Print</strong> for a printable report and <strong>Excel</strong> to export a loaded report table.</li>
     </ul>`],
 
     ['Dashboard', ['Admin','TeamMom','HeadCoach'], `<ul>
@@ -140,8 +152,11 @@
         <p><strong>${esc(release.title || '')}</strong></p>
         ${release.summary ? `<p>${esc(release.summary)}</p>` : ''}
         ${(release.features || []).length ? `
-          <p><strong>${index === 0 ? 'What’s New' : 'Features'}</strong></p>
+          <p><strong>New / Changed</strong></p>
           <ul>${release.features.map(item => `<li>${esc(item)}</li>`).join('')}</ul>` : ''}
+        ${(release.improvements || []).length ? `
+          <p><strong>Improved</strong></p>
+          <ul>${release.improvements.map(item => `<li>${esc(item)}</li>`).join('')}</ul>` : ''}
         ${(release.fixes || []).length ? `
           <p><strong>Fixes</strong></p>
           <ul>${release.fixes.map(item => `<li>${esc(item)}</li>`).join('')}</ul>` : ''}
@@ -158,6 +173,7 @@
           </div>
           <p><strong>${esc(latest.title || '')}</strong></p>
           <p>${esc(latest.summary || '')}</p>
+          <div class="help-note">Release History lists meaningful user-facing releases. Small internal fixes and repeated debugging changes are grouped instead of listed individually.</div>
           <button type="button" id="helpShowWhatsNewBtn" class="btn btn-secondary" style="margin:6px 0 14px;">
             Show What's New
           </button>
