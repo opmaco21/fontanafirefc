@@ -641,6 +641,7 @@
 
             <select id="newBirthYear">
               <option value="">Select birth year</option>
+              <option value="2011">2011</option>
               <option value="2012">2012</option>
               <option value="2013">2013</option>
               <option value="2014">2014</option>
@@ -709,8 +710,12 @@
 
       window.WEB_APP_VERSION = versionInfo;
 
+      // Include buildDate so phones do not keep an older Team Events script after deployment.
       const assetVersion = encodeURIComponent(
-        versionInfo.webVersion || String(Date.now())
+        [
+          versionInfo.webVersion || "web-dev",
+          versionInfo.buildDate || String(Date.now())
+        ].join("-")
       );
 
       const stylesheets = document.querySelectorAll("link.appStylesheet");
