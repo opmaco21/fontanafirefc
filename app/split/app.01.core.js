@@ -1483,22 +1483,23 @@ function updateRosterSummary() {
 }
 
 function setAllRosterCheckboxes(isChecked) {
-  const checkboxes = document.querySelectorAll(".roster-player-checkbox");
+  /*
+    Select All / Clear All must update the complete loaded roster,
+    not only the checkboxes currently visible under search or filters.
+  */
+  if (isChecked) {
+    selectedRosterPlayerIds = new Set(
+      latestRosterPlayers
+        .map(player => Number(player.PlayerID))
+        .filter(playerId => Number.isInteger(playerId) && playerId > 0)
+    );
+  } else {
+    selectedRosterPlayerIds.clear();
+  }
 
-  checkboxes.forEach(checkbox => {
-    const playerId = Number(checkbox.value);
-    checkbox.checked = isChecked;
-
-    if (!playerId) return;
-
-    if (isChecked) {
-      selectedRosterPlayerIds.add(playerId);
-    } else {
-      selectedRosterPlayerIds.delete(playerId);
-    }
-  });
-
-  updateRosterSummary();
+  // Re-render from the stored selection so hidden/filtered players
+  // cannot remain selected after Clear All.
+  renderRosterPlayers(latestRosterPlayers);
 }
 
 function renderRosterPlayers(players) {
