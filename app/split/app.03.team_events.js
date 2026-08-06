@@ -5,11 +5,14 @@
    - Team Events can be created by selecting exact players.
    - Backend will create the needed event rows by each player's group.
    ========================= */
+// Keep Team Event selections independent of the currently rendered/filtered list.
+// This matches the working Games selector behavior and prevents selections from
+// being lost when the Team Mom searches, filters, refreshes, or scrolls the list.
+let selectedTeamEventPlayerIds = new Set();
+
 function getSelectedTeamEventPlayerIds() {
-  return Array.from(
-    document.querySelectorAll(".team-event-player-checkbox:checked")
-  )
-    .map(checkbox => Number(checkbox.value))
+  return Array.from(selectedTeamEventPlayerIds)
+    .map(value => Number(value))
     .filter(value => Number.isInteger(value) && value > 0);
 }
 
@@ -22,11 +25,20 @@ function updateTeamEventPlayerSummary() {
 }
 
 function setAllTeamEventPlayerCheckboxes(isChecked) {
-  document.querySelectorAll(".team-event-player-checkbox").forEach(checkbox => {
-    checkbox.checked = isChecked;
-  });
+  if (isChecked) {
+    // Select every active player, not only the players currently visible after
+    // a search or gender filter.
+    latestTeamEventPlayers.forEach(player => {
+      const playerId = Number(player.PlayerID);
+      if (Number.isInteger(playerId) && playerId > 0) {
+        selectedTeamEventPlayerIds.add(playerId);
+      }
+    });
+  } else {
+    selectedTeamEventPlayerIds.clear();
+  }
 
-  updateTeamEventPlayerSummary();
+  renderTeamEventPlayerOptions();
 }
 
 function getFilteredTeamEventPlayers() {
@@ -58,7 +70,6 @@ function renderTeamEventPlayerOptions() {
   const list = document.getElementById("teamEventPlayerList");
   if (!list) return;
 
-  const selectedIds = new Set(getSelectedTeamEventPlayerIds());
   const players = getFilteredTeamEventPlayers();
 
   list.innerHTML = "";
@@ -87,7 +98,7 @@ function renderTeamEventPlayerOptions() {
         type="checkbox"
         class="team-event-player-checkbox"
         value="${player.PlayerID}"
-        ${selectedIds.has(Number(player.PlayerID)) ? "checked" : ""}
+        ${selectedTeamEventPlayerIds.has(Number(player.PlayerID)) ? "checked" : ""}
       />
       <span class="team-event-player-info">
         <span class="team-event-player-name">${escapeHtml(player.FirstName)} ${escapeHtml(player.LastName)}</span>
@@ -99,7 +110,17 @@ function renderTeamEventPlayerOptions() {
   });
 
   list.querySelectorAll(".team-event-player-checkbox").forEach(checkbox => {
-    checkbox.addEventListener("change", updateTeamEventPlayerSummary);
+    checkbox.addEventListener("change", () => {
+      const playerId = Number(checkbox.value);
+
+      if (checkbox.checked) {
+        selectedTeamEventPlayerIds.add(playerId);
+      } else {
+        selectedTeamEventPlayerIds.delete(playerId);
+      }
+
+      updateTeamEventPlayerSummary();
+    });
   });
 
   updateTeamEventPlayerSummary();
@@ -141,7 +162,7 @@ function ensureTeamEventPlayerSelectorPanel() {
           Refresh Players
         </button>
         <button type="button" id="teamEventSelectAllPlayersBtn" class="btn btn-secondary">
-          Select All Shown
+          Select All Players
         </button>
         <button type="button" id="teamEventClearPlayersBtn" class="btn btn-secondary">
           Clear Players
@@ -238,6 +259,18 @@ async function loadTeamEventPlayerSelector() {
 
     const data = await res.json();
     latestTeamEventPlayers = Array.isArray(data) ? data : data.players || [];
+
+    // Keep valid existing selections during refresh, but discard IDs that are
+    // no longer present in the active-player response.
+    const activePlayerIds = new Set(
+      latestTeamEventPlayers
+        .map(player => Number(player.PlayerID))
+        .filter(playerId => Number.isInteger(playerId) && playerId > 0)
+    );
+
+    selectedTeamEventPlayerIds = new Set(
+      Array.from(selectedTeamEventPlayerIds).filter(playerId => activePlayerIds.has(playerId))
+    );
 
     renderTeamEventPlayerOptions();
 
