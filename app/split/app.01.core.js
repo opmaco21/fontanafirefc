@@ -1284,6 +1284,7 @@ function ensureEventRosterFilterControls() {
           Birth Year
           <select id="eventRosterBirthYearFilter">
             <option value="">All Birth Years</option>
+            <option value="2011">2011</option>
             <option value="2012">2012</option>
             <option value="2013">2013</option>
             <option value="2014">2014</option>
@@ -1667,7 +1668,7 @@ async function updateEventRosterSection(options = {}) {
   }
 }
 
-async function saveEventRoster() {
+async function saveEventRoster(options = {}) {
   if (!eventSelect || !eventSelect.value) {
     setMessage(eventRosterMessage, "Select an event first.", true);
     return;
@@ -1676,11 +1677,24 @@ async function saveEventRoster() {
   const eventType = getSelectedEventType();
   const selectedGroupId = getSelectedGroupIdValue();
 
-  captureRosterSelectionsFromDom();
+  const hasForcedPlayerIds = Array.isArray(options.playerIds);
 
-  const selectedPlayerIds = Array.from(selectedRosterPlayerIds)
-    .map(playerId => Number(playerId))
-    .filter(playerId => Number.isInteger(playerId) && playerId > 0);
+  if (!hasForcedPlayerIds) {
+    captureRosterSelectionsFromDom();
+  }
+
+  const selectedPlayerIds = hasForcedPlayerIds
+    ? options.playerIds
+        .map(playerId => Number(playerId))
+        .filter(playerId => Number.isInteger(playerId) && playerId > 0)
+    : Array.from(selectedRosterPlayerIds)
+        .map(playerId => Number(playerId))
+        .filter(playerId => Number.isInteger(playerId) && playerId > 0);
+
+  if (hasForcedPlayerIds) {
+    selectedRosterPlayerIds = new Set(selectedPlayerIds);
+    renderRosterPlayers(latestRosterPlayers);
+  }
 
   const allMatchingParam = !selectedGroupId && eventType === "Team Event"
     ? "?allMatching=1"

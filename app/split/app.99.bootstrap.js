@@ -119,8 +119,15 @@ if (selectAllRosterBtn) {
 }
 
 if (clearRosterBtn) {
-  clearRosterBtn.addEventListener("click", () => {
+  clearRosterBtn.addEventListener("click", async () => {
+    const confirmed = window.confirm(
+      "Clear every player from this event roster and save the empty roster?"
+    );
+
+    if (!confirmed) return;
+
     setAllRosterCheckboxes(false);
+    await saveEventRoster({ playerIds: [] });
   });
 }
 
