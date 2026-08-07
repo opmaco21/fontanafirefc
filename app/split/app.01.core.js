@@ -195,6 +195,7 @@ let attendanceGenderFilter = "";
 let teamEventPlayerSearchTimer = null;
 let latestTeamEventPlayers = [];
 let teamEventGenderFilter = "";
+let eventLoadRequestId = 0;
 
 /* =========================
    GAME MANAGEMENT STATE
@@ -1800,6 +1801,14 @@ function getEventDateParts(eventDateValue) {
 async function loadEvents() {
   if (!eventSelect) return;
 
+  /*
+    Multiple UI paths can legitimately request an event refresh at nearly
+    the same time. Only the newest request is allowed to render the dropdown.
+    This prevents two overlapping responses from appending the same events
+    twice without changing Practice, Game, or Team Event filtering logic.
+  */
+  const requestId = ++eventLoadRequestId;
+
   eventSelect.innerHTML = `<option value="">Select event</option>`;
 
   try {
@@ -1821,6 +1830,12 @@ async function loadEvents() {
 
     if (!res.ok) {
       console.error("Events API failed:", res.status, data);
+      return;
+    }
+
+    // A newer loadEvents() call started while this request was in flight.
+    // Ignore this older response so it cannot append stale/duplicate options.
+    if (requestId !== eventLoadRequestId) {
       return;
     }
 
