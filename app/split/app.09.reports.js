@@ -28,6 +28,24 @@
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   }
 
+  function canOpenReport(key) {
+    if (!hasPerm("canViewReports")) return false;
+
+    if (["paperwork", "snacks", "roster", "redflags", "paperwork-complete"].includes(key)) {
+      return hasPerm("canViewPlayerContacts");
+    }
+
+    if (key === "emergency") {
+      return hasPerm("canViewEmergencyInfo");
+    }
+
+    return true;
+  }
+
+  function reportAccessDeniedHtml() {
+    return '<div class="report-error">You do not have permission to view this report.</div>';
+  }
+
   // ── Groups cache ──────────────────────────────────────────────────────────
   let groupsCache = null;
   async function loadGroups() {
@@ -44,6 +62,11 @@
   window.initReportsTab = function () {
     const container = document.getElementById('reportsContainer');
     if (!container) return;
+
+    if (!hasPerm("canViewReports")) {
+      container.innerHTML = reportAccessDeniedHtml();
+      return;
+    }
 
     // Reports are live views of current app data.
     // Preserve filter/search selections, but never reuse stale loaded rows
@@ -82,16 +105,23 @@
         <div class="reports-modern-section-label">Coaching & Attendance</div>
         ${buildAccordion('attendance', '📊 Attendance Summary', buildAttendanceControls())}
         ${buildAccordion('groupstats', '📈 Monthly Attendance by Group', buildGroupStatsControls())}
-        <div class="reports-modern-section-label">Club Administration</div>
-        ${buildAccordion('paperwork',  '📋 Missing Paperwork & Photo Release')}
-        ${buildAccordion('snacks',     '🍎 Snack Rotation')}
-        ${buildAccordion('emergency',  '🚨 Emergency Contacts')}
-        ${buildAccordion('roster',     '👥 Full Roster', buildRosterControls())}
-        ${buildAccordion('paperwork-complete', '✅ Paperwork Complete')}
-        <div class="reports-modern-section-label">Coaching Follow-Up</div>
-        ${buildAccordion('redflags',   '🎯 Player Follow-Up', buildRedFlagControls())}
+
+        ${hasPerm("canViewPlayerContacts") || hasPerm("canViewEmergencyInfo") ? `
+          <div class="reports-modern-section-label">Club Administration</div>
+          ${hasPerm("canViewPlayerContacts") ? buildAccordion('paperwork',  '📋 Missing Paperwork & Photo Release') : ''}
+          ${hasPerm("canViewPlayerContacts") ? buildAccordion('snacks',     '🍎 Snack Rotation') : ''}
+          ${hasPerm("canViewEmergencyInfo") ? buildAccordion('emergency',  '🚨 Emergency Contacts') : ''}
+          ${hasPerm("canViewPlayerContacts") ? buildAccordion('roster',     '👥 Full Roster', buildRosterControls()) : ''}
+          ${hasPerm("canViewPlayerContacts") ? buildAccordion('paperwork-complete', '✅ Paperwork Complete') : ''}
+        ` : ''}
+
+        ${hasPerm("canViewPlayerContacts") ? `
+          <div class="reports-modern-section-label">Coaching Follow-Up</div>
+          ${buildAccordion('redflags', '🎯 Player Follow-Up', buildRedFlagControls())}
+        ` : ''}
+
         <div class="reports-modern-section-label">Game Day</div>
-        ${buildAccordion('gameday',    '⚽ Game Day Roster', buildGameDayControls())}
+        ${buildAccordion('gameday', '⚽ Game Day Roster', buildGameDayControls())}
       </div>
     `;
   }
@@ -286,6 +316,8 @@
 
   // ── Accordion toggle ───────────────────────────────────────────────────────
   window.toggleReportAccordion = function (key) {
+    if (!canOpenReport(key)) return;
+
     const body = document.getElementById(`body-${key}`);
     const accordion = document.getElementById(`accordion-${key}`);
     if (!body || !accordion) return;
@@ -308,6 +340,12 @@
   async function loadReport(key) {
     const el = document.getElementById(`content-${key}`);
     if (!el) return;
+
+    if (!canOpenReport(key)) {
+      el.innerHTML = reportAccessDeniedHtml();
+      return;
+    }
+
     el.innerHTML = '<div class="report-loading">Loading…</div>';
 
     try {
@@ -636,8 +674,7 @@
             <div class="rpt-detail-name">${esc(player.FirstName)} ${esc(player.LastName)}</div>
             <div class="rpt-detail-sub">
               ${player.GroupName ? `${esc(player.GroupName)} · ` : ''}
-              ${player.PlayerNumber ? `Jersey #${player.PlayerNumber} · ` : ''}
-              ${esc(player.PaperworkStatus || '')}
+              ${player.PlayerNumber ? `Jersey #${player.PlayerNumber}` : ''}
             </div>
           </div>
           <div class="rpt-detail-print-actions">
@@ -841,6 +878,11 @@
 
   // ── Print ──────────────────────────────────────────────────────────────────
   window.printReport = function (key) {
+    if (!canOpenReport(key)) {
+      alert("You do not have permission to print this report.");
+      return;
+    }
+
     // Hide all other accordions during print to avoid blank pages
     const styleId = 'rpt-print-style';
     let style = document.getElementById(styleId);
@@ -864,6 +906,11 @@
   };
 
   window.downloadReportExcel = function (key) {
+    if (!canOpenReport(key)) {
+      alert("You do not have permission to export this report.");
+      return;
+    }
+
     const content = document.getElementById(`content-${key}`);
     if (!content) {
       alert('This report is not available yet.');

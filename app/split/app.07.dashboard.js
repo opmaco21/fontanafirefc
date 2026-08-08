@@ -111,10 +111,12 @@ function renderDashboardSummaryCards(data) {
 
   const cards = [
     renderDashboardCard("Inactive Players", totals.InactivePlayers || 0, activeCount + " active players", "inactive"),
-    renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, (paperwork.CompletePaperwork || 0) + " complete roster", "paperwork"),
-    renderDashboardCard("Photo Release", optIn, "<b>" + optIn + " Allowed</b> . " + optOut + " Denied<br>" + missingPhoto + " Missing Response", "photo"),
-    renderDashboardCard("Bring Snack 🍎", snack.BringSnackPlayers || 0, "Rotation families", "snack"),
-    renderDashboardCard("Paid Out 💰", snack.PaidOutPlayers || 0, "Coach provides snack", "paidout")
+    ...(hasPerm("canViewPlayerContacts") ? [
+      renderDashboardCard("Missing Paperwork", paperwork.MissingPaperwork || 0, (paperwork.CompletePaperwork || 0) + " complete roster", "paperwork"),
+      renderDashboardCard("Photo Release", optIn, "<b>" + optIn + " Allowed</b> . " + optOut + " Denied<br>" + missingPhoto + " Missing Response", "photo"),
+      renderDashboardCard("Bring Snack 🍎", snack.BringSnackPlayers || 0, "Rotation families", "snack"),
+      renderDashboardCard("Paid Out 💰", snack.PaidOutPlayers || 0, "Coach provides snack", "paidout")
+    ] : [])
   ].join("");
 
   dashboardSummaryCards.innerHTML = cards + `<div id="dashboardSummaryPanel" style="grid-column: 1 / -1;"></div>`;
@@ -122,6 +124,19 @@ function renderDashboardSummaryCards(data) {
   dashboardSummaryCards.querySelectorAll("[data-dash-card]").forEach(card => {
     card.addEventListener("click", async () => {
       const category = card.dataset.dashCard;
+
+      if (["paperwork", "photo", "snack", "paidout"].includes(category) && !hasPerm("canViewPlayerContacts")) {
+        dashboardOpenSummaryCard = "";
+        renderSummaryPanel(null);
+        return;
+      }
+
+      if (category === "emergency" && !hasPerm("canViewEmergencyInfo")) {
+        dashboardOpenSummaryCard = "";
+        renderSummaryPanel(null);
+        return;
+      }
+
       if (dashboardOpenSummaryCard === category) {
         dashboardOpenSummaryCard = "";
         renderSummaryPanel(null);
@@ -345,6 +360,7 @@ function setupDashboardDetailClickHandlers() {
     container.addEventListener("click", async e => {
       const btn = e.target.closest(".dashboard-category-row");
       if (!btn) return;
+      if (!hasPerm("canViewReports")) return;
       const key = btn.dataset.dashboardDetailKey;
       dashboardOpenDetailKey = (dashboardOpenDetailKey === key) ? "" : key;
       if (dashboardOpenDetailKey) {

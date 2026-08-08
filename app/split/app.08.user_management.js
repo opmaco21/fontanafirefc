@@ -607,7 +607,9 @@ const PERMISSION_LABELS = {
   canGenerateSchedule:   { label: "Generate Schedule",     desc: "Bulk-create practice events from the Practice tab" },
   canViewDashboard:      { label: "View Dashboard",        desc: "Access attendance reports and player summaries" },
   canViewUserManagement: { label: "View User Management",  desc: "See the user list; account administration remains hierarchy-protected" },
-  canViewReports:        { label: "View Reports",          desc: "Access attendance, roster, paperwork, emergency, snack, and player reports" },
+  canViewReports:        { label: "View Reports",          desc: "Access coaching and attendance reports" },
+  canViewPlayerContacts: { label: "View Player Contacts",  desc: "Access parent contact, paperwork, snack, roster, and follow-up details" },
+  canViewEmergencyInfo:  { label: "View Emergency Info",   desc: "Access emergency contacts, notes, and confidential emergency reports" },
   canDeleteEvents:       { label: "Delete Events",          desc: "Permanently delete games, practices, and team events" },
   canImportGames:        { label: "Import Games",           desc: "Use the AI schedule import to create games from photos or text" }
 };
