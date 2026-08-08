@@ -24,7 +24,7 @@ function canDeletePlayer() {
     return !!window.userPermissions.canDeletePlayer;
   }
   // Fallback: Admin only
-  return !!(currentUser && currentUser.RoleName === "Admin");
+  return !!(currentUser && ["SU", "Owner", "Admin"].includes(currentUser.RoleName));
 }
 
 function formatDateForInput(value) {

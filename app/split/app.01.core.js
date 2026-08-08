@@ -350,87 +350,66 @@ window.addEventListener("pageshow", (event) => {
 /* =========================
    ROLE PERMISSIONS
    ========================= */
-/* =========================
-   ROLE PERMISSION HELPERS
-   Roles: Admin, TeamMom, HeadCoach, Coaches
-   ========================= */
 function hasRole(...roles) {
-  return currentUser && roles.includes(currentUser.RoleName);
+  if (!currentUser) return false;
+  if (currentUser.RoleName === "SU") return true;
+  if (currentUser.RoleName === "Owner" && roles.includes("Admin")) return true;
+  return roles.includes(currentUser.RoleName);
 }
 
 function hasPerm(capability) {
-  // If permissions loaded from DB, use them
+  if (!currentUser) return false;
+
+  // SU is permanently unrestricted. Its access does not depend on DB toggles.
+  if (currentUser.RoleName === "SU") return true;
+
   if (currentPermissions && Object.keys(currentPermissions).length > 0) {
-    return currentUser && currentPermissions[capability] === true;
+    return currentPermissions[capability] === true;
   }
-  // Fallback to hardcoded defaults if DB permissions haven't loaded yet
+
+  // Safe fallback templates used only before DB permissions finish loading.
   const defaults = {
-    canMarkAttendance:     ["Admin", "TeamMom", "HeadCoach", "Coaches"],
-    canManageEvents:       ["Admin", "TeamMom", "HeadCoach"],
-    canManagePlayers:      ["Admin", "TeamMom"],
-    canGenerateSchedule:   ["Admin"],
-    canViewDashboard:      ["Admin", "TeamMom", "HeadCoach", "Coaches"],
-    canViewUserManagement: ["Admin", "TeamMom"],
-    canViewReports:        ["Admin", "TeamMom", "HeadCoach"]
+    canMarkAttendance:     ["Owner", "Admin", "HeadCoach", "TeamMom", "AssistantCoach"],
+    canManageEvents:       ["Owner", "Admin", "HeadCoach", "TeamMom", "AssistantCoach"],
+    canManagePlayers:      ["Owner", "Admin", "TeamMom", "Registrar"],
+    canDeletePlayer:       ["Owner", "Admin"],
+    canGenerateSchedule:   ["Owner", "Admin", "HeadCoach", "TeamMom"],
+    canViewDashboard:      ["Owner", "Admin", "HeadCoach", "TeamMom", "AssistantCoach", "Registrar", "Treasurer", "CommunicationsManager", "Viewer"],
+    canViewUserManagement: ["Owner", "Admin", "TeamMom"],
+    canViewReports:        ["Owner", "Admin", "HeadCoach", "TeamMom", "AssistantCoach", "Registrar", "Treasurer"],
+    canDeleteEvents:       ["Owner", "Admin"],
+    canImportGames:        ["Owner", "Admin", "HeadCoach", "TeamMom"]
   };
-  return currentUser && (defaults[capability] || []).includes(currentUser.RoleName);
+  return (defaults[capability] || []).includes(currentUser.RoleName);
 }
 
-function canManagePlayers() {
-  return hasPerm("canManagePlayers");
-}
-
-function canManageEvents() {
-  return hasPerm("canManageEvents");
-}
-
-function canManageUsers() {
-  // User management view ? Admin always, TeamMom always
-  return hasRole("Admin", "TeamMom");
-}
-
-function canCreateResetUsers() {
-  // Always Admin only ? not configurable
-  return hasRole("Admin");
-}
-
-function canGenerateSchedule() {
-  return hasPerm("canGenerateSchedule");
-}
+function canManagePlayers() { return hasPerm("canManagePlayers"); }
+function canManageEvents() { return hasPerm("canManageEvents"); }
+function canManageUsers() { return hasPerm("canViewUserManagement"); }
+function canCreateResetUsers() { return hasRole("Admin"); }
+function canGenerateSchedule() { return hasPerm("canGenerateSchedule"); }
 
 function applyRolePermissions() {
   if (!currentUser) return;
 
-  // Player Management ? Admin and TeamMom only
-  if (addPlayerSection) {
-    addPlayerSection.style.display = canManagePlayers() ? "block" : "none";
-  }
+  if (addPlayerSection) addPlayerSection.style.display = canManagePlayers() ? "block" : "none";
+  if (playerManagementTab) playerManagementTab.style.display = canManagePlayers() ? "" : "none";
+  if (userManagementTab) userManagementTab.classList.toggle("hidden", !canManageUsers());
+  if (reportsTab) reportsTab.classList.toggle("hidden", !hasPerm("canViewReports"));
 
-  // Player Management tab ? Admin and TeamMom only
-  if (playerManagementTab) {
-    playerManagementTab.style.display = canManagePlayers() ? "" : "none";
-  }
-
-  // User Management tab ? Admin and TeamMom only
-  if (userManagementTab) {
-    userManagementTab.classList.toggle("hidden", !canManageUsers());
-  }
-
-  // Reports tab — controlled by canViewReports
-  if (reportsTab) {
-    reportsTab.classList.toggle("hidden", !hasPerm("canViewReports"));
-  }
-
-  // Role label display
   const roleLabels = {
+    SU: "SU",
+    Owner: "Owner",
     Admin: "Admin",
-    TeamMom: "Team Mom",
     HeadCoach: "Head Coach",
-    Coaches: "Coach"
+    TeamMom: "Team Mom / Team Manager",
+    AssistantCoach: "Assistant Coach",
+    Registrar: "Registrar",
+    Treasurer: "Treasurer",
+    CommunicationsManager: "Communications Manager",
+    Viewer: "Viewer"
   };
-  if (roleText) {
-    roleText.textContent = roleLabels[currentUser.RoleName] || currentUser.RoleName;
-  }
+  if (roleText) roleText.textContent = roleLabels[currentUser.RoleName] || currentUser.RoleName;
 
   updateTeamEventSection();
   updateGameSection();
@@ -1113,6 +1092,8 @@ function resetWorkflowForSelectedEvent() {
 function updateAttendanceSectionVisibility() {
   if (!attendanceSection) return;
 
+  // Batch 2 security UX: users without attendance-write permission
+  // must not be offered the submit action. Backend enforcement remains authoritative.
   if (saveAttendanceBtn) {
     saveAttendanceBtn.classList.toggle("hidden", !hasPerm("canMarkAttendance"));
   }

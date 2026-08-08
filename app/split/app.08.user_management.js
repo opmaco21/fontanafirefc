@@ -1,9 +1,52 @@
 /* =========================
    USER MANAGEMENT (Batch 7)
-   Admin-only page for managing users, passwords, and access.
+   Hierarchy-protected page for managing users, passwords, roles, and access.
    ========================= */
 
 let allUsers = [];
+
+const USER_ROLE_LABELS = {
+  SU: "SU",
+  Owner: "Owner",
+  Admin: "Admin",
+  HeadCoach: "Head Coach",
+  TeamMom: "Team Mom / Team Manager",
+  AssistantCoach: "Assistant Coach",
+  Registrar: "Registrar",
+  Treasurer: "Treasurer",
+  CommunicationsManager: "Communications Manager",
+  Viewer: "Viewer"
+};
+
+const USER_ROLE_RANK = {
+  SU: 0, Owner: 1, Admin: 2, HeadCoach: 3, TeamMom: 3,
+  AssistantCoach: 4, Registrar: 4, Treasurer: 4, CommunicationsManager: 4, Viewer: 5
+};
+
+const CONFIGURABLE_USER_ROLES = [
+  "Owner", "Admin", "HeadCoach", "TeamMom", "AssistantCoach",
+  "Registrar", "Treasurer", "CommunicationsManager", "Viewer"
+];
+
+function canAdministerUserAccounts() {
+  return !!(currentUser && ["SU", "Owner", "Admin"].includes(currentUser.RoleName));
+}
+
+function canManageTargetRole(targetRole) {
+  if (!canAdministerUserAccounts() || targetRole === "SU") return false;
+  return USER_ROLE_RANK[targetRole] > USER_ROLE_RANK[currentUser.RoleName];
+}
+
+function getAssignableRoles() {
+  if (!canAdministerUserAccounts()) return [];
+  return CONFIGURABLE_USER_ROLES.filter(role => USER_ROLE_RANK[role] > USER_ROLE_RANK[currentUser.RoleName]);
+}
+
+function roleOptionsHtml(selectedRole = "") {
+  return getAssignableRoles().map(role =>
+    `<option value="${escapeUserMgmtHtml(role)}" ${selectedRole === role ? "selected" : ""}>${escapeUserMgmtHtml(USER_ROLE_LABELS[role] || role)}</option>`
+  ).join("");
+}
 
 function escapeUserMgmtHtml(value) {
   return String(value === null || value === undefined ? "" : value)
@@ -45,7 +88,7 @@ async function showUserManagement() {
   const container = document.getElementById("userManagementSection");
   if (!container) return;
 
-  if (!currentUser || (!["Admin", "TeamMom"].includes(currentUser.RoleName))) {
+  if (!currentUser || (typeof hasPerm === "function" ? !hasPerm("canViewUserManagement") : !["SU", "Owner", "Admin", "TeamMom"].includes(currentUser.RoleName))) {
     container.innerHTML = `<div style="padding:32px;text-align:center;color:#c62828;">Access denied.</div>`;
     return;
   }
@@ -57,17 +100,17 @@ async function showUserManagement() {
   // If already rendered, just reload data
   if (container.querySelector(".user-mgmt-container")) {
     await loadUsers();
-    const isAdmin = currentUser && currentUser.RoleName === "Admin";
-    if (isAdmin) await loadPermissionManager();
+    const canAdminister = canAdministerUserAccounts();
+    if (canAdminister) await loadPermissionManager();
     return;
   }
 
-  const isAdmin = currentUser && currentUser.RoleName === "Admin";
+  const canAdminister = canAdministerUserAccounts();
   container.innerHTML = `<div class="user-mgmt-container">
     <div class="user-mgmt-header">
       <h3>User Management</h3>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        ${isAdmin ? `<button id="createUserBtn" class="btn btn-primary" style="margin-top:0;">+ Create New User</button>` : ""}
+        ${canAdminister ? `<button id="createUserBtn" class="btn btn-primary" style="margin-top:0;">+ Create New User</button>` : ""}
       </div>
     </div>
 
@@ -89,7 +132,7 @@ async function showUserManagement() {
       </table>
     </div>
 
-    ${isAdmin ? `
+    ${canAdminister ? `
     <div style="margin-top:24px;">
       <div class="user-mgmt-header" style="margin-bottom:12px;">
         <h3 style="margin:0;">Role Permissions</h3>
@@ -106,7 +149,7 @@ async function showUserManagement() {
   if (createUserBtn) createUserBtn.addEventListener("click", showCreateUserModal);
 
   await loadUsers();
-  if (isAdmin) {
+  if (canAdminister) {
     await loadPermissionManager();
   }
 }
@@ -140,19 +183,8 @@ function renderUsersTable() {
   }
 
   tbody.innerHTML = allUsers.map(u => {
-    const roleClass = {
-      Admin:     "user-role-admin",
-      TeamMom:   "user-role-teammom",
-      HeadCoach: "user-role-headcoach",
-      Coaches:   "user-role-coaches"
-    }[u.RoleName] || "";
-
-    const roleLabel = {
-      Admin:     "Admin",
-      TeamMom:   "Team Mom",
-      HeadCoach: "Head Coach",
-      Coaches:   "Coaches"
-    }[u.RoleName] || u.RoleName;
+    const roleClass = `user-role-${String(u.RoleName || "").toLowerCase()}`;
+    const roleLabel = USER_ROLE_LABELS[u.RoleName] || u.RoleName;
 
     const lastLogin = u.LastLoginAt
       ? new Date(u.LastLoginAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
@@ -177,7 +209,7 @@ function renderUsersTable() {
         <td style="color:#666; font-size:12px;">${lastLogin}</td>
         <td>
           <div class="user-action-buttons">
-            ${currentUser && currentUser.RoleName === "Admin" ? `
+            ${canManageTargetRole(u.RoleName) ? `
             <button class="user-action-btn user-action-edit"
               data-action="edit" data-user-id="${u.UserID}" data-user-name="${escapeUserMgmtHtml(u.FullName)}" data-user-email="${escapeUserMgmtHtml(u.Email)}" data-user-role="${escapeUserMgmtHtml(u.RoleName)}">
               Edit
@@ -258,10 +290,7 @@ function showCreateUserModal() {
       <label>Role</label>
       <select id="newUserRole">
         <option value="">-- Select Role --</option>
-        <option value="Coaches">Coaches</option>
-        <option value="HeadCoach">Head Coach</option>
-        <option value="TeamMom">Team Mom</option>
-        <option value="Admin">Admin</option>
+        ${roleOptionsHtml()}
       </select>
     </div>
 
@@ -483,10 +512,7 @@ function showEditUserModal(userID, fullName, email, roleName) {
     <div class="form-row">
       <label>Role</label>
       <select id="editUserRole">
-        <option value="TeamMom" ${roleName === "TeamMom" ? "selected" : ""}>Team Mom</option>
-        <option value="HeadCoach" ${roleName === "HeadCoach" ? "selected" : ""}>Head Coach</option>
-        <option value="Coaches" ${roleName === "Coaches" ? "selected" : ""}>Coach</option>
-        <option value="Admin" ${roleName === "Admin" ? "selected" : ""}>Admin</option>
+        ${roleOptionsHtml(roleName)}
       </select>
     </div>
 
@@ -569,7 +595,7 @@ function buildModal(id, innerHtml) {
 }
 /* =========================
    PERMISSION MANAGER
-   Admin-only. Loads from DB, renders grid of toggles per role per capability.
+   SU/Owner/Admin role-template manager. Loads from DB and saves changes immediately.
    Changes save immediately on toggle.
    ========================= */
 
@@ -580,21 +606,18 @@ const PERMISSION_LABELS = {
   canDeletePlayer:       { label: "Delete Players",         desc: "Permanently delete players and their attendance records" },
   canGenerateSchedule:   { label: "Generate Schedule",     desc: "Bulk-create practice events from the Practice tab" },
   canViewDashboard:      { label: "View Dashboard",        desc: "Access attendance reports and player summaries" },
-  canViewUserManagement: { label: "View User Management",  desc: "See the user list (Admin can also edit users)" },
+  canViewUserManagement: { label: "View User Management",  desc: "See the user list; account administration remains hierarchy-protected" },
   canViewReports:        { label: "View Reports",          desc: "Access attendance, roster, paperwork, emergency, snack, and player reports" },
   canDeleteEvents:       { label: "Delete Events",          desc: "Permanently delete games, practices, and team events" },
   canImportGames:        { label: "Import Games",           desc: "Use the AI schedule import to create games from photos or text" }
 };
 
-const ROLE_LABELS = {
-  Admin:     "Admin",
-  TeamMom:   "Team Mom",
-  HeadCoach: "Head Coach",
-  Coaches:   "Coaches"
-};
+const ROLE_LABELS = USER_ROLE_LABELS;
 
-// Capabilities that Admin cannot have toggled (prevent lockout)
-const ADMIN_LOCKED = ["canMarkAttendance", "canViewDashboard", "canViewUserManagement", "canViewReports"];
+function canEditRoleTemplate(role) {
+  if (!canAdministerUserAccounts()) return false;
+  return USER_ROLE_RANK[role] > USER_ROLE_RANK[currentUser.RoleName];
+}
 
 async function loadPermissionManager() {
   const container = document.getElementById("permissionManagerContainer");
@@ -618,7 +641,7 @@ async function loadPermissionManager() {
 }
 
 function renderPermissionManager(permissions, container) {
-  const roles = ["Admin", "TeamMom", "HeadCoach", "Coaches"];
+  const roles = CONFIGURABLE_USER_ROLES;
   const capabilities = Object.keys(PERMISSION_LABELS);
 
   let html = `
@@ -643,11 +666,11 @@ function renderPermissionManager(permissions, container) {
 
     roles.forEach(role => {
       const isGranted = permissions[role] && permissions[role][cap] === true;
-      const isLocked = role === "Admin" && ADMIN_LOCKED.includes(cap);
+      const isLocked = !canEditRoleTemplate(role);
       const toggleId = `perm-${role}-${cap}`;
 
       html += `<td class="perm-toggle-cell">
-        <label class="perm-toggle ${isLocked ? "perm-toggle-locked" : ""}" title="${isLocked ? "Cannot be changed for Admin" : ""}">
+        <label class="perm-toggle ${isLocked ? "perm-toggle-locked" : ""}" title="${isLocked ? "This role is protected from your account level" : ""}">
           <input
             type="checkbox"
             id="${escapeUserMgmtHtml(toggleId)}"
