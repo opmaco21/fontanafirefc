@@ -604,7 +604,9 @@ async function loadAttendanceForEvent() {
 
     updateAttendanceDisplay();
 
-    const draftRestored = loadAttendanceDraft(eventId);
+    const draftRestored = hasPerm("canMarkAttendance")
+      ? loadAttendanceDraft(eventId)
+      : false;
 
     if (draftRestored) {
       setMessage(
@@ -653,6 +655,11 @@ function updateAttendanceDisplay() {
     row.querySelectorAll(".attendance-status-btn").forEach(button => {
       button.classList.toggle("active-status-btn", button.dataset.status === status);
     });
+
+    const readonlyStatus = row.querySelector(".attendance-readonly-status");
+    if (readonlyStatus) {
+      readonlyStatus.textContent = status && status !== "Clear" ? status : "Not marked";
+    }
 
     if (status === "Present") {
       present++;
@@ -809,37 +816,47 @@ function createAttendancePlayerRow(player) {
 
   const playerNameHtml = escapeHtml(playerName);
 
+  const canEditAttendance = hasPerm("canMarkAttendance");
+
   row.innerHTML = `
     <div class="attendance-player-info">
       <div class="attendance-player-name">${playerNameHtml}</div>
       <div class="attendance-player-meta">${playerNumber} ${birthYear ? `| Birth Year: ${birthYear}` : ""} ${gender ? `| Gender: ${formatGenderShort(gender)}` : ""} ${row.dataset.coach ? `| Coach: ${row.dataset.coach}` : ""}</div>
     </div>
 
-    <div class="attendance-status-buttons" role="group" aria-label="Attendance status for ${playerNameHtml}">
-      <button type="button" class="attendance-status-btn present-btn" data-status="Present">Present</button>
-      <button type="button" class="attendance-status-btn absent-btn" data-status="Absent">Absent</button>
-      <button type="button" class="attendance-status-btn excused-btn" data-status="Excused">Excused</button>
-      <button type="button" class="attendance-status-btn cancelled-btn" data-status="Cancelled">Cancelled</button>
-      <button type="button" class="attendance-status-btn clear-btn" data-status="Clear">Clear / Reset</button>
-    </div>
+    ${canEditAttendance ? `
+      <div class="attendance-status-buttons" role="group" aria-label="Attendance status for ${playerNameHtml}">
+        <button type="button" class="attendance-status-btn present-btn" data-status="Present">Present</button>
+        <button type="button" class="attendance-status-btn absent-btn" data-status="Absent">Absent</button>
+        <button type="button" class="attendance-status-btn excused-btn" data-status="Excused">Excused</button>
+        <button type="button" class="attendance-status-btn cancelled-btn" data-status="Cancelled">Cancelled</button>
+        <button type="button" class="attendance-status-btn clear-btn" data-status="Clear">Clear / Reset</button>
+      </div>
+    ` : `
+      <div class="attendance-readonly-status" aria-label="Saved attendance status for ${playerNameHtml}">
+        Not marked
+      </div>
+    `}
   `;
 
-  row.querySelectorAll(".attendance-status-btn").forEach(button => {
-    button.addEventListener("click", () => {
-      const nextStatus = button.dataset.status || "";
-      const currentStatus = getAttendanceRowStatus(row);
+  if (canEditAttendance) {
+    row.querySelectorAll(".attendance-status-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        const nextStatus = button.dataset.status || "";
+        const currentStatus = getAttendanceRowStatus(row);
 
-      setAttendanceRowStatus(row, currentStatus === nextStatus ? "" : nextStatus);
+        setAttendanceRowStatus(row, currentStatus === nextStatus ? "" : nextStatus);
 
-      if (attendanceMessage) {
-        if (nextStatus === "Clear") {
-          setMessage(attendanceMessage, "Reset selected. Submit attendance to remove this saved status.", false);
-        } else {
-          setMessage(attendanceMessage, nextStatus ? "Draft saved automatically." : "Status cleared from draft.", false);
+        if (attendanceMessage) {
+          if (nextStatus === "Clear") {
+            setMessage(attendanceMessage, "Reset selected. Submit attendance to remove this saved status.", false);
+          } else {
+            setMessage(attendanceMessage, nextStatus ? "Draft saved automatically." : "Status cleared from draft.", false);
+          }
         }
-      }
+      });
     });
-  });
+  }
 
   return row;
 }
@@ -863,6 +880,11 @@ function getAllAttendanceRows() {
        player's age group.
    ========================= */
 async function saveAttendance() {
+  if (!hasPerm("canMarkAttendance")) {
+    setMessage(attendanceMessage, "Attendance is read-only for your account.", true);
+    return;
+  }
+
   if (attendanceMessage) {
     attendanceMessage.textContent = "";
   }

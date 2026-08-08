@@ -1113,6 +1113,10 @@ function resetWorkflowForSelectedEvent() {
 function updateAttendanceSectionVisibility() {
   if (!attendanceSection) return;
 
+  if (saveAttendanceBtn) {
+    saveAttendanceBtn.classList.toggle("hidden", !hasPerm("canMarkAttendance"));
+  }
+
   if (currentTab === "Dashboard" || currentTab === "Player Management") {
     attendanceSection.classList.add("hidden");
     if (editRosterBtn) editRosterBtn.classList.add("hidden");

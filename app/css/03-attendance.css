@@ -233,3 +233,17 @@
   min-height: 36px !important;
   padding: 8px 5px !important;
 }
+
+
+/* Batch 2 security UI: read-only attendance status for users without canMarkAttendance. */
+.attendance-readonly-status {
+  min-width: 110px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
