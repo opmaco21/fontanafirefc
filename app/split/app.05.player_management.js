@@ -1414,6 +1414,16 @@ editingPlayerId = player.PlayerID;
 async function loadPlayerManagementList(options = {}) {
   if (!playerManagementList) return;
 
+  // Frontend least-privilege guard. The backend still enforces
+  // canManagePlayers and remains the actual security boundary.
+  if (!canManagePlayers()) {
+    latestManagedPlayers = [];
+    playerManagementPageIndex = 0;
+    playerManagementList.innerHTML = "";
+    if (playerManagementSummary) playerManagementSummary.textContent = "";
+    return;
+  }
+
   ensurePlayerManagementForm();
   ensurePlayerManagementFilters();
 

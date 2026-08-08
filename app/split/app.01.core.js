@@ -392,8 +392,27 @@ function canGenerateSchedule() { return hasPerm("canGenerateSchedule"); }
 function applyRolePermissions() {
   if (!currentUser) return;
 
-  if (addPlayerSection) addPlayerSection.style.display = canManagePlayers() ? "block" : "none";
-  if (playerManagementTab) playerManagementTab.style.display = canManagePlayers() ? "" : "none";
+  const mayManagePlayers = canManagePlayers();
+
+  if (addPlayerSection) addPlayerSection.style.display = mayManagePlayers ? "block" : "none";
+  if (playerManagementTab) playerManagementTab.style.display = mayManagePlayers ? "" : "none";
+
+  // Security/UX hardening: users without canManagePlayers must never be left
+  // looking at the protected Player Management section, even if the section
+  // was visible before permissions finished loading or after an account switch.
+  if (playerManagementSection) {
+    playerManagementSection.classList.toggle(
+      "hidden",
+      !mayManagePlayers || currentTab !== "Player Management"
+    );
+  }
+
+  if (!mayManagePlayers && currentTab === "Player Management") {
+    currentTab = "Dashboard";
+    setActiveTab();
+    updateMainModeVisibility();
+  }
+
   if (userManagementTab) userManagementTab.classList.toggle("hidden", !canManageUsers());
   if (reportsTab) reportsTab.classList.toggle("hidden", !hasPerm("canViewReports"));
 
@@ -898,8 +917,14 @@ if (gameClearPlayersBtn && !gameClearPlayersBtn.dataset.listenerAttached) {
    MAIN MODE VISIBILITY
    ========================= */
 function updateMainModeVisibility() {
+  // Never render a protected management section for a user who lacks its
+  // backend permission. This also protects against stale UI state.
+  if (currentTab === "Player Management" && !canManagePlayers()) {
+    currentTab = "Dashboard";
+  }
+
   const isDashboard       = currentTab === "Dashboard";
-  const isPlayerManagement = currentTab === "Player Management";
+  const isPlayerManagement = currentTab === "Player Management" && canManagePlayers();
   const isReports         = currentTab === "Reports";
   const isUserManagement  = currentTab === "User Management";
   const isHelp            = currentTab === "Help";

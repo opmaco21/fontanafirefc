@@ -232,6 +232,13 @@ if (teamEventsTab) {
 
 if (playerManagementTab) {
   playerManagementTab.addEventListener("click", async () => {
+    if (!canManagePlayers()) {
+      currentTab = "Dashboard";
+      setActiveTab();
+      updateMainModeVisibility();
+      return;
+    }
+
     currentTab = "Player Management";
     setActiveTab();
     clearSelectedEvent();
